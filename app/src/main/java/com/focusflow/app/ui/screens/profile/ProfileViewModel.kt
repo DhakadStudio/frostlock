@@ -15,7 +15,10 @@ import javax.inject.Inject
 
 data class ProfileUiState(
     val strictMode: Boolean = false,
-    val dailyGoalMinutes: Int = FocusSettings.DEFAULT_GOAL_MINUTES
+    val dailyGoalMinutes: Int = FocusSettings.DEFAULT_GOAL_MINUTES,
+    val breaksEnabled: Boolean = true,
+    val breakMinutes: Int = FocusSettings.DEFAULT_BREAK_MINUTES,
+    val focusGuardEnabled: Boolean = false
 )
 
 @HiltViewModel
@@ -26,9 +29,18 @@ class ProfileViewModel @Inject constructor(
 
     val uiState: StateFlow<ProfileUiState> = combine(
         focusSettings.strictMode,
-        focusSettings.dailyGoalMinutes
-    ) { strict, goal ->
-        ProfileUiState(strictMode = strict, dailyGoalMinutes = goal)
+        focusSettings.dailyGoalMinutes,
+        focusSettings.breaksEnabled,
+        focusSettings.breakMinutes,
+        focusSettings.focusGuardEnabled
+    ) { strict, goal, breaks, breakMinutes, guard ->
+        ProfileUiState(
+            strictMode = strict,
+            dailyGoalMinutes = goal,
+            breaksEnabled = breaks,
+            breakMinutes = breakMinutes,
+            focusGuardEnabled = guard
+        )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -36,6 +48,12 @@ class ProfileViewModel @Inject constructor(
     )
 
     fun setStrictMode(enabled: Boolean) = focusSettings.setStrictMode(enabled)
+
+    fun setBreaksEnabled(enabled: Boolean) = focusSettings.setBreaksEnabled(enabled)
+
+    fun setBreakMinutes(minutes: Int) = focusSettings.setBreakMinutes(minutes)
+
+    fun setFocusGuardEnabled(enabled: Boolean) = focusSettings.setFocusGuardEnabled(enabled)
 
     fun setDailyGoalMinutes(minutes: Int) {
         focusSettings.setDailyGoalMinutes(minutes)

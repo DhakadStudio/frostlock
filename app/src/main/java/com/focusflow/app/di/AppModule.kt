@@ -25,7 +25,9 @@ object AppModule {
             context,
             AppDatabase::class.java,
             "focusflow_db"
-        ).fallbackToDestructiveMigration().build()
+        ).addMigrations(AppDatabase.MIGRATION_3_4)
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides

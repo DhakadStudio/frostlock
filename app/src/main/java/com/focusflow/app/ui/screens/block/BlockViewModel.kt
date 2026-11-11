@@ -2,19 +2,18 @@ package com.focusflow.app.ui.screens.block
 
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.provider.Settings
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.focusflow.app.blocking.FocusBlockAccessibilityService
+import com.focusflow.app.data.InstalledApp
+import com.focusflow.app.data.InstalledAppsRepository
 import com.focusflow.app.data.local.prefs.AppLimitStore
 import com.focusflow.app.data.local.prefs.BlockingPreferences
+import com.focusflow.app.data.local.prefs.FocusSchedule
+import com.focusflow.app.data.local.prefs.ScheduleStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,12 +22,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class InstalledApp(
-    val packageName: String,
-    val label: String,
-    val icon: androidx.compose.ui.graphics.ImageBitmap? = null
-)
-
 data class BlockUiState(
     val apps: List<InstalledApp> = emptyList(),
     val blockedPackages: Set<String> = emptySet(),
@@ -36,14 +29,21 @@ data class BlockUiState(
     val usageMillis: Map<String, Long> = emptyMap(),
     val blockingEnabled: Boolean = false,
     val accessibilityEnabled: Boolean = false,
+    val schedules: List<FocusSchedule> = emptyList(),
+    val activeRuleLabels: List<String> = emptyList(),
     val loading: Boolean = true
-)
+) {
+    val blockedCount: Int get() = blockedPackages.size
+    val limitedCount: Int get() = limits.count { it.value > 0 }
+}
 
 @HiltViewModel
 class BlockViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val blockingPreferences: BlockingPreferences,
-    private val limitStore: AppLimitStore
+    private val limitStore: AppLimitStore,
+    private val scheduleStore: ScheduleStore,
+    private val installedApps: InstalledAppsRepository
 ) : ViewModel() {
 
     private val _apps = MutableStateFlow<List<InstalledApp>>(emptyList())
@@ -51,8 +51,10 @@ class BlockViewModel @Inject constructor(
     private val _accessibilityEnabled = MutableStateFlow(false)
     private val _limits = MutableStateFlow<Map<String, Int>>(emptyMap())
     private val _usage = MutableStateFlow<Map<String, Long>>(emptyMap())
+    private val _schedules = MutableStateFlow<List<FocusSchedule>>(emptyList())
+    private val _activeRuleLabels = MutableStateFlow<List<String>>(emptyList())
 
-    private val baseState = combine(
+    private val appState = combine(
         _apps,
         blockingPreferences.blockedPackages,
         blockingPreferences.blockingEnabled,
@@ -68,12 +70,22 @@ class BlockViewModel @Inject constructor(
         )
     }
 
+    private val ruleState = combine(_schedules, _activeRuleLabels) { schedules, active ->
+        schedules to active
+    }
+
     val uiState: StateFlow<BlockUiState> = combine(
-        baseState,
+        appState,
         _limits,
-        _usage
-    ) { base, limits, usage ->
-        base.copy(limits = limits, usageMillis = usage)
+        _usage,
+        ruleState
+    ) { base, limits, usage, (schedules, active) ->
+        base.copy(
+            limits = limits,
+            usageMillis = usage,
+            schedules = schedules,
+            activeRuleLabels = active
+        )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -84,16 +96,22 @@ class BlockViewModel @Inject constructor(
         loadApps()
         refreshAccessibilityStatus()
         refreshLimits()
+        refreshSchedules()
     }
 
     fun refreshAccessibilityStatus() {
         _accessibilityEnabled.value = FocusBlockAccessibilityService.isEnabled(context)
     }
 
-    /** Re-reads usage and limits; call when the screen resumes. */
+    /** Re-reads usage, limits and rules; call when the screen resumes. */
     fun refreshLimits() {
         _limits.value = limitStore.limits()
         _usage.value = limitStore.usageToday()
+    }
+
+    fun refreshSchedules() {
+        _schedules.value = scheduleStore.schedules()
+        _activeRuleLabels.value = scheduleStore.activeSchedules().map { it.schedule.label }
     }
 
     fun setBlockingEnabled(enabled: Boolean) = blockingPreferences.setBlockingEnabled(enabled)
@@ -113,34 +131,8 @@ class BlockViewModel @Inject constructor(
     }
 
     private fun loadApps() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val pm = context.packageManager
-            val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-            val resolved = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                pm.queryIntentActivities(launcherIntent, PackageManager.ResolveInfoFlags.of(0L))
-            } else {
-                @Suppress("DEPRECATION")
-                pm.queryIntentActivities(launcherIntent, 0)
-            }
-
-            val apps = resolved
-                .mapNotNull { it.activityInfo?.applicationInfo }
-                .distinctBy { it.packageName }
-                .filter { it.packageName != context.packageName }
-                .map { info ->
-                    InstalledApp(
-                        packageName = info.packageName,
-                        label = runCatching {
-                            pm.getApplicationLabel(info).toString()
-                        }.getOrDefault(info.packageName),
-                        icon = runCatching {
-                            pm.getApplicationIcon(info).toBitmap(96, 96).asImageBitmap()
-                        }.getOrNull()
-                    )
-                }
-                .sortedBy { it.label.lowercase() }
-
-            _apps.value = apps
+        viewModelScope.launch {
+            _apps.value = installedApps.apps()
             _loading.value = false
         }
     }

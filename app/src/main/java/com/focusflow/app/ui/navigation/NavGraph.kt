@@ -93,6 +93,11 @@ fun AppNavGraph(
                                 launchSingleTop = true
                                 restoreState = true
                             }
+                        },
+                        onOpenSchedules = {
+                            navController.navigate(Screen.Schedules.route) {
+                                launchSingleTop = true
+                            }
                         }
                     )
                 }

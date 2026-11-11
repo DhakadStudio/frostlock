@@ -71,6 +71,24 @@ class AppLimitStore @Inject constructor(@ApplicationContext context: Context) {
         return usageMillisToday(packageName) >= limit * 60_000L
     }
 
+    /**
+     * True once an app has used [WARN_FRACTION] of its budget but has not hit the
+     * cap yet. The service sends one heads-up notification per app per day.
+     */
+    fun shouldWarn(packageName: String): Boolean {
+        val limit = limitMinutes(packageName)
+        if (limit <= 0) return false
+        val used = usageMillisToday(packageName)
+        return shouldWarn(used, limit) && !warningSent(packageName)
+    }
+
+    fun markWarningSent(packageName: String) {
+        prefs.edit().putBoolean(warnedKey(packageName), true).apply()
+    }
+
+    fun warningSent(packageName: String): Boolean =
+        prefs.getBoolean(warnedKey(packageName), false)
+
     fun remainingMillis(packageName: String): Long {
         val limit = limitMinutes(packageName)
         if (limit <= 0) return Long.MAX_VALUE
@@ -126,13 +144,19 @@ class AppLimitStore @Inject constructor(@ApplicationContext context: Context) {
 
     private fun usageKey(packageName: String) = "${usagePrefix()}$packageName"
 
+    private fun warnedKey(packageName: String) = "$WARNED_PREFIX${LocalDate.now()}_$packageName"
+
     /** Drops usage counters from previous days so the prefs file stays small. */
     private fun pruneOldUsageIfNeeded() {
         val today = LocalDate.now()
         if (lastPrunedDay == today) return
         lastPrunedDay = today
-        val keep = usagePrefix()
-        val stale = prefs.all.keys.filter { it.startsWith(USAGE_PREFIX) && !it.startsWith(keep) }
+        val keepUsage = usagePrefix()
+        val keepWarned = "$WARNED_PREFIX${today}_"
+        val stale = prefs.all.keys.filter {
+            (it.startsWith(USAGE_PREFIX) && !it.startsWith(keepUsage)) ||
+                (it.startsWith(WARNED_PREFIX) && !it.startsWith(keepWarned))
+        }
         if (stale.isEmpty()) return
         prefs.edit().apply {
             stale.forEach { remove(it) }
@@ -143,10 +167,21 @@ class AppLimitStore @Inject constructor(@ApplicationContext context: Context) {
         const val PREFS_NAME = "focusflow_limits"
         private const val KEY_LIMIT_PREFIX = "limit_"
         private const val USAGE_PREFIX = "usage_"
+        private const val WARNED_PREFIX = "warned_"
         private const val KEY_ACTIVE_PACKAGE = "active_package"
         private const val KEY_ACTIVE_SINCE = "active_since"
 
+        /** Heads-up is sent once this share of the daily budget has been used. */
+        const val WARN_FRACTION = 0.8f
+
         /** Longest single block of time credited to an app (covers service hiccups). */
         private const val MAX_SINGLE_CREDIT_MS = 60_000L
+
+        /** Pure helper so the warning threshold is unit-testable. */
+        fun shouldWarn(usedMillis: Long, limitMinutes: Int): Boolean {
+            if (limitMinutes <= 0) return false
+            val budget = limitMinutes * 60_000L
+            return usedMillis >= budget * WARN_FRACTION && usedMillis < budget
+        }
     }
 }

@@ -8,9 +8,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -27,10 +30,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -47,6 +57,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,14 +77,18 @@ import com.focusflow.app.ui.theme.SurfaceHigh
 import com.focusflow.app.ui.theme.TextPrimary
 import com.focusflow.app.ui.theme.TextSecondary
 import com.focusflow.app.ui.util.formatClock
+import com.focusflow.app.ui.util.formatDuration
 
-private val DURATION_OPTIONS = listOf(15, 25, 45, 60)
+private val DURATION_OPTIONS = listOf(10, 15, 25, 30, 45, 60, 90)
+private val TAG_PRESETS = listOf("Study", "Work", "Reading", "Coding", "Revision")
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FocusScreen(
     viewModel: FocusViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+    var customTagOpen by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -109,16 +126,120 @@ fun FocusScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Duration chips
+        // Duration chips: quick presets plus a free-form custom length.
         if (state.mode != FocusMode.STOPWATCH) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            var customOpen by remember { mutableStateOf(false) }
+            val customSelected = state.targetMinutes !in DURATION_OPTIONS
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 DURATION_OPTIONS.forEach { minutes ->
                     DurationChip(
                         text = "${minutes}m",
                         selected = state.targetMinutes == minutes,
+                        enabled = !state.isRunning,
                         onClick = { viewModel.selectMinutes(minutes) }
                     )
                 }
+                DurationChip(
+                    text = if (customSelected) {
+                        formatDuration(state.targetMinutes * 60L)
+                    } else {
+                        "Custom"
+                    },
+                    selected = customSelected,
+                    enabled = !state.isRunning,
+                    onClick = { customOpen = true }
+                )
+            }
+
+            if (customOpen) {
+                CustomDurationDialog(
+                    initialMinutes = state.targetMinutes,
+                    onDismiss = { customOpen = false },
+                    onSave = { minutes ->
+                        viewModel.selectMinutes(minutes)
+                        customOpen = false
+                    }
+                )
+            }
+        }
+
+        // Subject tags are independent of blocking and the timer: pick one per
+        // session so the stats screen can break focus time down by subject.
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "Subject",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = TextSecondary
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if (state.tag.isNotBlank()) {
+                    TextButton(onClick = { viewModel.selectTag("") }) {
+                        Text(text = "Clear", color = TextSecondary)
+                    }
+                }
+            }
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                TAG_PRESETS.forEach { tag ->
+                    FilterChip(
+                        selected = state.tag == tag,
+                        onClick = {
+                            viewModel.selectTag(if (state.tag == tag) "" else tag)
+                        },
+                        label = { Text(tag) },
+                        colors = subjectChipColors()
+                    )
+                }
+                FilterChip(
+                    selected = state.tag.isNotBlank() && state.tag !in TAG_PRESETS,
+                    onClick = { customTagOpen = true },
+                    label = {
+                        Text(
+                            if (state.tag.isNotBlank() && state.tag !in TAG_PRESETS) {
+                                state.tag
+                            } else {
+                                "Custom"
+                            }
+                        )
+                    },
+                    colors = subjectChipColors()
+                )
+            }
+        }
+
+        if (customTagOpen) {
+            TagDialog(
+                initialTag = if (state.tag in TAG_PRESETS) "" else state.tag,
+                onDismiss = { customTagOpen = false },
+                onSave = { tag ->
+                    viewModel.selectTag(tag)
+                    customTagOpen = false
+                }
+            )
+        }
+
+        if (state.mode == FocusMode.POMODORO) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                InfoPill(text = "Round ${state.round}")
+                InfoPill(
+                    text = if (state.breaksEnabled) {
+                        "Break ${state.breakMinutes}m"
+                    } else {
+                        "Breaks off"
+                    }
+                )
             }
         }
 
@@ -130,6 +251,8 @@ fun FocusScreen(
                 formatClock(state.remainingSeconds)
             },
             subtitle = when {
+                state.phase == FocusPhase.BREAK -> "Break — step away"
+                state.breakFinished -> "Break over — round ${state.round} ready"
                 state.justCompleted -> "Session complete"
                 state.isRunning -> "Stay in the zone…"
                 state.hasStarted && state.elapsedSeconds > 0 -> "Paused"
@@ -157,7 +280,28 @@ fun FocusScreen(
             }
         }
 
-        if (state.strictActive) {
+        if (state.phase == FocusPhase.BREAK) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    text = "Phones are allowed during the break. FocusFlow will alert you when it ends and round ${state.round + 1} starts.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary,
+                    textAlign = TextAlign.Center
+                )
+                ActionCircle(
+                    icon = Icons.Default.SkipNext,
+                    label = "Skip break",
+                    container = Color(0xFF2B2650),
+                    tint = TextPrimary,
+                    onClick = { viewModel.skipBreak() },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        } else if (state.strictActive) {
             Text(
                 text = "Strict Mode is on. This session can't be paused or ended early.",
                 style = MaterialTheme.typography.bodyMedium,
@@ -187,6 +331,7 @@ fun FocusScreen(
                     ActionCircle(
                         icon = Icons.Default.PlayArrow,
                         label = when {
+                            state.breakFinished -> "Start round ${state.round}"
                             state.justCompleted -> "Start again"
                             state.hasStarted && state.elapsedSeconds > 0 -> "Resume"
                             else -> "Start"
@@ -284,6 +429,7 @@ private fun SegmentedControl(
 private fun DurationChip(
     text: String,
     selected: Boolean,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     Box(
@@ -295,16 +441,153 @@ private fun DurationChip(
                 if (selected) AccentPurple else StrokeSoft,
                 MaterialTheme.shapes.extraLarge
             )
-            .clickable(onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 18.dp, vertical = 10.dp)
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,
-            color = if (selected) TextPrimary else TextSecondary
+            color = when {
+                !enabled -> TextSecondary.copy(alpha = 0.5f)
+                selected -> TextPrimary
+                else -> TextSecondary
+            }
         )
     }
 }
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun CustomDurationDialog(
+    initialMinutes: Int,
+    onDismiss: () -> Unit,
+    onSave: (Int) -> Unit
+) {
+    var text by remember { mutableStateOf(initialMinutes.toString()) }
+    val minutes = text.toIntOrNull()?.coerceIn(1, 480) ?: 0
+
+    fun setValue(value: Int) {
+        text = value.coerceIn(1, 480).toString()
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = SurfaceCard,
+        titleContentColor = TextPrimary,
+        textContentColor = TextSecondary,
+        title = {
+            Text(
+                text = "Session length",
+                style = MaterialTheme.typography.headlineMedium
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Text(
+                    text = "Any length from 1 minute to 8 hours.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
+                ) {
+                    StepperButton(text = "−") { setValue(minutes - 5) }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = if (minutes > 0) formatDuration(minutes * 60L) else "—",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = TextPrimary,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "length",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextSecondary
+                        )
+                    }
+                    StepperButton(text = "+") { setValue(minutes + 5) }
+                }
+
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { input ->
+                        if (input.length <= 3 && input.all(Char::isDigit)) text = input
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Minutes") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = PrimaryPurple,
+                        unfocusedBorderColor = SurfaceHigh,
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary,
+                        cursorColor = AccentPurple,
+                        focusedLabelColor = AccentPurple,
+                        unfocusedLabelColor = TextSecondary
+                    ),
+                    shape = MaterialTheme.shapes.medium
+                )
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CUSTOM_PRESETS.forEach { preset ->
+                        FilterChip(
+                            selected = minutes == preset,
+                            onClick = { setValue(preset) },
+                            label = { Text("${preset}m") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                containerColor = SurfaceHigh,
+                                labelColor = TextSecondary,
+                                selectedContainerColor = PrimaryPurple,
+                                selectedLabelColor = Color.White
+                            )
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { if (minutes >= 1) onSave(minutes) },
+                enabled = minutes >= 1
+            ) {
+                Text(text = "Set", color = AccentPurple)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = "Cancel", color = TextSecondary)
+            }
+        }
+    )
+}
+
+@Composable
+private fun StepperButton(text: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(44.dp)
+            .clip(CircleShape)
+            .background(SurfaceHigh)
+            .border(1.dp, StrokeSoft, CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleLarge,
+            color = TextPrimary
+        )
+    }
+}
+
+private val CUSTOM_PRESETS = listOf(10, 20, 30, 45, 60, 90, 120)
 
 @Composable
 private fun ActionCircle(
@@ -402,6 +685,94 @@ private fun HoldToEndButton(
             color = TextPrimary
         )
     }
+}
+
+@Composable
+private fun subjectChipColors() = FilterChipDefaults.filterChipColors(
+    containerColor = SurfaceHigh,
+    labelColor = TextSecondary,
+    selectedContainerColor = PrimaryPurple,
+    selectedLabelColor = Color.White
+)
+
+@Composable
+private fun InfoPill(text: String) {
+    Box(
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.extraLarge)
+            .background(SurfaceCard)
+            .border(1.dp, StrokeSoft, MaterialTheme.shapes.extraLarge)
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = TextSecondary
+        )
+    }
+}
+
+@Composable
+private fun TagDialog(
+    initialTag: String,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit
+) {
+    var text by remember { mutableStateOf(initialTag) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = SurfaceCard,
+        titleContentColor = TextPrimary,
+        textContentColor = TextSecondary,
+        title = {
+            Text(
+                text = "Subject",
+                style = MaterialTheme.typography.headlineMedium
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "Name this session so it shows up in your subject breakdown.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { input ->
+                        if (input.length <= 24) text = input
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Subject") },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = PrimaryPurple,
+                        unfocusedBorderColor = SurfaceHigh,
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary,
+                        cursorColor = AccentPurple,
+                        focusedLabelColor = AccentPurple,
+                        unfocusedLabelColor = TextSecondary
+                    ),
+                    shape = MaterialTheme.shapes.medium
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSave(text) },
+                enabled = text.isNotBlank()
+            ) {
+                Text(text = "Save", color = AccentPurple)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = "Cancel", color = TextSecondary)
+            }
+        }
+    )
 }
 
 @Composable

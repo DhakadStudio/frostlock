@@ -17,10 +17,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,10 +41,14 @@ import com.focusflow.app.ui.components.SessionRow
 import com.focusflow.app.ui.components.StatTile
 import com.focusflow.app.ui.theme.AccentPurple
 import com.focusflow.app.ui.theme.BackgroundDark
+import com.focusflow.app.ui.theme.PrimaryIndigo
+import com.focusflow.app.ui.theme.PrimaryPurple
 import com.focusflow.app.ui.theme.StrokeSoft
+import com.focusflow.app.ui.theme.SurfaceHigh
 import com.focusflow.app.ui.theme.TextPrimary
 import com.focusflow.app.ui.theme.TextSecondary
 import com.focusflow.app.ui.theme.WarnAmber
+import com.focusflow.app.ui.util.TagTotal
 import com.focusflow.app.ui.util.formatDuration
 
 @Composable
@@ -162,7 +166,7 @@ fun StatsScreen(
             StatTile(
                 title = "This week",
                 value = formatDuration(state.weekSeconds),
-                icon = Icons.Default.Work,
+                icon = Icons.Default.DateRange,
                 modifier = Modifier.weight(1f)
             )
             StatTile(
@@ -203,6 +207,19 @@ fun StatsScreen(
             }
         }
 
+        if (state.tags.isNotEmpty()) {
+            AppCard {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = "By subject",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = TextPrimary
+                    )
+                    SubjectBreakdown(tags = state.tags)
+                }
+            }
+        }
+
         SectionHeader(title = "Recent sessions")
 
         if (state.recent.isEmpty()) {
@@ -220,6 +237,52 @@ fun StatsScreen(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun SubjectBreakdown(tags: List<TagTotal>) {
+    val max = (tags.maxOfOrNull { it.seconds } ?: 0L).coerceAtLeast(1L)
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        tags.forEach { tag ->
+            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = tag.tag,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextPrimary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = formatDuration(tag.seconds),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(SurfaceHigh)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(
+                                (tag.seconds.toFloat() / max.toFloat()).coerceIn(0.03f, 1f)
+                            )
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(PrimaryPurple, PrimaryIndigo)
+                                )
+                            )
+                    )
+                }
+            }
+        }
     }
 }
 

@@ -50,7 +50,11 @@ fun SessionRow(
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = modeLabel(session.mode),
+                    text = if (session.tag.isBlank()) {
+                        modeLabel(session.mode)
+                    } else {
+                        "${modeLabel(session.mode)} · ${session.tag}"
+                    },
                     style = MaterialTheme.typography.titleMedium,
                     color = TextPrimary
                 )

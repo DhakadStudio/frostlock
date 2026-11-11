@@ -89,7 +89,11 @@ class BlockingPreferences @Inject constructor(@ApplicationContext context: Conte
         totalSeconds: Int,
         accumulatedMs: Long,
         runningSince: Long,
-        strict: Boolean
+        strict: Boolean,
+        phase: String = "FOCUS",
+        round: Int = 1,
+        breakMinutes: Int = 5,
+        breaksEnabled: Boolean = true
     ) {
         prefs.edit()
             .putString(KEY_TIMER_MODE, mode)
@@ -97,6 +101,10 @@ class BlockingPreferences @Inject constructor(@ApplicationContext context: Conte
             .putLong(KEY_TIMER_ACCUMULATED, accumulatedMs)
             .putLong(KEY_TIMER_RUNNING_SINCE, runningSince)
             .putBoolean(KEY_TIMER_STRICT, strict)
+            .putString(KEY_TIMER_PHASE, phase)
+            .putInt(KEY_TIMER_ROUND, round)
+            .putInt(KEY_TIMER_BREAK_MINUTES, breakMinutes)
+            .putBoolean(KEY_TIMER_BREAKS_ENABLED, breaksEnabled)
             .apply()
     }
 
@@ -107,6 +115,10 @@ class BlockingPreferences @Inject constructor(@ApplicationContext context: Conte
             .remove(KEY_TIMER_ACCUMULATED)
             .remove(KEY_TIMER_RUNNING_SINCE)
             .remove(KEY_TIMER_STRICT)
+            .remove(KEY_TIMER_PHASE)
+            .remove(KEY_TIMER_ROUND)
+            .remove(KEY_TIMER_BREAK_MINUTES)
+            .remove(KEY_TIMER_BREAKS_ENABLED)
             .apply()
     }
 
@@ -121,6 +133,14 @@ class BlockingPreferences @Inject constructor(@ApplicationContext context: Conte
 
     fun savedTimerStrict(): Boolean = prefs.getBoolean(KEY_TIMER_STRICT, false)
 
+    fun savedTimerPhase(): String = prefs.getString(KEY_TIMER_PHASE, "FOCUS") ?: "FOCUS"
+
+    fun savedTimerRound(): Int = prefs.getInt(KEY_TIMER_ROUND, 1)
+
+    fun savedTimerBreakMinutes(): Int = prefs.getInt(KEY_TIMER_BREAK_MINUTES, 5)
+
+    fun savedTimerBreaksEnabled(): Boolean = prefs.getBoolean(KEY_TIMER_BREAKS_ENABLED, true)
+
     companion object {
         const val PREFS_NAME = "focusflow_blocking"
         const val KEY_ENABLED = "blocking_enabled"
@@ -132,6 +152,10 @@ class BlockingPreferences @Inject constructor(@ApplicationContext context: Conte
         const val KEY_TIMER_ACCUMULATED = "timer_accumulated_ms"
         const val KEY_TIMER_RUNNING_SINCE = "timer_running_since"
         const val KEY_TIMER_STRICT = "timer_strict"
+        const val KEY_TIMER_PHASE = "timer_phase"
+        const val KEY_TIMER_ROUND = "timer_round"
+        const val KEY_TIMER_BREAK_MINUTES = "timer_break_minutes"
+        const val KEY_TIMER_BREAKS_ENABLED = "timer_breaks_enabled"
 
         /** How long a single heartbeat keeps blocking alive. */
         const val HEARTBEAT_WINDOW_MS = 5_000L

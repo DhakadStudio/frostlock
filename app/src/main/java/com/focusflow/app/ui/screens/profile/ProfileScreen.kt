@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -195,6 +197,113 @@ fun ProfileScreen(
             }
         }
 
+        SectionHeader(title = "Pomodoro breaks")
+        AppCard {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(SurfaceHigh),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Timer,
+                            contentDescription = null,
+                            tint = AccentPurple,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Break between rounds",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = TextPrimary
+                        )
+                        Text(
+                            text = "After each Pomodoro round, blocking pauses and a break timer starts.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Switch(
+                        checked = state.breaksEnabled,
+                        onCheckedChange = viewModel::setBreaksEnabled,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = PrimaryPurple,
+                            uncheckedThumbColor = TextSecondary,
+                            uncheckedTrackColor = SurfaceHigh
+                        )
+                    )
+                }
+                if (state.breaksEnabled) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(3, 5, 10).forEach { minutes ->
+                            MoodChip(
+                                text = "${minutes}m",
+                                selected = state.breakMinutes == minutes,
+                                onClick = { viewModel.setBreakMinutes(minutes) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        SectionHeader(title = "Focus Guard")
+        AppCard {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(SurfaceHigh),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.NotificationsActive,
+                        contentDescription = null,
+                        tint = AccentPurple,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Gentle nudges",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = "A reminder every 10 minutes during a focus session, so a quick check doesn't become a scroll.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Switch(
+                    checked = state.focusGuardEnabled,
+                    onCheckedChange = viewModel::setFocusGuardEnabled,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = PrimaryPurple,
+                        uncheckedThumbColor = TextSecondary,
+                        uncheckedTrackColor = SurfaceHigh
+                    )
+                )
+            }
+        }
+
         SectionHeader(title = "Home screen widget")
         AppCard {
             Row(
@@ -227,9 +336,9 @@ fun ProfileScreen(
         SectionHeader(title = "Coming soon")
         AppCard {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("•  Tags & insights", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
                 Text("•  Website blocker", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
-                Text("•  Pomodoro breaks & alerts", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+                Text("•  Study diary & photos", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+                Text("•  Focus groups & leaderboards", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
             }
         }
 

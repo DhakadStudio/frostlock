@@ -1,6 +1,8 @@
 package com.focusflow.app.blocking
 
 import android.accessibilityservice.AccessibilityService
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -10,9 +12,12 @@ import android.os.Looper
 import android.os.SystemClock
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
+import androidx.core.app.NotificationCompat
+import com.focusflow.app.R
 import com.focusflow.app.data.local.prefs.AppLimitStore
 import com.focusflow.app.data.local.prefs.BlockingPreferences
 import com.focusflow.app.data.local.prefs.ScheduleStore
+import com.focusflow.app.data.local.prefs.blocks
 
 /**
  * Watches foreground app changes and sends the user to [BlockActivity] when they
@@ -45,6 +50,7 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         prefs = getSharedPreferences(BlockingPreferences.PREFS_NAME, Context.MODE_PRIVATE)
         limitStore = AppLimitStore(this)
         scheduleStore = ScheduleStore(this)
+        createLimitChannel()
         handler.postDelayed(usageTicker, USAGE_TICK_MS)
     }
 
@@ -70,19 +76,33 @@ class FocusBlockAccessibilityService : AccessibilityService() {
                 return
             }
             store.setActive(openedPackage, now)
+            maybeWarnLimit(store, openedPackage)
         }
 
         val prefs = prefs ?: return
-        if (!prefs.getBoolean(BlockingPreferences.KEY_ENABLED, false)) return
+        val globalBlocked =
+            prefs.getStringSet(BlockingPreferences.KEY_PACKAGES, emptySet()) ?: emptySet()
 
-        val blocked = prefs.getStringSet(BlockingPreferences.KEY_PACKAGES, emptySet()) ?: return
-        if (openedPackage !in blocked) return
-
-        val schedule = scheduleStore?.activeSchedule()
-        if (schedule != null) {
-            showWall(openedPackage, BlockActivity.REASON_SCHEDULE, now, schedule.endsAtMillis)
+        // Rules carry their own app list, so each rule can lock a different set.
+        // Older rules without apps fall back to the global focus-session list.
+        // Several rules can run at once, so check every active rule. Schedules are
+        // deliberately independent of the Focus blocking switch: disabling manual
+        // session blocking must not silently turn off the user's schedule.
+        val rule = scheduleStore?.activeSchedules().orEmpty()
+            .firstOrNull { it.schedule.blocks(openedPackage, globalBlocked) }
+        if (rule != null) {
+            showWall(
+                openedPackage,
+                BlockActivity.REASON_SCHEDULE,
+                now,
+                rule.endsAtMillis,
+                rule.schedule.label
+            )
             return
         }
+
+        if (!prefs.getBoolean(BlockingPreferences.KEY_ENABLED, false)) return
+        if (openedPackage !in globalBlocked) return
 
         if (prefs.getLong(BlockingPreferences.KEY_FOCUS_UNTIL, 0L) <= now) return
 
@@ -102,9 +122,60 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         store.commitActive(now)
         if (store.isLimitReached(active)) {
             showWall(active, BlockActivity.REASON_LIMIT, now)
-        } else {
-            store.setActive(active, now)
+            return
         }
+        store.setActive(active, now)
+        maybeWarnLimit(store, active)
+    }
+
+    /** Sends a single "X minutes left" heads-up before a daily limit is reached. */
+    private fun maybeWarnLimit(store: AppLimitStore, packageName: String) {
+        if (!store.shouldWarn(packageName)) return
+        store.markWarningSent(packageName)
+
+        val remainingMinutes =
+            ((store.remainingMillis(packageName) + 59_999L) / 60_000L).toInt().coerceAtLeast(1)
+        val label = runCatching {
+            val info = packageManager.getApplicationInfo(packageName, 0)
+            packageManager.getApplicationLabel(info).toString()
+        }.getOrDefault(packageName)
+        val limit = store.limitMinutes(packageName)
+
+        val notification = NotificationCompat.Builder(this, LIMIT_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_stat_focus)
+            .setContentTitle("$label: $remainingMinutes min left")
+            .setContentText("Your $limit minute daily limit is almost up.")
+            .setContentIntent(
+                android.app.PendingIntent.getActivity(
+                    this,
+                    0,
+                    Intent(this, com.focusflow.app.ui.MainActivity::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+                    android.app.PendingIntent.FLAG_IMMUTABLE or
+                        android.app.PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            )
+            .setAutoCancel(true)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .build()
+
+        runCatching {
+            getSystemService(NotificationManager::class.java)
+                .notify(LIMIT_NOTIFICATION_BASE + (packageName.hashCode() and 0x7FFF), notification)
+        }
+    }
+
+    private fun createLimitChannel() {
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(
+            NotificationChannel(
+                LIMIT_CHANNEL_ID,
+                "App limit warnings",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Heads-up before an app hits its daily limit"
+            }
+        )
     }
 
     /**
@@ -115,20 +186,30 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         val pkg = foregroundPackage ?: return
         if (pkg == packageName) return
 
+        // Schedules run independently of the manual Focus blocking switch.
         val prefs = prefs ?: return
-        if (!prefs.getBoolean(BlockingPreferences.KEY_ENABLED, false)) return
-        val blocked = prefs.getStringSet(BlockingPreferences.KEY_PACKAGES, emptySet()) ?: return
-        if (pkg !in blocked) return
+        val globalBlocked =
+            prefs.getStringSet(BlockingPreferences.KEY_PACKAGES, emptySet()) ?: emptySet()
 
-        val schedule = scheduleStore?.activeSchedule() ?: return
-        showWall(pkg, BlockActivity.REASON_SCHEDULE, System.currentTimeMillis(), schedule.endsAtMillis)
+        val rule = scheduleStore?.activeSchedules().orEmpty()
+            .firstOrNull { it.schedule.blocks(pkg, globalBlocked) }
+            ?: return
+
+        showWall(
+            pkg,
+            BlockActivity.REASON_SCHEDULE,
+            System.currentTimeMillis(),
+            rule.endsAtMillis,
+            rule.schedule.label
+        )
     }
 
     private fun showWall(
         packageName: String,
         reason: String,
         now: Long,
-        untilMillis: Long = 0L
+        untilMillis: Long = 0L,
+        ruleLabel: String? = null
     ) {
         // Window events fire several times per app switch; debounce them.
         val elapsed = SystemClock.elapsedRealtime()
@@ -147,6 +228,7 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             .putExtra(BlockActivity.EXTRA_BLOCKED_PACKAGE, packageName)
             .putExtra(BlockActivity.EXTRA_REASON, reason)
             .putExtra(BlockActivity.EXTRA_UNTIL, untilMillis)
+            .putExtra(BlockActivity.EXTRA_RULE_LABEL, ruleLabel)
 
         runCatching { startActivity(intent) }
             .onFailure { performGlobalAction(GLOBAL_ACTION_HOME) }
@@ -163,6 +245,8 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     companion object {
         private const val USAGE_TICK_MS = 10_000L
         private const val BLOCK_DEBOUNCE_MS = 700L
+        private const val LIMIT_CHANNEL_ID = "app_limits"
+        private const val LIMIT_NOTIFICATION_BASE = 2_000
 
         /** True when the user has enabled this service in system accessibility settings. */
         fun isEnabled(context: Context): Boolean {

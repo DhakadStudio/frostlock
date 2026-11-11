@@ -19,12 +19,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -60,6 +60,7 @@ import java.util.Locale
 fun HomeScreen(
     onStartFocus: () -> Unit,
     onOpenBlock: () -> Unit = {},
+    onOpenSchedules: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -142,7 +143,7 @@ fun HomeScreen(
             StatTile(
                 title = "This week",
                 value = formatDuration(state.weekSeconds),
-                icon = Icons.Default.Work,
+                icon = Icons.Default.BarChart,
                 modifier = Modifier.weight(1f)
             )
             StatTile(
@@ -169,7 +170,7 @@ fun HomeScreen(
                 title = "Schedules",
                 subtitle = "Auto-block weekly",
                 icon = Icons.Default.CalendarMonth,
-                onClick = onOpenBlock,
+                onClick = onOpenSchedules,
                 modifier = Modifier.weight(1f)
             )
         }

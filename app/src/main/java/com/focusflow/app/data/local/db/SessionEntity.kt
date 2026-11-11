@@ -1,5 +1,6 @@
 package com.focusflow.app.data.local.db
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -17,5 +18,8 @@ data class SessionEntity(
     val durationSeconds: Int,
     val startedAt: Long,
     val endedAt: Long,
-    val completed: Boolean
+    val completed: Boolean,
+    /** Optional subject/tag the user picked for this session ("Physics", "Work", ...). */
+    @ColumnInfo(defaultValue = "''")
+    val tag: String = ""
 )

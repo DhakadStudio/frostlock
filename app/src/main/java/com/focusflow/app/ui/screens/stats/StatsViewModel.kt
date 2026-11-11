@@ -6,6 +6,8 @@ import com.focusflow.app.data.local.db.SessionDao
 import com.focusflow.app.data.local.db.SessionEntity
 import com.focusflow.app.ui.util.computeStreak
 import com.focusflow.app.ui.util.localDateOf
+import com.focusflow.app.ui.util.tagBreakdown
+import com.focusflow.app.ui.util.TagTotal
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -32,6 +34,7 @@ data class StatsUiState(
     val completedSessions: Int = 0,
     val streak: Int = 0,
     val days: List<DayBar> = emptyList(),
+    val tags: List<TagTotal> = emptyList(),
     val recent: List<SessionEntity> = emptyList()
 ) {
     val averageSeconds: Long
@@ -71,6 +74,7 @@ class StatsViewModel @Inject constructor(
             completedSessions = completed,
             streak = computeStreak(partial.recent.map { it.startedAt }),
             days = buildDays(partial.recent),
+            tags = tagBreakdown(partial.recent),
             recent = partial.recent.take(10)
         )
     }.stateIn(

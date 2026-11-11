@@ -43,7 +43,8 @@ fun BlockedScreen(
     isLimitReached: Boolean = false,
     isScheduled: Boolean = false,
     limitMinutes: Int = 0,
-    usedMinutes: Int = 0
+    usedMinutes: Int = 0,
+    ruleLabel: String? = null
 ) {
     val accent = if (isLimitReached) DangerRed else AccentPurple
 
@@ -97,6 +98,10 @@ fun BlockedScreen(
                     isLimitReached && appLabel != null ->
                         "You've used your $limitMinutes-minute budget for $appLabel today."
                     isLimitReached -> "You've used this app's daily budget."
+                    isScheduled && ruleLabel != null && appLabel != null ->
+                        "$appLabel is blocked during \u201C$ruleLabel\u201D."
+                    isScheduled && ruleLabel != null ->
+                        "This app is blocked during \u201C$ruleLabel\u201D."
                     isScheduled && appLabel != null ->
                         "$appLabel is blocked during your scheduled focus."
                     isScheduled -> "This app is blocked during your scheduled focus."

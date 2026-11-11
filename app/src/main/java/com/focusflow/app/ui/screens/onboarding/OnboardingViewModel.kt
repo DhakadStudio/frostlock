@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class OnboardingUiState(
@@ -81,7 +82,11 @@ class OnboardingViewModel @Inject constructor(
 
     fun finishOnboarding(onFinished: () -> Unit) {
         val state = _uiState.value
-        viewModelScope.launch(testDispatcher ?: Dispatchers.IO) {
+        val ioDispatcher = testDispatcher ?: Dispatchers.IO
+        // Navigation mutates the NavController/Lifecycle, which is main-thread only,
+        // so the callback must be dispatched back to the main thread.
+        val mainDispatcher = testDispatcher ?: Dispatchers.Main.immediate
+        viewModelScope.launch(ioDispatcher) {
             val profile = ProfileEntity(
                 goals = state.selectedGoals.joinToString(","),
                 triggers = state.selectedTriggers.joinToString(","),
@@ -96,7 +101,7 @@ class OnboardingViewModel @Inject constructor(
             )
             settingsDataStore.setOnboardingDone(true)
             _uiState.update { it.copy(isCompleted = true) }
-            onFinished()
+            withContext(mainDispatcher) { onFinished() }
         }
     }
 }

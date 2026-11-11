@@ -25,9 +25,51 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
     private val _dailyGoalMinutes = MutableStateFlow(prefs.getInt(KEY_DAILY_GOAL, DEFAULT_GOAL_MINUTES))
     val dailyGoalMinutes: StateFlow<Int> = _dailyGoalMinutes.asStateFlow()
 
+    /** Last timer length the user picked, so custom durations stick between visits. */
+    private val _lastDurationMinutes =
+        MutableStateFlow(prefs.getInt(KEY_LAST_DURATION, DEFAULT_DURATION_MINUTES))
+    val lastDurationMinutes: StateFlow<Int> = _lastDurationMinutes.asStateFlow()
+
+    /** Whether Pomodoro rounds are followed by a break. Independent of app blocking. */
+    private val _breaksEnabled = MutableStateFlow(prefs.getBoolean(KEY_BREAKS_ENABLED, true))
+    val breaksEnabled: StateFlow<Boolean> = _breaksEnabled.asStateFlow()
+
+    private val _breakMinutes = MutableStateFlow(prefs.getInt(KEY_BREAK_MINUTES, DEFAULT_BREAK_MINUTES))
+    val breakMinutes: StateFlow<Int> = _breakMinutes.asStateFlow()
+
+    /** Opt-in reminder during long focus sessions. */
+    private val _focusGuardEnabled = MutableStateFlow(prefs.getBoolean(KEY_FOCUS_GUARD, false))
+    val focusGuardEnabled: StateFlow<Boolean> = _focusGuardEnabled.asStateFlow()
+
+    /** Last subject/tag, so repeated study sessions keep the same label. */
+    private val _sessionTag = MutableStateFlow(prefs.getString(KEY_SESSION_TAG, "") ?: "")
+    val sessionTag: StateFlow<String> = _sessionTag.asStateFlow()
+
     fun setStrictMode(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_STRICT_MODE, enabled).apply()
         _strictMode.value = enabled
+    }
+
+    fun setBreaksEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_BREAKS_ENABLED, enabled).apply()
+        _breaksEnabled.value = enabled
+    }
+
+    fun setBreakMinutes(minutes: Int) {
+        val clamped = minutes.coerceIn(MIN_BREAK_MINUTES, MAX_BREAK_MINUTES)
+        prefs.edit().putInt(KEY_BREAK_MINUTES, clamped).apply()
+        _breakMinutes.value = clamped
+    }
+
+    fun setFocusGuardEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_FOCUS_GUARD, enabled).apply()
+        _focusGuardEnabled.value = enabled
+    }
+
+    fun setSessionTag(tag: String) {
+        val cleaned = tag.trim().take(MAX_TAG_LENGTH)
+        prefs.edit().putString(KEY_SESSION_TAG, cleaned).apply()
+        _sessionTag.value = cleaned
     }
 
     fun setDailyGoalMinutes(minutes: Int) {
@@ -36,10 +78,28 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
         _dailyGoalMinutes.value = clamped
     }
 
+    fun setLastDurationMinutes(minutes: Int) {
+        val clamped = minutes.coerceIn(MIN_DURATION_MINUTES, MAX_DURATION_MINUTES)
+        prefs.edit().putInt(KEY_LAST_DURATION, clamped).apply()
+        _lastDurationMinutes.value = clamped
+    }
+
     companion object {
         const val PREFS_NAME = "focusflow_settings"
         const val KEY_STRICT_MODE = "strict_mode"
         const val KEY_DAILY_GOAL = "daily_goal_minutes"
+        const val KEY_LAST_DURATION = "last_duration_minutes"
+        const val KEY_BREAKS_ENABLED = "pomodoro_breaks_enabled"
+        const val KEY_BREAK_MINUTES = "pomodoro_break_minutes"
+        const val KEY_FOCUS_GUARD = "focus_guard_enabled"
+        const val KEY_SESSION_TAG = "last_session_tag"
         const val DEFAULT_GOAL_MINUTES = 120
+        const val DEFAULT_DURATION_MINUTES = 25
+        const val DEFAULT_BREAK_MINUTES = 5
+        const val MIN_BREAK_MINUTES = 1
+        const val MAX_BREAK_MINUTES = 30
+        const val MAX_TAG_LENGTH = 24
+        const val MIN_DURATION_MINUTES = 1
+        const val MAX_DURATION_MINUTES = 480
     }
 }

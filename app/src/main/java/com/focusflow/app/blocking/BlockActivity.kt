@@ -33,6 +33,7 @@ class BlockActivity : ComponentActivity() {
     private var blockedPackage by mutableStateOf<String?>(null)
     private var reason by mutableStateOf(REASON_FOCUS)
     private var untilMillis by mutableStateOf(0L)
+    private var ruleLabel by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +57,7 @@ class BlockActivity : ComponentActivity() {
                     blockedPackage = blockedPackage,
                     reason = reason,
                     untilMillis = untilMillis,
+                    ruleLabel = ruleLabel,
                     prefs = prefs,
                     limitStore = limitStore,
                     onGoHome = ::goHome,
@@ -76,6 +78,7 @@ class BlockActivity : ComponentActivity() {
         blockedPackage = intent.getStringExtra(EXTRA_BLOCKED_PACKAGE)
         reason = intent.getStringExtra(EXTRA_REASON) ?: REASON_FOCUS
         untilMillis = intent.getLongExtra(EXTRA_UNTIL, 0L)
+        ruleLabel = intent.getStringExtra(EXTRA_RULE_LABEL)
     }
 
     private fun labelFor(packageName: String): String? = runCatching {
@@ -103,6 +106,7 @@ class BlockActivity : ComponentActivity() {
         const val EXTRA_BLOCKED_PACKAGE = "extra_blocked_package"
         const val EXTRA_REASON = "extra_reason"
         const val EXTRA_UNTIL = "extra_until"
+        const val EXTRA_RULE_LABEL = "extra_rule_label"
         const val REASON_FOCUS = "focus"
         const val REASON_LIMIT = "limit"
         const val REASON_SCHEDULE = "schedule"
@@ -115,6 +119,7 @@ private fun BlockedContent(
     blockedPackage: String?,
     reason: String,
     untilMillis: Long,
+    ruleLabel: String?,
     prefs: SharedPreferences,
     limitStore: AppLimitStore,
     onGoHome: () -> Unit,
@@ -197,6 +202,7 @@ private fun BlockedContent(
         isScheduled = isScheduled,
         limitMinutes = limitMinutes,
         usedMinutes = usedMinutes,
+        ruleLabel = ruleLabel,
         onGoHome = onGoHome,
         onOpenFocusFlow = onOpenFocusFlow
     )
