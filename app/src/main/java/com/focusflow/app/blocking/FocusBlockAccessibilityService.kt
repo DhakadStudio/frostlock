@@ -102,11 +102,23 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         }
 
         if (!prefs.getBoolean(BlockingPreferences.KEY_ENABLED, false)) return
-        if (openedPackage !in globalBlocked) return
+        // A subject owns its app set for the duration of the session. Older
+        // sessions and subjects without apps fall back to the global list.
+        val sessionPackages =
+            prefs.getStringSet(BlockingPreferences.KEY_SESSION_PACKAGES, emptySet())
+                ?: emptySet()
+        val focusPackages = sessionPackages.ifEmpty { globalBlocked }
+        if (openedPackage !in focusPackages) return
 
         if (prefs.getLong(BlockingPreferences.KEY_FOCUS_UNTIL, 0L) <= now) return
 
-        showWall(openedPackage, BlockActivity.REASON_FOCUS, now)
+        val subject = prefs.getString(BlockingPreferences.KEY_SESSION_SUBJECT, null)
+        showWall(
+            openedPackage,
+            BlockActivity.REASON_FOCUS,
+            now,
+            ruleLabel = subject?.takeIf { it.isNotBlank() }?.let { "$it session" }
+        )
     }
 
     /**

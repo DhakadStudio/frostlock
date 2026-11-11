@@ -3,10 +3,15 @@ package com.focusflow.app.ui.screens.focus
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.focusflow.app.data.InstalledApp
+import com.focusflow.app.data.InstalledAppsRepository
 import com.focusflow.app.data.local.db.SessionDao
 import com.focusflow.app.data.local.db.SessionEntity
 import com.focusflow.app.data.local.prefs.BlockingPreferences
 import com.focusflow.app.data.local.prefs.FocusSettings
+import com.focusflow.app.data.local.prefs.FocusSubject
+import com.focusflow.app.data.local.prefs.SubjectStore
+import com.focusflow.app.data.local.prefs.effectiveSessionPackages
 import com.focusflow.app.focus.FocusSessionService
 import com.focusflow.app.widget.WidgetUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,8 +49,18 @@ data class FocusUiState(
     val breaksEnabled: Boolean = true,
     val breakMinutes: Int = FocusSettings.DEFAULT_BREAK_MINUTES,
     val breakFinished: Boolean = false,
-    val tag: String = ""
+    val tag: String = "",
+    val subjects: List<FocusSubject> = emptyList(),
+    val installedApps: List<InstalledApp> = emptyList()
 ) {
+    /** The subject selected for this session, if it still exists. */
+    val selectedSubject: FocusSubject?
+        get() = subjects.firstOrNull { it.name.equals(tag, ignoreCase = true) }
+
+    /** Apps this session will lock. Zero means the global focus list is used. */
+    val subjectBlockedCount: Int
+        get() = selectedSubject?.packages?.size ?: 0
+
     /** True while a Strict Mode session is running, so the UI can hide early exits. */
     val strictActive: Boolean
         get() = strictMode && isRunning && phase == FocusPhase.FOCUS
@@ -81,7 +96,9 @@ class FocusViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val sessionDao: SessionDao,
     private val blockingPreferences: BlockingPreferences,
-    private val focusSettings: FocusSettings
+    private val focusSettings: FocusSettings,
+    private val subjectStore: SubjectStore,
+    private val installedApps: InstalledAppsRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FocusUiState())
@@ -95,16 +112,23 @@ class FocusViewModel @Inject constructor(
     private var sessionSaved = false
 
     init {
+        val savedTag = focusSettings.sessionTag.value
+        if (savedTag.isNotBlank()) subjectStore.ensureSubject(savedTag)
         _uiState.update {
             it.copy(
                 targetMinutes = focusSettings.lastDurationMinutes.value,
-                tag = focusSettings.sessionTag.value,
+                tag = savedTag,
                 breaksEnabled = focusSettings.breaksEnabled.value,
-                breakMinutes = focusSettings.breakMinutes.value
+                breakMinutes = focusSettings.breakMinutes.value,
+                subjects = subjectStore.subjects()
             )
         }
         observePreferences()
         restoreSession()
+        viewModelScope.launch {
+            val apps = installedApps.apps()
+            _uiState.update { it.copy(installedApps = apps) }
+        }
     }
 
     /** Keeps idle timers in sync when settings change on the Profile tab. */
@@ -166,9 +190,22 @@ class FocusViewModel @Inject constructor(
 
     /** Sets (or clears, with a blank value) the subject for this session. */
     fun selectTag(tag: String) {
+        // The app snapshot is fixed when the session starts, so changing the
+        // subject mid-session would make the UI disagree with the blocker.
+        if (_uiState.value.isRunning) return
         val cleaned = tag.trim().take(FocusSettings.MAX_TAG_LENGTH)
+        if (cleaned.isNotBlank()) subjectStore.ensureSubject(cleaned)
         focusSettings.setSessionTag(cleaned)
-        _uiState.update { it.copy(tag = cleaned) }
+        _uiState.update {
+            it.copy(tag = cleaned, subjects = subjectStore.subjects())
+        }
+    }
+
+    /** Saves the selected subject's app list; applies to the next session. */
+    fun setSubjectPackages(subjectName: String, packages: Set<String>) {
+        if (_uiState.value.isRunning) return
+        subjectStore.setPackages(subjectName, packages)
+        _uiState.update { it.copy(subjects = subjectStore.subjects()) }
     }
 
     fun startOrResume() {
@@ -390,6 +427,16 @@ class FocusViewModel @Inject constructor(
         } else {
             System.currentTimeMillis() + state.remainingSeconds * 1000L
         }
+        // Snapshot the subject's apps for this session. The blocker reads this
+        // snapshot so switching subjects later cannot change a running session.
+        val subject = subjectStore.subjectFor(state.tag)
+        blockingPreferences.saveSessionApps(
+            packages = effectiveSessionPackages(
+                subject,
+                blockingPreferences.blockedPackages.value
+            ),
+            subject = subject?.name
+        )
         FocusSessionService.start(
             context = appContext,
             openEnded = openEnded,
@@ -462,7 +509,8 @@ class FocusViewModel @Inject constructor(
                 elapsedSeconds = elapsed,
                 hasStarted = true,
                 strictMode = strict,
-                tag = focusSettings.sessionTag.value
+                tag = focusSettings.sessionTag.value,
+                subjects = subjectStore.subjects()
             )
         }
 

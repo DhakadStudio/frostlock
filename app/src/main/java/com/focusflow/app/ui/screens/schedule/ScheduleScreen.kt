@@ -72,7 +72,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.focusflow.app.data.InstalledApp
 import com.focusflow.app.data.local.prefs.FocusSchedule
+import com.focusflow.app.data.local.prefs.FocusSubject
 import com.focusflow.app.ui.components.AppCard
+import com.focusflow.app.ui.components.AppPickerDialog
 import com.focusflow.app.ui.components.PrimaryButton
 import com.focusflow.app.ui.components.SectionHeader
 import com.focusflow.app.ui.theme.AccentPurple
@@ -99,6 +101,7 @@ fun ScheduleScreen(
 ) {
     val schedules by viewModel.schedules.collectAsState()
     val apps by viewModel.apps.collectAsState()
+    val subjects by viewModel.subjects.collectAsState()
     val activeIds by viewModel.activeIds.collectAsState()
 
     var editorOpen by remember { mutableStateOf(false) }
@@ -109,7 +112,10 @@ fun ScheduleScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) viewModel.refreshActive()
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshActive()
+                viewModel.refreshSubjects()
+            }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
@@ -155,7 +161,7 @@ fun ScheduleScreen(
         item {
             AppCard {
                 Text(
-                    text = "Each rule blocks its own set of apps, so “Study” and “Work” can lock different apps at different times. Rules run while focus blocking is on.",
+                    text = "Each rule blocks its own set of apps, so “Study” and “Work” can lock different apps at different times. Rules run independently of the focus-blocking switch.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = AccentPurple
                 )
@@ -215,6 +221,7 @@ fun ScheduleScreen(
         ScheduleEditorDialog(
             initial = editing,
             apps = apps,
+            subjects = subjects,
             onDismiss = { editorOpen = false },
             onSave = {
                 viewModel.save(it)
@@ -317,6 +324,7 @@ private fun ScheduleRow(
 private fun ScheduleEditorDialog(
     initial: FocusSchedule?,
     apps: List<InstalledApp>,
+    subjects: List<FocusSubject>,
     onDismiss: () -> Unit,
     onSave: (FocusSchedule) -> Unit
 ) {
@@ -391,6 +399,35 @@ private fun ScheduleEditorDialog(
                         },
                         color = AccentPurple
                     )
+                }
+
+                val reusableSubjects = subjects.filter { it.hasApps }
+                if (reusableSubjects.isNotEmpty()) {
+                    Text(
+                        text = "Or copy apps from a subject",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        reusableSubjects.forEach { subject ->
+                            FilterChip(
+                                selected = packages == subject.packages,
+                                onClick = { packages = subject.packages },
+                                label = {
+                                    Text("${subject.name} · ${subject.packages.size}")
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    containerColor = SurfaceHigh,
+                                    labelColor = TextSecondary,
+                                    selectedContainerColor = PrimaryPurple,
+                                    selectedLabelColor = TextPrimary
+                                )
+                            )
+                        }
+                    }
                 }
 
                 Text(
@@ -597,157 +634,6 @@ private fun ScheduleEditorDialog(
     }
 }
 
-@Composable
-private fun AppPickerDialog(
-    apps: List<InstalledApp>,
-    selected: Set<String>,
-    onDismiss: () -> Unit,
-    onConfirm: (Set<String>) -> Unit
-) {
-    var query by remember { mutableStateOf("") }
-    var working by remember { mutableStateOf(selected) }
-
-    val visible = remember(apps, query) {
-        apps.filter { query.isBlank() || it.label.contains(query, ignoreCase = true) }
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = SurfaceCard,
-        titleContentColor = TextPrimary,
-        title = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(
-                    text = "Apps to block · ${working.size}",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                OutlinedTextField(
-                    value = query,
-                    onValueChange = { query = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Search apps", color = TextSecondary) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = null,
-                            tint = TextSecondary
-                        )
-                    },
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PrimaryPurple,
-                        unfocusedBorderColor = StrokeSoft,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary,
-                        cursorColor = AccentPurple
-                    ),
-                    shape = MaterialTheme.shapes.extraLarge
-                )
-            }
-        },
-        text = {
-            if (visible.isEmpty()) {
-                Text(
-                    text = "No apps match that search.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier.heightIn(max = 360.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    items(visible, key = { it.packageName }) { app ->
-                        val checked = app.packageName in working
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable {
-                                    working = if (checked) {
-                                        working - app.packageName
-                                    } else {
-                                        working + app.packageName
-                                    }
-                                }
-                                .padding(horizontal = 4.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            if (app.icon != null) {
-                                Image(
-                                    bitmap = app.icon,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(34.dp)
-                                        .clip(RoundedCornerShape(10.dp))
-                                )
-                            } else {
-                                Box(
-                                    modifier = Modifier
-                                        .size(34.dp)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(SurfaceHigh),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = app.label.take(1).uppercase(),
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = AccentPurple
-                                    )
-                                }
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = app.label,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = TextPrimary,
-                                maxLines = 1,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        if (checked) {
-                                            Brush.linearGradient(GradientViolet)
-                                        } else {
-                                            androidx.compose.ui.graphics.SolidColor(SurfaceHigh)
-                                        }
-                                    )
-                                    .border(
-                                        1.dp,
-                                        if (checked) Color.Transparent else StrokeSoft,
-                                        CircleShape
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (checked) {
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(working) }) {
-                Text(text = "Done", color = AccentPurple)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(text = "Cancel", color = TextSecondary)
-            }
-        }
-    )
-}
 
 private fun pickTime(context: Context, initialMinutes: Int, onPick: (Int) -> Unit) {
     TimePickerDialog(

@@ -74,7 +74,28 @@ class BlockingPreferences @Inject constructor(@ApplicationContext context: Conte
     fun clearSession() {
         setSessionEndsAt(0L)
         clearFocusWindow()
+        prefs.edit()
+            .remove(KEY_SESSION_PACKAGES)
+            .remove(KEY_SESSION_SUBJECT)
+            .apply()
     }
+
+    /**
+     * Snapshot of the apps this session blocks. The accessibility service reads
+     * this instead of the global list so a "Work" session and a "Study" session
+     * can lock different apps. Empty means "use the global focus-session list".
+     */
+    fun saveSessionApps(packages: Set<String>, subject: String?) {
+        prefs.edit()
+            .putStringSet(KEY_SESSION_PACKAGES, packages)
+            .putString(KEY_SESSION_SUBJECT, subject?.takeIf { it.isNotBlank() })
+            .apply()
+    }
+
+    fun sessionPackages(): Set<String> =
+        prefs.getStringSet(KEY_SESSION_PACKAGES, emptySet())?.toSet() ?: emptySet()
+
+    fun sessionSubject(): String? = prefs.getString(KEY_SESSION_SUBJECT, null)
 
     fun isFocusActive(now: Long = System.currentTimeMillis()): Boolean =
         prefs.getLong(KEY_FOCUS_UNTIL, 0L) > now
@@ -147,6 +168,8 @@ class BlockingPreferences @Inject constructor(@ApplicationContext context: Conte
         const val KEY_PACKAGES = "blocked_packages"
         const val KEY_FOCUS_UNTIL = "focus_until"
         const val KEY_SESSION_ENDS_AT = "session_ends_at"
+        const val KEY_SESSION_PACKAGES = "session_packages"
+        const val KEY_SESSION_SUBJECT = "session_subject"
         const val KEY_TIMER_MODE = "timer_mode"
         const val KEY_TIMER_TOTAL = "timer_total_seconds"
         const val KEY_TIMER_ACCUMULATED = "timer_accumulated_ms"

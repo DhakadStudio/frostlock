@@ -65,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.focusflow.app.ui.components.AppCard
+import com.focusflow.app.ui.components.AppPickerDialog
 import com.focusflow.app.ui.theme.AccentPurple
 import com.focusflow.app.ui.theme.BackgroundDark
 import com.focusflow.app.ui.theme.GradientViolet
@@ -80,7 +81,6 @@ import com.focusflow.app.ui.util.formatClock
 import com.focusflow.app.ui.util.formatDuration
 
 private val DURATION_OPTIONS = listOf(10, 15, 25, 30, 45, 60, 90)
-private val TAG_PRESETS = listOf("Study", "Work", "Reading", "Coding", "Revision")
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -89,6 +89,7 @@ fun FocusScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     var customTagOpen by remember { mutableStateOf(false) }
+    var subjectPickerOpen by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -169,8 +170,8 @@ fun FocusScreen(
             }
         }
 
-        // Subject tags are independent of blocking and the timer: pick one per
-        // session so the stats screen can break focus time down by subject.
+        // A subject is a reusable app set as well as a stats label. Picking one
+        // here decides which apps this session blocks.
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -182,7 +183,7 @@ fun FocusScreen(
                     color = TextSecondary
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                if (state.tag.isNotBlank()) {
+                if (state.tag.isNotBlank() && !state.isRunning) {
                     TextButton(onClick = { viewModel.selectTag("") }) {
                         Text(text = "Clear", color = TextSecondary)
                     }
@@ -192,22 +193,38 @@ fun FocusScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                TAG_PRESETS.forEach { tag ->
+                state.subjects.forEach { subject ->
                     FilterChip(
-                        selected = state.tag == tag,
+                        selected = state.tag.equals(subject.name, ignoreCase = true),
+                        enabled = !state.isRunning,
                         onClick = {
-                            viewModel.selectTag(if (state.tag == tag) "" else tag)
+                            viewModel.selectTag(
+                                if (state.tag.equals(subject.name, ignoreCase = true)) {
+                                    ""
+                                } else {
+                                    subject.name
+                                }
+                            )
                         },
-                        label = { Text(tag) },
+                        label = {
+                            Text(
+                                if (subject.hasApps) {
+                                    "${subject.name} · ${subject.packages.size}"
+                                } else {
+                                    subject.name
+                                }
+                            )
+                        },
                         colors = subjectChipColors()
                     )
                 }
                 FilterChip(
-                    selected = state.tag.isNotBlank() && state.tag !in TAG_PRESETS,
+                    selected = state.tag.isNotBlank() && state.selectedSubject == null,
+                    enabled = !state.isRunning,
                     onClick = { customTagOpen = true },
                     label = {
                         Text(
-                            if (state.tag.isNotBlank() && state.tag !in TAG_PRESETS) {
+                            if (state.tag.isNotBlank() && state.selectedSubject == null) {
                                 state.tag
                             } else {
                                 "Custom"
@@ -217,15 +234,70 @@ fun FocusScreen(
                     colors = subjectChipColors()
                 )
             }
+
+            if (state.tag.isNotBlank()) {
+                val count = state.subjectBlockedCount
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(SurfaceCard)
+                        .border(1.dp, StrokeSoft, MaterialTheme.shapes.medium)
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = if (count > 0) {
+                                "Blocks $count app${if (count == 1) "" else "s"}"
+                            } else {
+                                "No apps set for ${state.tag}"
+                            },
+                            style = MaterialTheme.typography.titleMedium,
+                            color = TextPrimary
+                        )
+                        Text(
+                            text = if (count > 0) {
+                                "This subject's own app list is used during the session."
+                            } else {
+                                "Falling back to the focus-session app list."
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (count > 0) SuccessGreen else TextSecondary
+                        )
+                    }
+                    if (!state.isRunning) {
+                        TextButton(onClick = { subjectPickerOpen = true }) {
+                            Text(
+                                text = if (count > 0) "Edit apps" else "Set apps",
+                                color = AccentPurple
+                            )
+                        }
+                    }
+                }
+            }
         }
 
         if (customTagOpen) {
             TagDialog(
-                initialTag = if (state.tag in TAG_PRESETS) "" else state.tag,
+                initialTag = if (state.selectedSubject == null) state.tag else "",
                 onDismiss = { customTagOpen = false },
                 onSave = { tag ->
                     viewModel.selectTag(tag)
                     customTagOpen = false
+                }
+            )
+        }
+
+        if (subjectPickerOpen) {
+            AppPickerDialog(
+                apps = state.installedApps,
+                selected = state.selectedSubject?.packages ?: emptySet(),
+                title = "${state.tag} apps",
+                onDismiss = { subjectPickerOpen = false },
+                onConfirm = { packages ->
+                    viewModel.setSubjectPackages(state.tag, packages)
+                    subjectPickerOpen = false
                 }
             )
         }
