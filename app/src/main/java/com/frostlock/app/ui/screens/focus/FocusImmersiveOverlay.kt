@@ -63,7 +63,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.frostlock.app.data.InstalledApp
-import com.frostlock.app.ui.theme.AccentPurple
+import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.DangerRed
 import com.frostlock.app.ui.theme.SuccessGreen
 import com.frostlock.app.ui.theme.TextPrimary
@@ -106,7 +106,7 @@ fun FocusImmersiveOverlay(
     ) {
         HideSystemBars()
         Box(modifier = Modifier.fillMaxSize()) {
-            AuroraBackdrop()
+            FrostBackdrop()
 
             Column(
                 modifier = Modifier
@@ -120,7 +120,7 @@ fun FocusImmersiveOverlay(
                 ) {
                     SubjectBadge(
                         subject = state.tag,
-                        color = state.selectedSubject?.colorArgb ?: 0xFFA78BFA.toInt(),
+                        color = state.selectedSubject?.colorArgb ?: 0xFF7DD3FC.toInt(),
                         isBreak = state.phase == FocusPhase.BREAK
                     )
                     Spacer(modifier = Modifier.weight(1f))
@@ -316,14 +316,14 @@ private fun PrimaryOverlayButton(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = Color(0xFF0A0A12),
+            tint = Color(0xFF04202E),
             modifier = Modifier.size(21.dp)
         )
         Spacer(modifier = Modifier.width(9.dp))
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
-            color = Color(0xFF0A0A12),
+            color = Color(0xFF04202E),
             fontWeight = FontWeight.SemiBold
         )
     }
@@ -400,7 +400,7 @@ private fun ImmersiveTimerRing(
     subtitle: String,
     isBreak: Boolean
 ) {
-    val glow = if (isBreak) Color(0xFF22D3EE) else Color(0xFFA78BFA)
+    val glow = if (isBreak) Color(0xFF22D3EE) else Color(0xFF7DD3FC)
     Box(
         modifier = Modifier.size(300.dp),
         contentAlignment = Alignment.Center
@@ -425,10 +425,10 @@ private fun ImmersiveTimerRing(
             drawArc(
                 brush = Brush.sweepGradient(
                     listOf(
-                        Color(0xFFA78BFA),
+                        Color(0xFF7DD3FC),
                         Color(0xFF22D3EE),
-                        Color(0xFFF0ABFC),
-                        Color(0xFFA78BFA)
+                        Color(0xFFBAE6FD),
+                        Color(0xFF7DD3FC)
                     )
                 ),
                 startAngle = -90f,
@@ -458,8 +458,8 @@ private fun ImmersiveTimerRing(
 }
 
 @Composable
-private fun AuroraBackdrop() {
-    val transition = rememberInfiniteTransition(label = "aurora")
+private fun FrostBackdrop() {
+    val transition = rememberInfiniteTransition(label = "frost drift")
     val drift by transition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
@@ -467,7 +467,7 @@ private fun AuroraBackdrop() {
             animation = tween(durationMillis = 11_000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "auroraDrift"
+        label = "frostDrift"
     )
     val stars = remember {
         List(78) {
@@ -478,14 +478,14 @@ private fun AuroraBackdrop() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF04040B))
+            .background(Color(0xFF03080E))
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width
             val height = size.height
             drawRect(
                 brush = Brush.verticalGradient(
-                    listOf(Color(0xFF07161A), Color(0xFF0B0A1B), Color(0xFF04040B))
+                    listOf(Color(0xFF061620), Color(0xFF071A28), Color(0xFF03080E))
                 )
             )
             val tealCenter = Offset(width * (0.16f + drift * 0.18f), height * 0.20f)
@@ -501,31 +501,31 @@ private fun AuroraBackdrop() {
                 radius = width * 0.92f,
                 center = tealCenter
             )
-            val violetCenter = Offset(width * (0.88f - drift * 0.14f), height * 0.46f)
+            val frostCenter = Offset(width * (0.88f - drift * 0.14f), height * 0.46f)
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFF7C3AED).copy(alpha = 0.34f),
+                        Color(0xFF0EA5E9).copy(alpha = 0.34f),
                         Color.Transparent
                     ),
-                    center = violetCenter,
+                    center = frostCenter,
                     radius = width * 0.85f
                 ),
                 radius = width * 0.85f,
-                center = violetCenter
+                center = frostCenter
             )
-            val roseCenter = Offset(width * (0.30f + drift * 0.22f), height * 0.88f)
+            val deepCenter = Offset(width * (0.30f + drift * 0.22f), height * 0.88f)
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFFF472B6).copy(alpha = 0.16f),
+                        Color(0xFF60A5FA).copy(alpha = 0.16f),
                         Color.Transparent
                     ),
-                    center = roseCenter,
+                    center = deepCenter,
                     radius = width * 0.70f
                 ),
                 radius = width * 0.70f,
-                center = roseCenter
+                center = deepCenter
             )
         }
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -570,7 +570,7 @@ fun TestBlockDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color(0xFF14141F),
+        containerColor = Color(0xFF0E1B28),
         titleContentColor = TextPrimary,
         textContentColor = TextSecondary,
         icon = {
@@ -616,11 +616,11 @@ fun TestBlockDialog(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                     contentDescription = null,
-                    tint = AccentPurple,
+                    tint = AccentFrost,
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(text = "Open ${app.label}", color = AccentPurple)
+                Text(text = "Open ${app.label}", color = AccentFrost)
             }
         },
         dismissButton = {

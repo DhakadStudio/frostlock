@@ -19,6 +19,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AcUnit
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -32,8 +35,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.frostlock.app.R
@@ -42,9 +47,11 @@ import com.frostlock.app.ui.components.MoodChip
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SecondaryButton
 import com.frostlock.app.ui.components.SectionHeader
-import com.frostlock.app.ui.theme.AccentPurple
+import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.PrimaryPurple
+import com.frostlock.app.ui.theme.GradientFrost
+import com.frostlock.app.ui.theme.InkOnIce
+import com.frostlock.app.ui.theme.PrimaryIce
 import com.frostlock.app.ui.theme.FrostLockTheme
 import com.frostlock.app.ui.theme.SurfaceCard
 import com.frostlock.app.ui.theme.TextPrimary
@@ -96,7 +103,7 @@ fun OnboardingScreen(
                         .padding(horizontal = 4.dp)
                         .size(if (isSelected) 10.dp else 6.dp)
                         .clip(CircleShape)
-                        .background(if (isSelected) PrimaryPurple else SurfaceCard)
+                        .background(if (isSelected) PrimaryIce else SurfaceCard)
                 )
             }
         }
@@ -159,10 +166,39 @@ fun OnboardingScreen(
 @Composable
 fun WelcomePage() {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 8.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Box(
+            modifier = Modifier
+                .size(96.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.linearGradient(
+                        listOf(AccentFrost.copy(alpha = 0.22f), PrimaryIce.copy(alpha = 0.10f))
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(68.dp)
+                    .clip(CircleShape)
+                    .background(Brush.linearGradient(GradientFrost)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AcUnit,
+                    contentDescription = null,
+                    tint = InkOnIce,
+                    modifier = Modifier.size(38.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(28.dp))
         Text(
             text = stringResource(R.string.onb_welcome_title),
             style = MaterialTheme.typography.displayLarge,
@@ -172,7 +208,8 @@ fun WelcomePage() {
         Text(
             text = stringResource(R.string.onb_welcome_subtitle),
             style = MaterialTheme.typography.bodyLarge,
-            color = TextSecondary
+            color = TextSecondary,
+            textAlign = TextAlign.Center
         )
     }
 }
@@ -261,7 +298,7 @@ fun ReasonPage(
                 .heightIn(min = 120.dp),
             placeholder = { Text(text = stringResource(R.string.onb_reason_hint), color = TextSecondary) },
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PrimaryPurple,
+                focusedBorderColor = PrimaryIce,
                 unfocusedBorderColor = SurfaceCard,
                 focusedTextColor = TextPrimary,
                 unfocusedTextColor = TextPrimary
@@ -272,7 +309,7 @@ fun ReasonPage(
         Text(
             text = "Characters: ${reason.trim().length} / 300 (min 10)",
             style = MaterialTheme.typography.bodyMedium,
-            color = if (reason.trim().length in 10..300) AccentPurple else TextSecondary
+            color = if (reason.trim().length in 10..300) AccentFrost else TextSecondary
         )
     }
 }
@@ -349,18 +386,22 @@ fun CommitmentPage(
                 modifier = Modifier
                     .matchParentSize()
                     .fillMaxWidth(progress.value)
-                    .background(PrimaryPurple)
+                    .background(PrimaryIce)
             )
             Text(
                 text = stringResource(R.string.onb_start_journey),
                 style = MaterialTheme.typography.labelLarge,
-                color = TextPrimary
+                color = if (progress.value > 0.55f) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    TextPrimary
+                }
             )
         }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0F0A1F)
+@Preview(showBackground = true, backgroundColor = 0xFF050B12)
 @Composable
 fun OnboardingScreenPreview() {
     FrostLockTheme {

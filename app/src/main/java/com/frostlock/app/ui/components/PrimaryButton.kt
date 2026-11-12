@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.frostlock.app.ui.theme.FrostLockTheme
-import com.frostlock.app.ui.theme.GradientViolet
+import com.frostlock.app.ui.theme.GradientFrost
 import com.frostlock.app.ui.theme.TextPrimary
 
 @Composable
@@ -30,7 +30,7 @@ fun PrimaryButton(
             Modifier
                 .matchParentSize()
                 .background(
-                    brush = Brush.horizontalGradient(GradientViolet),
+                    brush = Brush.horizontalGradient(GradientFrost),
                     shape = CircleShape
                 )
         )
@@ -42,7 +42,7 @@ fun PrimaryButton(
             shape = CircleShape,
             colors = ButtonDefaults.buttonColors(
                 containerColor = androidx.compose.ui.graphics.Color.Transparent,
-                contentColor = TextPrimary
+                contentColor = MaterialTheme.colorScheme.onPrimary
             )
         ) {
             Text(text = text, style = MaterialTheme.typography.labelLarge)
@@ -50,7 +50,7 @@ fun PrimaryButton(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0A0913)
+@Preview(showBackground = true, backgroundColor = 0xFF050B12)
 @Composable
 private fun PrimaryButtonPreview() {
     FrostLockTheme {

@@ -22,9 +22,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.frostlock.app.data.local.db.SessionEntity
-import com.frostlock.app.ui.theme.AccentPurple
+import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.DangerRed
-import com.frostlock.app.ui.theme.PrimaryPurple
+import com.frostlock.app.ui.theme.PrimaryIce
 import com.frostlock.app.ui.theme.SurfaceCard
 import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
@@ -58,7 +58,7 @@ fun SessionReflectionDialog(
                 Text(
                     text = "$subjectLabel · what did you focus on?",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = AccentPurple
+                    color = AccentFrost
                 )
             }
         },
@@ -83,11 +83,11 @@ fun SessionReflectionDialog(
                     minLines = 3,
                     maxLines = 5,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PrimaryPurple,
+                        focusedBorderColor = PrimaryIce,
                         unfocusedBorderColor = SurfaceHigh,
                         focusedTextColor = TextPrimary,
                         unfocusedTextColor = TextPrimary,
-                        cursorColor = AccentPurple
+                        cursorColor = AccentFrost
                     ),
                     shape = MaterialTheme.shapes.medium
                 )
@@ -100,7 +100,7 @@ fun SessionReflectionDialog(
         },
         confirmButton = {
             TextButton(onClick = { onSave(note) }) {
-                Text(text = "Save note", color = AccentPurple)
+                Text(text = "Save note", color = AccentFrost)
             }
         },
         dismissButton = {

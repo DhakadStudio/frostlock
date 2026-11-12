@@ -20,7 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
@@ -41,15 +41,14 @@ import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.SectionHeader
 import com.frostlock.app.ui.components.SessionRow
 import com.frostlock.app.ui.components.StatTile
-import com.frostlock.app.ui.theme.AccentPurple
+import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.PrimaryIndigo
-import com.frostlock.app.ui.theme.PrimaryPurple
+import com.frostlock.app.ui.theme.GlacierBlue
+import com.frostlock.app.ui.theme.PrimaryIce
 import com.frostlock.app.ui.theme.StrokeSoft
 import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
-import com.frostlock.app.ui.theme.WarnAmber
 import com.frostlock.app.ui.util.TagTotal
 import com.frostlock.app.ui.util.formatDuration
 
@@ -91,7 +90,7 @@ fun StatsScreen(
                     .clip(MaterialTheme.shapes.medium)
                     .background(
                         Brush.verticalGradient(
-                            listOf(Color(0xFF2E2560), Color(0xFF1B1637))
+                            listOf(Color(0xFF0B3B52), Color(0xFF071A28))
                         )
                     )
                     .border(1.dp, StrokeSoft, MaterialTheme.shapes.medium)
@@ -101,7 +100,7 @@ fun StatsScreen(
                     Text(
                         text = "Today",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = AccentPurple
+                        color = AccentFrost
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
@@ -123,7 +122,7 @@ fun StatsScreen(
                     .clip(MaterialTheme.shapes.medium)
                     .background(
                         Brush.verticalGradient(
-                            listOf(Color(0xFF2E2560), Color(0xFF1B1637))
+                            listOf(Color(0xFF0B3B52), Color(0xFF071A28))
                         )
                     )
                     .border(1.dp, StrokeSoft, MaterialTheme.shapes.medium)
@@ -132,16 +131,16 @@ fun StatsScreen(
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.LocalFireDepartment,
+                            imageVector = Icons.Default.AcUnit,
                             contentDescription = null,
-                            tint = WarnAmber,
+                            tint = AccentFrost,
                             modifier = Modifier.width(20.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "Streak",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = WarnAmber
+                            color = AccentFrost
                         )
                     }
                     Spacer(modifier = Modifier.height(6.dp))
@@ -324,7 +323,7 @@ private fun WeeklyChart(days: List<DayBar>) {
                     Text(
                         text = formatDuration(day.seconds),
                         style = MaterialTheme.typography.labelMedium,
-                        color = if (day.isToday) AccentPurple else TextSecondary
+                        color = if (day.isToday) AccentFrost else TextSecondary
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                 }
@@ -338,15 +337,15 @@ private fun WeeklyChart(days: List<DayBar>) {
                             if (day.isToday) {
                                 Brush.verticalGradient(
                                     listOf(
-                                        com.frostlock.app.ui.theme.PrimaryPurple,
-                                        com.frostlock.app.ui.theme.PrimaryIndigo
+                                        com.frostlock.app.ui.theme.PrimaryIce,
+                                        com.frostlock.app.ui.theme.GlacierBlue
                                     )
                                 )
                             } else {
                                 Brush.verticalGradient(
                                     listOf(
-                                        com.frostlock.app.ui.theme.PrimaryPurple.copy(alpha = 0.55f),
-                                        com.frostlock.app.ui.theme.PrimaryIndigo.copy(alpha = 0.35f)
+                                        com.frostlock.app.ui.theme.PrimaryIce.copy(alpha = 0.55f),
+                                        com.frostlock.app.ui.theme.GlacierBlue.copy(alpha = 0.35f)
                                     )
                                 )
                             }

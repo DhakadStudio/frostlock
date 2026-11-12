@@ -77,11 +77,11 @@ import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.AppPickerDialog
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SectionHeader
-import com.frostlock.app.ui.theme.AccentPurple
+import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.BackgroundDark
 import com.frostlock.app.ui.theme.DangerRed
-import com.frostlock.app.ui.theme.GradientViolet
-import com.frostlock.app.ui.theme.PrimaryPurple
+import com.frostlock.app.ui.theme.GradientFrost
+import com.frostlock.app.ui.theme.PrimaryIce
 import com.frostlock.app.ui.theme.StrokeSoft
 import com.frostlock.app.ui.theme.SuccessGreen
 import com.frostlock.app.ui.theme.SurfaceCard
@@ -163,7 +163,7 @@ fun ScheduleScreen(
                 Text(
                     text = "Each rule blocks its own set of apps, so “Study” and “Work” can lock different apps at different times. Rules run independently of the focus-blocking switch.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = AccentPurple
+                    color = AccentFrost
                 )
             }
         }
@@ -281,7 +281,7 @@ private fun ScheduleRow(
                     Text(
                         text = "${formatTime(schedule.startMinutes)} – ${formatTime(schedule.endMinutes)}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = AccentPurple
+                        color = AccentFrost
                     )
                 }
                 Switch(
@@ -289,7 +289,7 @@ private fun ScheduleRow(
                     onCheckedChange = onToggle,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = TextPrimary,
-                        checkedTrackColor = PrimaryPurple,
+                        checkedTrackColor = PrimaryIce,
                         uncheckedThumbColor = TextSecondary,
                         uncheckedTrackColor = SurfaceHigh
                     )
@@ -309,7 +309,7 @@ private fun ScheduleRow(
                 horizontalArrangement = Arrangement.End
             ) {
                 TextButton(onClick = onEdit) {
-                    Text(text = "Edit", color = AccentPurple)
+                    Text(text = "Edit", color = AccentFrost)
                 }
                 TextButton(onClick = onDelete) {
                     Text(text = "Delete", color = DangerRed)
@@ -364,12 +364,12 @@ private fun ScheduleEditorDialog(
                     label = { Text("Name") },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PrimaryPurple,
+                        focusedBorderColor = PrimaryIce,
                         unfocusedBorderColor = SurfaceHigh,
                         focusedTextColor = TextPrimary,
                         unfocusedTextColor = TextPrimary,
-                        cursorColor = AccentPurple,
-                        focusedLabelColor = AccentPurple,
+                        cursorColor = AccentFrost,
+                        focusedLabelColor = AccentFrost,
                         unfocusedLabelColor = TextSecondary
                     ),
                     shape = MaterialTheme.shapes.medium
@@ -387,7 +387,7 @@ private fun ScheduleEditorDialog(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = null,
-                        tint = AccentPurple,
+                        tint = AccentFrost,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -397,7 +397,7 @@ private fun ScheduleEditorDialog(
                         } else {
                             "Edit selection"
                         },
-                        color = AccentPurple
+                        color = AccentFrost
                     )
                 }
 
@@ -433,8 +433,8 @@ private fun ScheduleEditorDialog(
                                 colors = FilterChipDefaults.filterChipColors(
                                     containerColor = SurfaceHigh,
                                     labelColor = TextSecondary,
-                                    selectedContainerColor = PrimaryPurple,
-                                    selectedLabelColor = TextPrimary
+                                    selectedContainerColor = PrimaryIce,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                                 )
                             )
                         }
@@ -452,14 +452,14 @@ private fun ScheduleEditorDialog(
                         dates = emptySet()
                         error = null
                     }) {
-                        Text(text = "Weekdays", color = AccentPurple)
+                        Text(text = "Weekdays", color = AccentFrost)
                     }
                     TextButton(onClick = {
                         days = setOf(1, 2, 3, 4, 5, 6, 7)
                         dates = emptySet()
                         error = null
                     }) {
-                        Text(text = "Every day", color = AccentPurple)
+                        Text(text = "Every day", color = AccentFrost)
                     }
                     TextButton(onClick = {
                         days = emptySet()
@@ -483,8 +483,8 @@ private fun ScheduleEditorDialog(
                             colors = FilterChipDefaults.filterChipColors(
                                 containerColor = SurfaceHigh,
                                 labelColor = TextSecondary,
-                                selectedContainerColor = PrimaryPurple,
-                                selectedLabelColor = TextPrimary
+                                selectedContainerColor = PrimaryIce,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                             )
                         )
                     }
@@ -501,7 +501,7 @@ private fun ScheduleEditorDialog(
                         modifier = Modifier.weight(1f)
                     )
                     TextButton(onClick = { datePickerOpen = true }) {
-                        Text(text = "Add date", color = AccentPurple)
+                        Text(text = "Add date", color = AccentFrost)
                     }
                 }
 
@@ -525,8 +525,8 @@ private fun ScheduleEditorDialog(
                                 colors = FilterChipDefaults.filterChipColors(
                                     containerColor = SurfaceHigh,
                                     labelColor = TextPrimary,
-                                    selectedContainerColor = PrimaryPurple,
-                                    selectedLabelColor = TextPrimary
+                                    selectedContainerColor = PrimaryIce,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                                 )
                             )
                         }
@@ -590,7 +590,7 @@ private fun ScheduleEditorDialog(
                     }
                 }
             ) {
-                Text(text = "Save", color = AccentPurple)
+                Text(text = "Save", color = AccentFrost)
             }
         },
         dismissButton = {
@@ -631,7 +631,7 @@ private fun ScheduleEditorDialog(
                         datePickerOpen = false
                     }
                 ) {
-                    Text(text = "Add", color = AccentPurple)
+                    Text(text = "Add", color = AccentFrost)
                 }
             },
             dismissButton = {

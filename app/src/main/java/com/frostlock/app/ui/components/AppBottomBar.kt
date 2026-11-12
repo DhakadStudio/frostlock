@@ -35,7 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.frostlock.app.ui.navigation.Screen
-import com.frostlock.app.ui.theme.GradientViolet
+import com.frostlock.app.ui.theme.GradientFrost
 import com.frostlock.app.ui.theme.StrokeSoft
 import com.frostlock.app.ui.theme.SurfaceCard
 import com.frostlock.app.ui.theme.TextPrimary
@@ -102,7 +102,7 @@ fun AppBottomBar(
                                 .clip(RoundedCornerShape(16.dp))
                                 .background(
                                     if (selected) {
-                                        Brush.linearGradient(GradientViolet)
+                                        Brush.linearGradient(GradientFrost)
                                     } else {
                                         androidx.compose.ui.graphics.SolidColor(Color.Transparent)
                                     }
@@ -112,7 +112,7 @@ fun AppBottomBar(
                             Icon(
                                 imageVector = tab.icon,
                                 contentDescription = tab.screen.title,
-                                tint = if (selected) Color.White else TextSecondary,
+                                tint = if (selected) MaterialTheme.colorScheme.onPrimary else TextSecondary,
                                 modifier = Modifier.size(21.dp)
                             )
                         }

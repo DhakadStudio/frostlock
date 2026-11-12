@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">FrostLock</string>
     <string name="onb_welcome_title">FrostLock</string>
-    <string name="onb_welcome_subtitle">Focus deeply. Build momentum. Take your time back.</string>
+    <string name="onb_welcome_subtitle">Focus deeply. Freeze out distractions. Take your time back.</string>
     <string name="onb_get_started">Get started</string>
     <string name="onb_goals_title">What do you want to focus on?</string>
     <string name="onb_goal_study">Study and exams</string>

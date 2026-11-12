@@ -2,28 +2,29 @@ package com.frostlock.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Base surfaces — deep ink with a violet cast
-val BackgroundDark = Color(0xFF0A0913)
-val BackgroundElevated = Color(0xFF12101F)
-val SurfaceCard = Color(0xFF17142A)
-val SurfaceHigh = Color(0xFF211D3A)
-val StrokeSoft = Color(0xFF2B2650)
+// Base surfaces — polar night with frozen depth
+val BackgroundDark = Color(0xFF050B12)
+val BackgroundElevated = Color(0xFF0A1520)
+val SurfaceCard = Color(0xFF0E1B28)
+val SurfaceHigh = Color(0xFF152838)
+val StrokeSoft = Color(0xFF20394F)
 
-// Accents
-val PrimaryPurple = Color(0xFF8B5CF6)
-val PrimaryIndigo = Color(0xFF6366F1)
-val AccentPurple = Color(0xFFA78BFA)
-val GlowPurple = Color(0xFFC4B5FD)
+// Accents — ice, glacier and frost
+val PrimaryIce = Color(0xFF38BDF8)
+val GlacierBlue = Color(0xFF0EA5E9)
+val AccentFrost = Color(0xFF7DD3FC)
+val GlowIce = Color(0xFFBAE6FD)
+val InkOnIce = Color(0xFF04202E)
 
 // Text
-val TextPrimary = Color(0xFFF4F2FF)
-val TextSecondary = Color(0xFF9D93C4)
+val TextPrimary = Color(0xFFEAF7FF)
+val TextSecondary = Color(0xFF93AEC4)
 
 // Feedback
-val SuccessGreen = Color(0xFF34D399)
+val SuccessGreen = Color(0xFF2DD4BF)
 val DangerRed = Color(0xFFFB7185)
-val WarnAmber = Color(0xFFFBBF24)
+val WarnAmber = Color(0xFFFCD34D)
 
 // Gradients
-val GradientViolet = listOf(PrimaryPurple, PrimaryIndigo)
-val GradientHero = listOf(Color(0xFF4C3A8C), Color(0xFF2A2158))
+val GradientFrost = listOf(PrimaryIce, GlacierBlue)
+val GradientHero = listOf(Color(0xFF0B3B52), Color(0xFF071A28))

@@ -1,20 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="background_dark">#FF0F0A1F</color>
+    <color name="background_dark">#FF050B12</color>
 
-    <color name="widget_bg_start">#FF1A1330</color>
-    <color name="widget_bg_end">#FF241A42</color>
-    <color name="widget_stroke">#FF2E2150</color>
-    <color name="widget_accent">#FFA78BFA</color>
-    <color name="widget_text_primary">#FFF5F3FF</color>
-    <color name="widget_text_secondary">#FFB8AEDB</color>
-    <color name="widget_progress">#FF7C3AED</color>
-    <color name="widget_progress_track">#FF2E2150</color>
+    <color name="widget_bg_start">#FF0B2432</color>
+    <color name="widget_bg_end">#FF071A28</color>
+    <color name="widget_stroke">#FF20394F</color>
+    <color name="widget_accent">#FF7DD3FC</color>
+    <color name="widget_text_primary">#FFEAF7FF</color>
+    <color name="widget_text_secondary">#FF93AEC4</color>
+    <color name="widget_progress">#FF38BDF8</color>
+    <color name="widget_progress_track">#FF152838</color>
 </resources>

@@ -43,7 +43,7 @@ fun SessionRow(
                 Icon(
                     imageVector = modeIcon(session.mode),
                     contentDescription = null,
-                    tint = com.frostlock.app.ui.theme.AccentPurple,
+                    tint = com.frostlock.app.ui.theme.AccentFrost,
                     modifier = Modifier.size(20.dp)
                 )
             }

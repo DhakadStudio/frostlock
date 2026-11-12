@@ -29,13 +29,13 @@ data class FocusSubject(
 
     companion object {
         val SUBJECT_COLORS = listOf(
-            0xFFFACC15.toInt(), // amber
-            0xFF60A5FA.toInt(), // blue
-            0xFFF472B6.toInt(), // pink
-            0xFF34D399.toInt(), // green
-            0xFFFB923C.toInt(), // orange
-            0xFFA78BFA.toInt(), // violet
-            0xFF22D3EE.toInt() // cyan
+            0xFF7DD3FC.toInt(), // ice
+            0xFF38BDF8.toInt(), // sky
+            0xFF22D3EE.toInt(), // cyan
+            0xFF2DD4BF.toInt(), // arctic teal
+            0xFF818CF8.toInt(), // periwinkle frost
+            0xFF93C5FD.toInt(), // glacier
+            0xFF94A3B8.toInt() // frozen steel
         )
 
         fun colorFor(index: Int): Int =

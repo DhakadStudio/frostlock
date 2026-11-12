@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.frostlock.app.ui.theme.AccentPurple
+import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.FrostLockTheme
 import com.frostlock.app.ui.theme.TextPrimary
 
@@ -32,12 +32,12 @@ fun SectionHeader(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0F0A1F)
+@Preview(showBackground = true, backgroundColor = 0xFF050B12)
 @Composable
 fun SectionHeaderPreview() {
     FrostLockTheme {
         SectionHeader(title = "Recent Sessions") {
-            Text(text = "See All", color = AccentPurple)
+            Text(text = "See All", color = AccentFrost)
         }
     }
 }

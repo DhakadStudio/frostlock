@@ -39,10 +39,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.MoodChip
 import com.frostlock.app.ui.components.SectionHeader
-import com.frostlock.app.ui.theme.AccentPurple
+import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.GradientViolet
-import com.frostlock.app.ui.theme.PrimaryPurple
+import com.frostlock.app.ui.theme.GradientFrost
+import com.frostlock.app.ui.theme.PrimaryIce
 import com.frostlock.app.ui.theme.StrokeSoft
 import com.frostlock.app.ui.theme.SuccessGreen
 import com.frostlock.app.ui.theme.SurfaceHigh
@@ -86,7 +86,7 @@ fun ProfileScreen(
                 .clip(MaterialTheme.shapes.medium)
                 .background(
                     Brush.horizontalGradient(
-                        listOf(Color(0xFF2E2560), Color(0xFF1B1637))
+                        listOf(Color(0xFF0B3B52), Color(0xFF071A28))
                     )
                 )
                 .border(1.dp, StrokeSoft, MaterialTheme.shapes.medium)
@@ -97,13 +97,13 @@ fun ProfileScreen(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(CircleShape)
-                    .background(Brush.linearGradient(GradientViolet)),
+                    .background(Brush.linearGradient(GradientFrost)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "F",
                     style = MaterialTheme.typography.titleLarge,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
             Spacer(modifier = Modifier.width(14.dp))
@@ -166,7 +166,7 @@ fun ProfileScreen(
                     Icon(
                         imageVector = Icons.Default.Lock,
                         contentDescription = null,
-                        tint = AccentPurple,
+                        tint = AccentFrost,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -189,7 +189,7 @@ fun ProfileScreen(
                     onCheckedChange = viewModel::setStrictMode,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
-                        checkedTrackColor = PrimaryPurple,
+                        checkedTrackColor = PrimaryIce,
                         uncheckedThumbColor = TextSecondary,
                         uncheckedTrackColor = SurfaceHigh
                     )
@@ -214,7 +214,7 @@ fun ProfileScreen(
                         Icon(
                             imageVector = Icons.Default.Timer,
                             contentDescription = null,
-                            tint = AccentPurple,
+                            tint = AccentFrost,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -237,7 +237,7 @@ fun ProfileScreen(
                         onCheckedChange = viewModel::setBreaksEnabled,
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
-                            checkedTrackColor = PrimaryPurple,
+                            checkedTrackColor = PrimaryIce,
                             uncheckedThumbColor = TextSecondary,
                             uncheckedTrackColor = SurfaceHigh
                         )
@@ -273,7 +273,7 @@ fun ProfileScreen(
                     Icon(
                         imageVector = Icons.Default.NotificationsActive,
                         contentDescription = null,
-                        tint = AccentPurple,
+                        tint = AccentFrost,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -296,7 +296,7 @@ fun ProfileScreen(
                     onCheckedChange = viewModel::setFocusGuardEnabled,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
-                        checkedTrackColor = PrimaryPurple,
+                        checkedTrackColor = PrimaryIce,
                         uncheckedThumbColor = TextSecondary,
                         uncheckedTrackColor = SurfaceHigh
                     )
@@ -320,7 +320,7 @@ fun ProfileScreen(
                     Icon(
                         imageVector = Icons.Default.Widgets,
                         contentDescription = null,
-                        tint = AccentPurple,
+                        tint = AccentFrost,
                         modifier = Modifier.size(18.dp)
                     )
                 }

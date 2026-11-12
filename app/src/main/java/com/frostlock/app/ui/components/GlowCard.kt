@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.frostlock.app.ui.theme.GlowPurple
+import com.frostlock.app.ui.theme.GlowIce
 import com.frostlock.app.ui.theme.FrostLockTheme
 import com.frostlock.app.ui.theme.SurfaceCard
 import com.frostlock.app.ui.theme.TextPrimary
@@ -28,12 +28,12 @@ fun GlowCard(
             .shadow(
                 elevation = 12.dp,
                 shape = MaterialTheme.shapes.medium,
-                spotColor = GlowPurple,
-                ambientColor = GlowPurple
+                spotColor = GlowIce,
+                ambientColor = GlowIce
             )
             .border(
                 width = 1.dp,
-                color = GlowPurple.copy(alpha = 0.3f),
+                color = GlowIce.copy(alpha = 0.3f),
                 shape = MaterialTheme.shapes.medium
             )
             .background(
@@ -46,12 +46,12 @@ fun GlowCard(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0F0A1F)
+@Preview(showBackground = true, backgroundColor = 0xFF050B12)
 @Composable
 fun GlowCardPreview() {
     FrostLockTheme {
         GlowCard {
-            Text(text = "Soft Purple Glow Card", color = TextPrimary)
+            Text(text = "Frost Glow Card", color = TextPrimary)
         }
     }
 }

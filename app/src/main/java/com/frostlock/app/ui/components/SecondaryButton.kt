@@ -50,7 +50,7 @@ fun SecondaryButton(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0A0913)
+@Preview(showBackground = true, backgroundColor = 0xFF050B12)
 @Composable
 fun SecondaryButtonPreview() {
     FrostLockTheme {

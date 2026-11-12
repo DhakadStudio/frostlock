@@ -64,11 +64,11 @@ import com.frostlock.app.data.InstalledApp
 import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SectionHeader
-import com.frostlock.app.ui.theme.AccentPurple
+import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.BackgroundDark
 import com.frostlock.app.ui.theme.DangerRed
-import com.frostlock.app.ui.theme.GradientViolet
-import com.frostlock.app.ui.theme.PrimaryPurple
+import com.frostlock.app.ui.theme.GradientFrost
+import com.frostlock.app.ui.theme.PrimaryIce
 import com.frostlock.app.ui.theme.StrokeSoft
 import com.frostlock.app.ui.theme.SuccessGreen
 import com.frostlock.app.ui.theme.SurfaceCard
@@ -209,7 +209,7 @@ fun BlockScreen(
                                 Icon(
                                     imageVector = Icons.Default.CalendarMonth,
                                     contentDescription = null,
-                                    tint = AccentPurple,
+                                    tint = AccentFrost,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -240,7 +240,7 @@ fun BlockScreen(
                                 )
                             }
                             TextButton(onClick = onOpenSchedules) {
-                                Text(text = "Manage", color = AccentPurple)
+                                Text(text = "Manage", color = AccentFrost)
                             }
                         }
                     }
@@ -267,7 +267,7 @@ fun BlockScreen(
                             TextButton(onClick = { selectedOnly = !selectedOnly }) {
                                 Text(
                                     text = if (selectedOnly) "Show all" else "Selected only",
-                                    color = AccentPurple
+                                    color = AccentFrost
                                 )
                             }
                         }
@@ -304,7 +304,7 @@ fun BlockScreen(
                             Icon(
                                 imageVector = Icons.Default.Timer,
                                 contentDescription = null,
-                                tint = AccentPurple
+                                tint = AccentFrost
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
@@ -411,7 +411,7 @@ private fun BlockTabSwitcher(
                     .clip(MaterialTheme.shapes.extraLarge)
                     .background(
                         if (isSelected) {
-                            Brush.linearGradient(GradientViolet)
+                            Brush.linearGradient(GradientFrost)
                         } else {
                             androidx.compose.ui.graphics.SolidColor(Color.Transparent)
                         }
@@ -423,7 +423,7 @@ private fun BlockTabSwitcher(
                 Text(
                     text = if (badge > 0) "${entry.label} · $badge" else entry.label,
                     style = MaterialTheme.typography.labelLarge,
-                    color = if (isSelected) Color.White else TextSecondary
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else TextSecondary
                 )
             }
         }
@@ -436,7 +436,7 @@ private fun BlockingToggleCard(enabled: Boolean, onToggle: (Boolean) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.medium)
-            .background(Brush.horizontalGradient(listOf(Color(0xFF2E2560), Color(0xFF1B1637))))
+            .background(Brush.horizontalGradient(listOf(Color(0xFF0B3B52), Color(0xFF071A28))))
             .border(1.dp, StrokeSoft, MaterialTheme.shapes.medium)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -447,7 +447,7 @@ private fun BlockingToggleCard(enabled: Boolean, onToggle: (Boolean) -> Unit) {
                 .clip(CircleShape)
                 .background(
                     if (enabled) {
-                        Brush.linearGradient(GradientViolet)
+                        Brush.linearGradient(GradientFrost)
                     } else {
                         androidx.compose.ui.graphics.SolidColor(SurfaceHigh)
                     }
@@ -483,7 +483,7 @@ private fun BlockingToggleCard(enabled: Boolean, onToggle: (Boolean) -> Unit) {
             onCheckedChange = onToggle,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = PrimaryPurple,
+                checkedTrackColor = PrimaryIce,
                 uncheckedThumbColor = TextSecondary,
                 uncheckedTrackColor = SurfaceHigh
             )
@@ -511,11 +511,11 @@ private fun SearchField(
         },
         singleLine = true,
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = PrimaryPurple,
+            focusedBorderColor = PrimaryIce,
             unfocusedBorderColor = StrokeSoft,
             focusedTextColor = TextPrimary,
             unfocusedTextColor = TextPrimary,
-            cursorColor = AccentPurple
+            cursorColor = AccentFrost
         ),
         shape = MaterialTheme.shapes.extraLarge
     )
@@ -529,7 +529,7 @@ private fun LoadingRow() {
             .height(120.dp),
         contentAlignment = Alignment.Center
     ) {
-        CircularProgressIndicator(color = AccentPurple)
+        CircularProgressIndicator(color = AccentFrost)
     }
 }
 
@@ -554,7 +554,7 @@ private fun AppIdentity(app: InstalledApp) {
             Text(
                 text = app.label.take(1).uppercase(),
                 style = MaterialTheme.typography.titleLarge,
-                color = AccentPurple
+                color = AccentFrost
             )
         }
     }
@@ -583,7 +583,7 @@ private fun BlockAppRow(
                     .clip(CircleShape)
                     .background(
                         if (checked) {
-                            Brush.linearGradient(GradientViolet)
+                            Brush.linearGradient(GradientFrost)
                         } else {
                             androidx.compose.ui.graphics.SolidColor(SurfaceHigh)
                         }
@@ -600,7 +600,7 @@ private fun BlockAppRow(
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Blocked",
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -642,7 +642,7 @@ private fun LimitAppRow(
                             .fillMaxWidth()
                             .height(4.dp)
                             .clip(CircleShape),
-                        color = if (usedMinutes >= limitMinutes) DangerRed else PrimaryPurple,
+                        color = if (usedMinutes >= limitMinutes) DangerRed else PrimaryIce,
                         trackColor = SurfaceHigh
                     )
                 }
@@ -663,7 +663,7 @@ private fun LimitAppRow(
                 Text(
                     text = if (limitMinutes > 0) "Edit" else "Set limit",
                     style = MaterialTheme.typography.labelMedium,
-                    color = AccentPurple
+                    color = AccentFrost
                 )
             }
         }
@@ -702,7 +702,7 @@ private fun LimitDialog(
                 Text(
                     text = "$usedMinutes min used today · resets at midnight",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = AccentPurple
+                    color = AccentFrost
                 )
 
                 FlowRow(
@@ -717,8 +717,8 @@ private fun LimitDialog(
                             colors = FilterChipDefaults.filterChipColors(
                                 containerColor = SurfaceHigh,
                                 labelColor = TextSecondary,
-                                selectedContainerColor = PrimaryPurple,
-                                selectedLabelColor = Color.White
+                                selectedContainerColor = PrimaryIce,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                             )
                         )
                     }
@@ -758,7 +758,7 @@ private fun LimitDialog(
         },
         confirmButton = {
             TextButton(onClick = { onSave(minutes) }) {
-                Text(text = "Save", color = AccentPurple)
+                Text(text = "Save", color = AccentFrost)
             }
         },
         dismissButton = {

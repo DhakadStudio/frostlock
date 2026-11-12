@@ -19,8 +19,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.frostlock.app.ui.theme.AccentPurple
-import com.frostlock.app.ui.theme.PrimaryPurple
+import com.frostlock.app.ui.theme.AccentFrost
+import com.frostlock.app.ui.theme.PrimaryIce
 import com.frostlock.app.ui.theme.FrostLockTheme
 import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
@@ -61,7 +61,7 @@ fun StreakRing(
             // Progress Arc
             drawArc(
                 brush = Brush.sweepGradient(
-                    listOf(PrimaryPurple, AccentPurple)
+                    listOf(PrimaryIce, AccentFrost)
                 ),
                 startAngle = -90f,
                 sweepAngle = animatedProgress.value * 360f,
@@ -82,13 +82,13 @@ fun StreakRing(
             Text(
                 text = "Day Streak",
                 style = MaterialTheme.typography.bodyMedium,
-                color = AccentPurple
+                color = AccentFrost
             )
         }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0F0A1F)
+@Preview(showBackground = true, backgroundColor = 0xFF050B12)
 @Composable
 fun StreakRingPreview() {
     FrostLockTheme {

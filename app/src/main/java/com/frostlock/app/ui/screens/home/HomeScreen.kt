@@ -45,7 +45,7 @@ import com.frostlock.app.ui.components.SectionHeader
 import com.frostlock.app.ui.components.SessionRow
 import com.frostlock.app.ui.components.StatTile
 import com.frostlock.app.ui.components.StreakRing
-import com.frostlock.app.ui.theme.AccentPurple
+import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.BackgroundDark
 import com.frostlock.app.ui.theme.StrokeSoft
 import com.frostlock.app.ui.theme.SurfaceHigh
@@ -80,10 +80,10 @@ fun HomeScreen(
                     DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale.ENGLISH)
                 ),
                 style = MaterialTheme.typography.labelMedium,
-                color = AccentPurple
+                color = AccentFrost
             )
             Text(
-                text = "Get in the zone",
+                text = "Freeze out the noise",
                 style = MaterialTheme.typography.headlineMedium,
                 color = TextPrimary
             )
@@ -96,7 +96,7 @@ fun HomeScreen(
                 .clip(MaterialTheme.shapes.large)
                 .background(
                     Brush.verticalGradient(
-                        listOf(Color(0xFF2E2560), Color(0xFF1B1637))
+                        listOf(Color(0xFF0B3B52), Color(0xFF071A28))
                     )
                 )
                 .border(1.dp, StrokeSoft, MaterialTheme.shapes.large)
@@ -123,7 +123,7 @@ fun HomeScreen(
                         "focused today · goal ${formatDuration(state.dailyGoalSeconds)}"
                     },
                     style = MaterialTheme.typography.bodyMedium,
-                    color = AccentPurple,
+                    color = AccentFrost,
                     textAlign = TextAlign.Center
                 )
             }
@@ -218,8 +218,8 @@ private fun QuickAction(
                 .background(
                     Brush.linearGradient(
                         listOf(
-                            com.frostlock.app.ui.theme.PrimaryPurple,
-                            com.frostlock.app.ui.theme.PrimaryIndigo
+                            com.frostlock.app.ui.theme.PrimaryIce,
+                            com.frostlock.app.ui.theme.GlacierBlue
                         )
                     )
                 ),
@@ -228,7 +228,7 @@ private fun QuickAction(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = Color.White,
+                tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(18.dp)
             )
         }

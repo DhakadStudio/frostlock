@@ -39,7 +39,7 @@ fun PanicButton(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0F0A1F)
+@Preview(showBackground = true, backgroundColor = 0xFF050B12)
 @Composable
 fun PanicButtonPreview() {
     FrostLockTheme {

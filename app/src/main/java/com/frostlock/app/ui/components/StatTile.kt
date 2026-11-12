@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.frostlock.app.ui.theme.FrostLockTheme
-import com.frostlock.app.ui.theme.GradientViolet
+import com.frostlock.app.ui.theme.GradientFrost
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
 
@@ -40,13 +40,13 @@ fun StatTile(
             Box(
                 modifier = Modifier
                     .size(38.dp)
-                    .background(Brush.linearGradient(GradientViolet), CircleShape),
+                    .background(Brush.linearGradient(GradientFrost), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = androidx.compose.ui.graphics.Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -67,7 +67,7 @@ fun StatTile(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0A0913)
+@Preview(showBackground = true, backgroundColor = 0xFF050B12)
 @Composable
 private fun StatTilePreview() {
     FrostLockTheme {

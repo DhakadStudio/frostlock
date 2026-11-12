@@ -10,7 +10,7 @@ data class TagTotal(
     val colorArgb: Int = DEFAULT_SUBJECT_COLOR
 )
 
-private const val DEFAULT_SUBJECT_COLOR = 0xFFA78BFA.toInt()
+private const val DEFAULT_SUBJECT_COLOR = 0xFF7DD3FC.toInt()
 
 /**
  * Groups sessions by their optional subject tag, newest sessions first, and
@@ -18,7 +18,7 @@ private const val DEFAULT_SUBJECT_COLOR = 0xFFA78BFA.toInt()
  * "Untagged" so no focus time disappears from the breakdown.
  *
  * [colorFor] lets the caller resolve the saved subject colour; unknown or
- * untagged rows fall back to the app's violet accent.
+ * untagged rows fall back to the app's ice accent.
  */
 fun tagBreakdown(
     sessions: List<SessionEntity>,

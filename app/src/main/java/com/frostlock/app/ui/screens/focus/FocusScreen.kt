@@ -72,11 +72,11 @@ import com.frostlock.app.data.local.prefs.FocusSettings
 import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.AppPickerDialog
 import com.frostlock.app.ui.components.SessionReflectionDialog
-import com.frostlock.app.ui.theme.AccentPurple
+import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.GradientViolet
-import com.frostlock.app.ui.theme.PrimaryIndigo
-import com.frostlock.app.ui.theme.PrimaryPurple
+import com.frostlock.app.ui.theme.GradientFrost
+import com.frostlock.app.ui.theme.GlacierBlue
+import com.frostlock.app.ui.theme.PrimaryIce
 import com.frostlock.app.ui.theme.StrokeSoft
 import com.frostlock.app.ui.theme.SuccessGreen
 import com.frostlock.app.ui.theme.SurfaceCard
@@ -318,7 +318,7 @@ fun FocusScreen(
                         TextButton(onClick = { subjectPickerOpen = true }) {
                             Text(
                                 text = if (count > 0) "Edit apps" else "Set apps",
-                                color = AccentPurple
+                                color = AccentFrost
                             )
                         }
                     }
@@ -339,7 +339,7 @@ fun FocusScreen(
                 Icon(
                     imageVector = Icons.Default.Flag,
                     contentDescription = null,
-                    tint = AccentPurple,
+                    tint = AccentFrost,
                     modifier = Modifier.size(18.dp)
                 )
             },
@@ -354,12 +354,12 @@ fun FocusScreen(
                 )
             },
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PrimaryPurple,
+                focusedBorderColor = PrimaryIce,
                 unfocusedBorderColor = StrokeSoft,
                 focusedTextColor = TextPrimary,
                 unfocusedTextColor = TextPrimary,
-                cursorColor = AccentPurple,
-                focusedLabelColor = AccentPurple,
+                cursorColor = AccentFrost,
+                focusedLabelColor = AccentFrost,
                 unfocusedLabelColor = TextSecondary
             ),
             shape = MaterialTheme.shapes.medium
@@ -454,7 +454,7 @@ fun FocusScreen(
                 ActionCircle(
                     icon = Icons.Default.SkipNext,
                     label = "Skip break",
-                    container = Color(0xFF2B2650),
+                    container = Color(0xFF20394F),
                     tint = TextPrimary,
                     onClick = { viewModel.skipBreak() },
                     modifier = Modifier.fillMaxWidth()
@@ -464,7 +464,7 @@ fun FocusScreen(
             Text(
                 text = "Strict Mode is on. This session can't be paused or ended early.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = AccentPurple,
+                color = AccentFrost,
                 textAlign = TextAlign.Center
             )
             HoldToEndButton(
@@ -481,7 +481,7 @@ fun FocusScreen(
                     ActionCircle(
                         icon = Icons.Default.Pause,
                         contentDescription = "Pause",
-                        container = Color(0xFF2B2650),
+                        container = Color(0xFF20394F),
                         tint = TextPrimary,
                         onClick = { viewModel.pause() },
                         modifier = Modifier.weight(1f)
@@ -495,8 +495,8 @@ fun FocusScreen(
                             state.hasStarted && state.elapsedSeconds > 0 -> "Resume"
                             else -> "Start"
                         },
-                        brush = Brush.linearGradient(GradientViolet),
-                        tint = Color.White,
+                        brush = Brush.linearGradient(GradientFrost),
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         onClick = { viewModel.startOrResume() },
                         modifier = Modifier.weight(2f)
                     )
@@ -506,7 +506,7 @@ fun FocusScreen(
                     ActionCircle(
                         icon = Icons.Default.Stop,
                         contentDescription = "Stop",
-                        container = Color(0xFF2B2650),
+                        container = Color(0xFF20394F),
                         tint = com.frostlock.app.ui.theme.DangerRed,
                         onClick = { viewModel.stop() },
                         modifier = Modifier.weight(1f)
@@ -520,7 +520,7 @@ fun FocusScreen(
                 Icon(
                     imageVector = Icons.Default.Bolt,
                     contentDescription = null,
-                    tint = AccentPurple
+                    tint = AccentFrost
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
@@ -565,7 +565,7 @@ private fun SegmentedControl(
                     .clip(MaterialTheme.shapes.extraLarge)
                     .background(
                         if (selected) {
-                            Brush.linearGradient(GradientViolet)
+                            Brush.linearGradient(GradientFrost)
                         } else {
                             androidx.compose.ui.graphics.SolidColor(Color.Transparent)
                         }
@@ -597,7 +597,7 @@ private fun DurationChip(
             .background(if (selected) SurfaceHigh else SurfaceCard)
             .border(
                 1.dp,
-                if (selected) AccentPurple else StrokeSoft,
+                if (selected) AccentFrost else StrokeSoft,
                 MaterialTheme.shapes.extraLarge
             )
             .clickable(enabled = enabled, onClick = onClick)
@@ -680,12 +680,12 @@ private fun CustomDurationDialog(
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PrimaryPurple,
+                        focusedBorderColor = PrimaryIce,
                         unfocusedBorderColor = SurfaceHigh,
                         focusedTextColor = TextPrimary,
                         unfocusedTextColor = TextPrimary,
-                        cursorColor = AccentPurple,
-                        focusedLabelColor = AccentPurple,
+                        cursorColor = AccentFrost,
+                        focusedLabelColor = AccentFrost,
                         unfocusedLabelColor = TextSecondary
                     ),
                     shape = MaterialTheme.shapes.medium
@@ -703,8 +703,8 @@ private fun CustomDurationDialog(
                             colors = FilterChipDefaults.filterChipColors(
                                 containerColor = SurfaceHigh,
                                 labelColor = TextSecondary,
-                                selectedContainerColor = PrimaryPurple,
-                                selectedLabelColor = Color.White
+                                selectedContainerColor = PrimaryIce,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                             )
                         )
                     }
@@ -716,7 +716,7 @@ private fun CustomDurationDialog(
                 onClick = { if (minutes >= 1) onSave(minutes) },
                 enabled = minutes >= 1
             ) {
-                Text(text = "Set", color = AccentPurple)
+                Text(text = "Set", color = AccentFrost)
             }
         },
         dismissButton = {
@@ -835,13 +835,13 @@ internal fun HoldToEndButton(
                 .fillMaxWidth(progress.value)
                 .align(Alignment.CenterStart)
                 .background(
-                    Brush.horizontalGradient(listOf(PrimaryPurple, PrimaryIndigo))
+                    Brush.horizontalGradient(listOf(PrimaryIce, GlacierBlue))
                 )
         )
         Text(
             text = if (holding) "Keep holding to end…" else "Hold to end session",
             style = MaterialTheme.typography.labelLarge,
-            color = TextPrimary
+            color = MaterialTheme.colorScheme.onPrimary
         )
     }
 }
@@ -866,8 +866,8 @@ private fun SubjectChipLabel(name: String, count: Int?, colorArgb: Int) {
 private fun subjectChipColors() = FilterChipDefaults.filterChipColors(
     containerColor = SurfaceHigh,
     labelColor = TextSecondary,
-    selectedContainerColor = PrimaryPurple,
-    selectedLabelColor = Color.White
+    selectedContainerColor = PrimaryIce,
+    selectedLabelColor = MaterialTheme.colorScheme.onPrimary
 )
 
 @Composable
@@ -922,12 +922,12 @@ private fun TagDialog(
                     label = { Text("Subject") },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PrimaryPurple,
+                        focusedBorderColor = PrimaryIce,
                         unfocusedBorderColor = SurfaceHigh,
                         focusedTextColor = TextPrimary,
                         unfocusedTextColor = TextPrimary,
-                        cursorColor = AccentPurple,
-                        focusedLabelColor = AccentPurple,
+                        cursorColor = AccentFrost,
+                        focusedLabelColor = AccentFrost,
                         unfocusedLabelColor = TextSecondary
                     ),
                     shape = MaterialTheme.shapes.medium
@@ -939,7 +939,7 @@ private fun TagDialog(
                 onClick = { onSave(text) },
                 enabled = text.isNotBlank()
             ) {
-                Text(text = "Save", color = AccentPurple)
+                Text(text = "Save", color = AccentFrost)
             }
         },
         dismissButton = {
@@ -971,7 +971,7 @@ private fun TimerRing(
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        PrimaryPurple.copy(alpha = 0.22f),
+                        PrimaryIce.copy(alpha = 0.22f),
                         Color.Transparent
                     )
                 )
@@ -982,7 +982,7 @@ private fun TimerRing(
             val arcSize = Size(size.width, size.height)
 
             drawArc(
-                color = Color(0xFF221E3D),
+                color = Color(0xFF152838),
                 startAngle = -90f,
                 sweepAngle = 360f,
                 useCenter = false,
@@ -990,7 +990,7 @@ private fun TimerRing(
                 size = arcSize
             )
             drawArc(
-                brush = Brush.sweepGradient(listOf(PrimaryPurple, PrimaryIndigo, PrimaryPurple)),
+                brush = Brush.sweepGradient(listOf(PrimaryIce, GlacierBlue, PrimaryIce)),
                 startAngle = -90f,
                 sweepAngle = animatedProgress.value * 360f,
                 useCenter = false,
@@ -1009,7 +1009,7 @@ private fun TimerRing(
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodyMedium,
-                color = AccentPurple
+                color = AccentFrost
             )
         }
     }

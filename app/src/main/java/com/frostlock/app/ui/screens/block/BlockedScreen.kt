@@ -26,10 +26,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SecondaryButton
-import com.frostlock.app.ui.theme.AccentPurple
+import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.BackgroundDark
 import com.frostlock.app.ui.theme.DangerRed
-import com.frostlock.app.ui.theme.PrimaryPurple
+import com.frostlock.app.ui.theme.PrimaryIce
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.util.formatClock
@@ -46,7 +46,7 @@ fun BlockedScreen(
     usedMinutes: Int = 0,
     ruleLabel: String? = null
 ) {
-    val accent = if (isLimitReached) DangerRed else AccentPurple
+    val accent = if (isLimitReached) DangerRed else AccentFrost
 
     Box(
         modifier = Modifier
@@ -135,7 +135,7 @@ fun BlockedScreen(
                 Text(
                     text = if (isScheduled) "left in this schedule" else "left in this session",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = AccentPurple
+                    color = AccentFrost
                 )
             } else {
                 Text(
@@ -146,7 +146,7 @@ fun BlockedScreen(
                 Text(
                     text = "End the session in FrostLock to unlock apps.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = AccentPurple,
+                    color = AccentFrost,
                     textAlign = TextAlign.Center
                 )
             }

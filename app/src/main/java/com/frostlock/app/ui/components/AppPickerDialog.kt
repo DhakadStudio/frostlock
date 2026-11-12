@@ -40,9 +40,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.frostlock.app.data.InstalledApp
-import com.frostlock.app.ui.theme.AccentPurple
-import com.frostlock.app.ui.theme.GradientViolet
-import com.frostlock.app.ui.theme.PrimaryPurple
+import com.frostlock.app.ui.theme.AccentFrost
+import com.frostlock.app.ui.theme.GradientFrost
+import com.frostlock.app.ui.theme.PrimaryIce
 import com.frostlock.app.ui.theme.StrokeSoft
 import com.frostlock.app.ui.theme.SurfaceCard
 import com.frostlock.app.ui.theme.SurfaceHigh
@@ -89,11 +89,11 @@ fun AppPickerDialog(
                     },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PrimaryPurple,
+                        focusedBorderColor = PrimaryIce,
                         unfocusedBorderColor = StrokeSoft,
                         focusedTextColor = TextPrimary,
                         unfocusedTextColor = TextPrimary,
-                        cursorColor = AccentPurple
+                        cursorColor = AccentFrost
                     ),
                     shape = MaterialTheme.shapes.extraLarge
                 )
@@ -146,7 +146,7 @@ fun AppPickerDialog(
                                     Text(
                                         text = app.label.take(1).uppercase(),
                                         style = MaterialTheme.typography.labelLarge,
-                                        color = AccentPurple
+                                        color = AccentFrost
                                     )
                                 }
                             }
@@ -164,7 +164,7 @@ fun AppPickerDialog(
                                     .clip(CircleShape)
                                     .background(
                                         if (checked) {
-                                            Brush.linearGradient(GradientViolet)
+                                            Brush.linearGradient(GradientFrost)
                                         } else {
                                             androidx.compose.ui.graphics.SolidColor(SurfaceHigh)
                                         }
@@ -180,7 +180,7 @@ fun AppPickerDialog(
                                     Icon(
                                         imageVector = Icons.Default.Check,
                                         contentDescription = null,
-                                        tint = Color.White,
+                                        tint = MaterialTheme.colorScheme.onPrimary,
                                         modifier = Modifier.size(14.dp)
                                     )
                                 }
@@ -192,7 +192,7 @@ fun AppPickerDialog(
         },
         confirmButton = {
             TextButton(onClick = { onConfirm(working) }) {
-                Text(text = "Done", color = AccentPurple)
+                Text(text = "Done", color = AccentFrost)
             }
         },
         dismissButton = {

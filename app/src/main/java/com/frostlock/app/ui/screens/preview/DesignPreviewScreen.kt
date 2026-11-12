@@ -63,7 +63,7 @@ fun DesignPreviewScreen(
             Text(text = "Standard AppCard content", color = TextPrimary)
         }
         GlowCard {
-            Text(text = "GlowCard with soft purple shadow", color = TextPrimary)
+            Text(text = "GlowCard with a soft frost glow", color = TextPrimary)
         }
 
         SectionHeader(title = "Streak Ring")
@@ -82,7 +82,7 @@ fun DesignPreviewScreen(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0F0A1F)
+@Preview(showBackground = true, backgroundColor = 0xFF050B12)
 @Composable
 fun DesignPreviewScreenPreview() {
     FrostLockTheme {
