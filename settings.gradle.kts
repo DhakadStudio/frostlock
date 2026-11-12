@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "FocusFlow"
+rootProject.name = "FrostLock"
 include(":app")

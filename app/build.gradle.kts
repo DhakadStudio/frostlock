@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.focusflow.app"
+    namespace = "com.frostlock.app"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.focusflow.app"
+        applicationId = "com.frostlock.app"
         minSdk = 26
         targetSdk = 37
         versionCode = 1

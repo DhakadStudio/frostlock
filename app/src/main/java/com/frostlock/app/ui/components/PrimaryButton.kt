@@ -1,0 +1,59 @@
+package com.frostlock.app.ui.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.frostlock.app.ui.theme.FrostLockTheme
+import com.frostlock.app.ui.theme.GradientViolet
+import com.frostlock.app.ui.theme.TextPrimary
+
+@Composable
+fun PrimaryButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier) {
+        // Gradient wash behind the pill.
+        Box(
+            Modifier
+                .matchParentSize()
+                .background(
+                    brush = Brush.horizontalGradient(GradientViolet),
+                    shape = CircleShape
+                )
+        )
+        Button(
+            onClick = onClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 54.dp),
+            shape = CircleShape,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                contentColor = TextPrimary
+            )
+        ) {
+            Text(text = text, style = MaterialTheme.typography.labelLarge)
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF0A0913)
+@Composable
+private fun PrimaryButtonPreview() {
+    FrostLockTheme {
+        PrimaryButton(text = "Start focus session", onClick = {})
+    }
+}

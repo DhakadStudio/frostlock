@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">FocusFlow</string>
-    <string name="onb_welcome_title">FocusFlow</string>
+    <string name="app_name">FrostLock</string>
+    <string name="onb_welcome_title">FrostLock</string>
     <string name="onb_welcome_subtitle">Focus deeply. Build momentum. Take your time back.</string>
     <string name="onb_get_started">Get started</string>
     <string name="onb_goals_title">What do you want to focus on?</string>
@@ -26,10 +26,10 @@
     <string name="onb_next">Next</string>
     <string name="onb_back">Back</string>
 
-    <string name="accessibility_service_label">FocusFlow App Blocker</string>
-    <string name="accessibility_description">FocusFlow uses this permission to notice when you open an app you chose to block during a focus session. It does not read the content of your screen.</string>
+    <string name="accessibility_service_label">FrostLock App Blocker</string>
+    <string name="accessibility_description">FrostLock uses this permission to notice when you open an app you chose to block during a focus session. It does not read the content of your screen.</string>
 
-    <string name="widget_title">FOCUSFLOW</string>
+    <string name="widget_title">FROSTLOCK</string>
     <string name="widget_description">Today\'s focus time, daily goal progress and streak.</string>
     <string name="widget_goal_placeholder">of 2h daily goal</string>
     <string name="widget_no_sessions">Start your first session</string>

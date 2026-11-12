@@ -5,4 +5,4 @@
     android:canRetrieveWindowContent="false"
     android:description="@string/accessibility_description"
     android:notificationTimeout="100"
-    android:settingsActivity="com.focusflow.app.ui.MainActivity" />
+    android:settingsActivity="com.frostlock.app.ui.MainActivity" />
