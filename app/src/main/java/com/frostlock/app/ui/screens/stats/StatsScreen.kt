@@ -58,6 +58,7 @@ import com.frostlock.app.ui.util.formatDuration
 @Composable
 fun StatsScreen(
     onOpenAchievements: () -> Unit,
+    onOpenDiary: () -> Unit,
     viewModel: StatsViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -278,7 +279,15 @@ fun StatsScreen(
             }
         }
 
-        SectionHeader(title = "Recent sessions")
+        SectionHeader(title = "Recent sessions") {
+            androidx.compose.material3.TextButton(onClick = onOpenDiary) {
+                Text(
+                    text = "Diary",
+                    color = AccentFrost,
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
 
         if (state.recent.isEmpty()) {
             AppCard {

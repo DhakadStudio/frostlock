@@ -2,6 +2,7 @@ package com.frostlock.app.ui.screens.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +18,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Widgets
@@ -54,6 +57,7 @@ private val GOAL_OPTIONS = listOf(30, 60, 90, 120, 180, 240)
 @Composable
 fun ProfileScreen(
     onNavigateToDesignPreview: () -> Unit = {},
+    onOpenDiary: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -304,6 +308,50 @@ fun ProfileScreen(
             }
         }
 
+        SectionHeader(title = "Reflect & review")
+        AppCard {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onOpenDiary),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(SurfaceHigh),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MenuBook,
+                        contentDescription = null,
+                        tint = AccentFrost,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Study diary",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = "One-line reflections saved with every session.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                }
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = TextSecondary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+
         SectionHeader(title = "Home screen widget")
         AppCard {
             Row(
@@ -336,8 +384,8 @@ fun ProfileScreen(
         SectionHeader(title = "Coming soon")
         AppCard {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("•  Website blocker", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
-                Text("•  Study diary & photos", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+                Text("•  Website & Shorts blocker", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+                Text("•  Session photos & focus stamps", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
                 Text("•  Focus groups & leaderboards", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
             }
         }

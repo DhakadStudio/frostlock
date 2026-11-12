@@ -15,6 +15,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.frostlock.app.ui.components.AppBottomBar
 import com.frostlock.app.ui.screens.block.BlockScreen
+import com.frostlock.app.ui.screens.diary.DiaryScreen
 import com.frostlock.app.ui.screens.focus.FocusScreen
 import com.frostlock.app.ui.screens.home.HomeScreen
 import com.frostlock.app.ui.screens.onboarding.OnboardingScreen
@@ -37,7 +38,8 @@ fun AppNavGraph(
     val showBottomBar = currentRoute != Screen.DesignPreview.route &&
         currentRoute != Screen.Onboarding.route &&
         currentRoute != Screen.Schedules.route &&
-        currentRoute != Screen.Achievements.route
+        currentRoute != Screen.Achievements.route &&
+        currentRoute != Screen.Diary.route
 
     Scaffold(
         bottomBar = {
@@ -115,11 +117,30 @@ fun AppNavGraph(
                             navController.navigate(Screen.Achievements.route) {
                                 launchSingleTop = true
                             }
+                        },
+                        onOpenDiary = {
+                            navController.navigate(Screen.Diary.route) {
+                                launchSingleTop = true
+                            }
                         }
                     )
                 }
                 composable(Screen.Achievements.route) {
                     AchievementsScreen(onBack = { navController.popBackStack() })
+                }
+                composable(Screen.Diary.route) {
+                    DiaryScreen(
+                        onBack = { navController.popBackStack() },
+                        onStartFocus = {
+                            navController.navigate(Screen.Focus.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
                 }
                 composable(Screen.Schedules.route) {
                     ScheduleScreen(onBack = { navController.popBackStack() })
@@ -128,6 +149,11 @@ fun AppNavGraph(
                     ProfileScreen(
                         onNavigateToDesignPreview = {
                             navController.navigate(Screen.DesignPreview.route)
+                        },
+                        onOpenDiary = {
+                            navController.navigate(Screen.Diary.route) {
+                                launchSingleTop = true
+                            }
                         }
                     )
                 }
