@@ -49,6 +49,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalView
@@ -401,6 +402,17 @@ private fun ImmersiveTimerRing(
     isBreak: Boolean
 ) {
     val glow = if (isBreak) Color(0xFF22D3EE) else Color(0xFF7DD3FC)
+    val breath = rememberInfiniteTransition(label = "timer glow")
+    val glowAlpha by breath.animateFloat(
+        initialValue = 0.20f,
+        targetValue = 0.34f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 4_000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "timerGlowAlpha"
+    )
+
     Box(
         modifier = Modifier.size(300.dp),
         contentAlignment = Alignment.Center
@@ -408,12 +420,28 @@ private fun ImmersiveTimerRing(
         Canvas(modifier = Modifier.size(292.dp)) {
             drawCircle(
                 brush = Brush.radialGradient(
-                    listOf(glow.copy(alpha = 0.28f), Color.Transparent)
+                    listOf(glow.copy(alpha = glowAlpha), Color.Transparent)
                 )
             )
         }
         Canvas(modifier = Modifier.size(278.dp)) {
             val strokeWidth = 10.dp.toPx()
+            // Frosted clock face: translucent ice disc with a fine rim.
+            drawCircle(
+                color = Color(0xFF04121C).copy(alpha = 0.62f),
+                radius = size.width * 0.445f
+            )
+            drawCircle(
+                color = Color.White.copy(alpha = 0.10f),
+                radius = size.width * 0.445f,
+                style = Stroke(width = 1.dp.toPx())
+            )
+            drawCircle(
+                color = glow.copy(alpha = 0.12f),
+                radius = size.width * 0.405f,
+                style = Stroke(width = 0.8.dp.toPx())
+            )
+
             drawArc(
                 color = Color.White.copy(alpha = 0.10f),
                 startAngle = -90f,
@@ -536,6 +564,67 @@ private fun FrostBackdrop() {
                     center = Offset(x * size.width, y * size.height)
                 )
             }
+        }
+        // Layered snowdrifts along the bottom edge for depth.
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val w = size.width
+            val h = size.height
+            val sway = (drift - 0.5f) * 22.dp.toPx()
+
+            val farDrift = Path().apply {
+                moveTo(0f, h * 0.795f)
+                cubicTo(
+                    w * 0.20f, h * 0.755f + sway,
+                    w * 0.36f, h * 0.875f,
+                    w * 0.56f, h * 0.835f
+                )
+                cubicTo(
+                    w * 0.73f, h * 0.805f,
+                    w * 0.87f, h * 0.895f,
+                    w, h * 0.855f
+                )
+                lineTo(w, h)
+                lineTo(0f, h)
+                close()
+            }
+            drawPath(
+                path = farDrift,
+                brush = Brush.verticalGradient(
+                    listOf(Color(0xFF0B2C40).copy(alpha = 0.50f), Color.Transparent),
+                    startY = h * 0.78f,
+                    endY = h
+                )
+            )
+
+            val nearDrift = Path().apply {
+                moveTo(0f, h * 0.905f)
+                cubicTo(
+                    w * 0.18f, h * 0.865f - sway,
+                    w * 0.42f, h * 0.955f,
+                    w * 0.63f, h * 0.912f
+                )
+                cubicTo(
+                    w * 0.79f, h * 0.882f,
+                    w * 0.91f, h * 0.962f,
+                    w, h * 0.930f
+                )
+                lineTo(w, h)
+                lineTo(0f, h)
+                close()
+            }
+            drawPath(
+                path = nearDrift,
+                brush = Brush.verticalGradient(
+                    listOf(Color(0xFF071A28).copy(alpha = 0.92f), Color(0xFF03080E)),
+                    startY = h * 0.86f,
+                    endY = h
+                )
+            )
+            drawPath(
+                path = nearDrift,
+                color = Color.White.copy(alpha = 0.06f),
+                style = Stroke(width = 1.dp.toPx())
+            )
         }
     }
 }
