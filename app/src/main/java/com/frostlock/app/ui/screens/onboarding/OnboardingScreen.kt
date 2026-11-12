@@ -18,6 +18,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +28,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -63,14 +65,18 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -107,6 +113,9 @@ import com.frostlock.app.ui.util.onboardingShowcaseApps
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.random.Random
 
 @Composable
@@ -147,7 +156,7 @@ fun OnboardingScreen(
         ) {
             OnboardingTopBar(
                 showSkip = pagerState.currentPage in
-                    OnboardingPages.FOCUS..OnboardingPages.PROGRESS,
+                    OnboardingPages.RADAR..OnboardingPages.PROGRESS,
                 onSkip = {
                     coroutineScope.launch {
                         pagerState.animateScrollToPage(OnboardingPages.GOALS)
@@ -166,6 +175,19 @@ fun OnboardingScreen(
             ) { page ->
                 when (page) {
                     OnboardingPages.WELCOME -> WelcomePage()
+                    OnboardingPages.RADAR -> FeatureSlide(
+                        kicker = "DISTRACTION RADAR",
+                        accent = GlowIce,
+                        title = "They're circling your focus.",
+                        subtitle = "The pull of a notification is designed, not accidental. " +
+                            "FrostLock watches the usual suspects and freezes them first.",
+                        bullets = listOf(
+                            "The apps that quietly eat an hour",
+                            "Frozen the moment focus starts",
+                            "Your own app list decides what locks"
+                        ),
+                        illustration = { DistractionRadarIllustration() }
+                    )
                     OnboardingPages.FOCUS -> FeatureSlide(
                         kicker = "FOCUS TOOLKIT",
                         accent = AccentFrost,
@@ -639,7 +661,7 @@ private fun AppControlIllustration() {
     val limited = apps.take(2)
     val blocked = apps.getOrNull(2)
 
-    ShowcaseCard(height = 214.dp) {
+    ShowcaseCard(height = 244.dp) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -685,6 +707,21 @@ private fun AppControlIllustration() {
                 )
             }
             blocked?.let { app -> BlockedAppRow(app) }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            showcaseBrands.take(6).forEach { brand ->
+                BrandTile(brand = brand, size = 22.dp)
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = "+4 more",
+                style = MaterialTheme.typography.labelSmall,
+                color = TextSecondary
+            )
         }
     }
 }
@@ -1042,6 +1079,204 @@ private fun ProgressIllustration() {
         ) {
             badges.forEach { badge ->
                 AchievementBadge(achievement = badge, size = 42.dp)
+            }
+        }
+    }
+}
+
+/**
+ * Real app artwork shown in the radar and on the app-control card. The PNGs are
+ * official marks pulled from Wikimedia Commons, bundled so onboarding works offline.
+ * A few brands only publish a glyph, so those draw on their brand-coloured tile.
+ */
+private data class BrandApp(
+    val iconRes: Int,
+    val label: String,
+    val background: Color? = null,
+    val tint: Color? = null,
+    val frozen: Boolean = false
+)
+
+private val showcaseBrands = listOf(
+    BrandApp(R.drawable.ic_app_instagram, "Instagram"),
+    BrandApp(R.drawable.ic_app_tiktok, "TikTok", frozen = true),
+    BrandApp(R.drawable.ic_app_youtube, "YouTube", frozen = true),
+    BrandApp(R.drawable.ic_app_facebook, "Facebook"),
+    BrandApp(R.drawable.ic_app_snapchat, "Snapchat"),
+    BrandApp(
+        iconRes = R.drawable.ic_app_x,
+        label = "X",
+        background = Color(0xFF000000),
+        tint = Color.White
+    ),
+    BrandApp(
+        iconRes = R.drawable.ic_app_reddit,
+        label = "Reddit",
+        background = Color(0xFFFF4500),
+        tint = Color.White
+    ),
+    BrandApp(R.drawable.ic_app_netflix, "Netflix"),
+    BrandApp(R.drawable.ic_app_spotify, "Spotify"),
+    BrandApp(R.drawable.ic_app_pinterest, "Pinterest")
+)
+
+@Composable
+private fun BrandTile(brand: BrandApp, size: Dp) {
+    val shape = RoundedCornerShape(size * 0.28f)
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(shape)
+            .then(
+                if (brand.background != null) Modifier.background(brand.background) else Modifier
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = painterResource(brand.iconRes),
+            contentDescription = brand.label,
+            contentScale = ContentScale.Fit,
+            colorFilter = brand.tint?.let { ColorFilter.tint(it) },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(if (brand.background != null) size * 0.18f else 0.dp)
+        )
+    }
+}
+
+@Composable
+private fun DistractionRadarIllustration() {
+    val transition = rememberInfiniteTransition(label = "radar")
+    val sweep by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 9_000, easing = LinearEasing)
+        ),
+        label = "radarSweep"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(258.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.size(232.dp)) {
+            val radius = size.minDimension / 2f
+            val center = Offset(size.width / 2f, size.height / 2f)
+
+            drawCircle(color = Color(0xFF04121B), radius = radius)
+            drawCircle(
+                brush = Brush.radialGradient(
+                    listOf(AccentFrost.copy(alpha = 0.12f), Color.Transparent),
+                    center = center,
+                    radius = radius
+                ),
+                radius = radius
+            )
+            listOf(0.36f, 0.64f, 0.92f).forEach { scale ->
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.07f),
+                    radius = radius * scale,
+                    style = Stroke(width = 1.dp.toPx())
+                )
+            }
+            val crossColor = Color.White.copy(alpha = 0.05f)
+            drawLine(
+                color = crossColor,
+                start = Offset(0f, center.y),
+                end = Offset(size.width, center.y),
+                strokeWidth = 1.dp.toPx()
+            )
+            drawLine(
+                color = crossColor,
+                start = Offset(center.x, 0f),
+                end = Offset(center.x, size.height),
+                strokeWidth = 1.dp.toPx()
+            )
+
+            rotate(sweep) {
+                drawArc(
+                    brush = Brush.sweepGradient(
+                        0.00f to Color.Transparent,
+                        0.72f to AccentFrost.copy(alpha = 0.02f),
+                        0.94f to AccentFrost.copy(alpha = 0.34f),
+                        1.00f to Color.Transparent
+                    ),
+                    startAngle = 0f,
+                    sweepAngle = 360f,
+                    useCenter = true
+                )
+            }
+
+            drawCircle(
+                color = AccentFrost.copy(alpha = 0.22f),
+                radius = radius,
+                style = Stroke(width = 1.2.dp.toPx())
+            )
+            drawCircle(color = AccentFrost.copy(alpha = 0.55f), radius = 2.dp.toPx())
+        }
+
+        Box(
+            modifier = Modifier
+                .size(46.dp)
+                .clip(CircleShape)
+                .background(Brush.linearGradient(GradientFrost)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.AcUnit,
+                contentDescription = null,
+                tint = InkOnIce,
+                modifier = Modifier.size(25.dp)
+            )
+        }
+
+        showcaseBrands.forEachIndexed { index, brand ->
+            RadarAppIcon(brand = brand, index = index)
+        }
+    }
+}
+
+@Composable
+private fun androidx.compose.foundation.layout.BoxScope.RadarAppIcon(
+    brand: BrandApp,
+    index: Int
+) {
+    val onOuterRing = index < 5
+    val angle = if (onOuterRing) -90f + index * 72f else -54f + (index - 5) * 72f
+    val orbit = if (onOuterRing) 0.80f else 0.52f
+    val radians = (angle * PI / 180.0).toFloat()
+    val radiusDp = 116f * orbit
+
+    Box(
+        modifier = Modifier
+            .align(Alignment.Center)
+            .absoluteOffset(
+                x = (cos(radians) * radiusDp).dp,
+                y = (sin(radians) * radiusDp).dp
+            )
+            .size(42.dp)
+    ) {
+        BrandTile(brand = brand, size = 42.dp)
+        if (brand.frozen) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .absoluteOffset(x = 5.dp, y = 5.dp)
+                    .size(16.dp)
+                    .clip(CircleShape)
+                    .background(BackgroundDark)
+                    .border(1.dp, AccentFrost.copy(alpha = 0.55f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = null,
+                    tint = AccentFrost,
+                    modifier = Modifier.size(9.dp)
+                )
             }
         }
     }

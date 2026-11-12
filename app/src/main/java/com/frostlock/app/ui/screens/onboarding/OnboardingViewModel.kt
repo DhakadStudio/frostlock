@@ -29,15 +29,16 @@ data class OnboardingUiState(
 /** Order of the intro slides plus the personalisation steps. */
 object OnboardingPages {
     const val WELCOME = 0
-    const val FOCUS = 1
-    const val CONTROL = 2
-    const val SCHEDULE = 3
-    const val PROGRESS = 4
-    const val GOALS = 5
-    const val TRIGGERS = 6
-    const val REASON = 7
-    const val COMMITMENT = 8
-    const val COUNT = 9
+    const val RADAR = 1
+    const val FOCUS = 2
+    const val CONTROL = 3
+    const val SCHEDULE = 4
+    const val PROGRESS = 5
+    const val GOALS = 6
+    const val TRIGGERS = 7
+    const val REASON = 8
+    const val COMMITMENT = 9
+    const val COUNT = 10
 }
 
 @HiltViewModel
