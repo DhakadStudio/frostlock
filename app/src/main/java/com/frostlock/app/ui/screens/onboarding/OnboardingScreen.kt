@@ -1,6 +1,7 @@
 package com.frostlock.app.ui.screens.onboarding
 
 import androidx.activity.compose.BackHandler
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -9,6 +10,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -62,6 +64,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -655,15 +658,13 @@ private fun AppControlIllustration() {
         }
         Spacer(modifier = Modifier.height(4.dp))
         MockLimitRow(
-            initial = "Y",
-            tint = Color(0xFFFF4D4F),
+            iconRes = R.drawable.ic_brand_youtube,
             label = "YouTube",
             detail = "12 / 20 min",
             fraction = 0.6f
         )
         MockLimitRow(
-            initial = "I",
-            tint = Color(0xFFE1306C),
+            iconRes = R.drawable.ic_brand_instagram,
             label = "Instagram",
             detail = "8 / 15 min",
             fraction = 0.53f
@@ -676,14 +677,13 @@ private fun AppControlIllustration() {
                 modifier = Modifier
                     .size(34.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFF4285F4).copy(alpha = 0.20f)),
+                    .background(Color.White),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "C",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = Color(0xFF8AB4F8),
-                    fontWeight = FontWeight.Bold
+                Image(
+                    painter = painterResource(R.drawable.ic_brand_chrome),
+                    contentDescription = null,
+                    modifier = Modifier.size(30.dp)
                 )
             }
             Spacer(modifier = Modifier.width(10.dp))
@@ -711,8 +711,7 @@ private fun AppControlIllustration() {
 
 @Composable
 private fun MockLimitRow(
-    initial: String,
-    tint: Color,
+    @DrawableRes iconRes: Int,
     label: String,
     detail: String,
     fraction: Float
@@ -721,20 +720,13 @@ private fun MockLimitRow(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
+        Image(
+            painter = painterResource(iconRes),
+            contentDescription = null,
             modifier = Modifier
                 .size(34.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(tint.copy(alpha = 0.20f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = initial,
-                style = MaterialTheme.typography.labelLarge,
-                color = tint,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        )
         Spacer(modifier = Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
