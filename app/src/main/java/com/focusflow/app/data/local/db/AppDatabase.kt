@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [StreakEntity::class, ProfileEntity::class, SessionEntity::class],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -21,6 +21,15 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
                     "ALTER TABLE focus_sessions ADD COLUMN tag TEXT NOT NULL DEFAULT ''"
+                )
+            }
+        }
+
+        /** Adds the post-session reflection that powers the study diary. */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE focus_sessions ADD COLUMN note TEXT NOT NULL DEFAULT ''"
                 )
             }
         }

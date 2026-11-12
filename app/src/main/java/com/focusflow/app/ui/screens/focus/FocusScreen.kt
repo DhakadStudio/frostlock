@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.focusflow.app.ui.components.AppCard
 import com.focusflow.app.ui.components.AppPickerDialog
+import com.focusflow.app.ui.components.SessionReflectionDialog
 import com.focusflow.app.ui.theme.AccentPurple
 import com.focusflow.app.ui.theme.BackgroundDark
 import com.focusflow.app.ui.theme.GradientViolet
@@ -90,6 +91,15 @@ fun FocusScreen(
     val state by viewModel.uiState.collectAsState()
     var customTagOpen by remember { mutableStateOf(false) }
     var subjectPickerOpen by remember { mutableStateOf(false) }
+
+    if (state.lastSessionId != null && !state.isRunning) {
+        SessionReflectionDialog(
+            subject = state.tag,
+            onSave = viewModel::updateLastSessionNote,
+            onDelete = viewModel::deleteLastSession,
+            onDismiss = viewModel::dismissReflection
+        )
+    }
 
     Column(
         modifier = Modifier

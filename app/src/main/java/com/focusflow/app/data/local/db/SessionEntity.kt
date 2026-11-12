@@ -21,5 +21,12 @@ data class SessionEntity(
     val completed: Boolean,
     /** Optional subject/tag the user picked for this session ("Physics", "Work", ...). */
     @ColumnInfo(defaultValue = "''")
-    val tag: String = ""
-)
+    val tag: String = "",
+    /** A short reflection written after the session, shown in the study diary. */
+    @ColumnInfo(defaultValue = "''")
+    val note: String = ""
+) {
+    companion object {
+        const val MAX_NOTE_LENGTH = 280
+    }
+}

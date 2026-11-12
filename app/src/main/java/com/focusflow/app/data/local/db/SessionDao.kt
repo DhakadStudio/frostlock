@@ -28,4 +28,10 @@ interface SessionDao {
 
     @Query("SELECT COUNT(*) FROM focus_sessions WHERE completed = 1")
     fun completedCount(): Flow<Int>
+
+    @Query("UPDATE focus_sessions SET note = :note WHERE id = :id")
+    fun updateNote(id: Long, note: String)
+
+    @Query("DELETE FROM focus_sessions WHERE id = :id")
+    fun deleteById(id: Long)
 }

@@ -63,6 +63,15 @@ fun SessionRow(
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary
                 )
+                if (session.note.isNotBlank()) {
+                    Text(
+                        text = "“${session.note}”",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                }
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(

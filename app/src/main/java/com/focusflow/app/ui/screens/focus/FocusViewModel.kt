@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 enum class FocusMode(val label: String) {
@@ -51,7 +52,9 @@ data class FocusUiState(
     val breakFinished: Boolean = false,
     val tag: String = "",
     val subjects: List<FocusSubject> = emptyList(),
-    val installedApps: List<InstalledApp> = emptyList()
+    val installedApps: List<InstalledApp> = emptyList(),
+    /** Id of the newest saved session, used for the study-diary reflection card. */
+    val lastSessionId: Long? = null
 ) {
     /** The subject selected for this session, if it still exists. */
     val selectedSubject: FocusSubject?
@@ -208,6 +211,42 @@ class FocusViewModel @Inject constructor(
         _uiState.update { it.copy(subjects = subjectStore.subjects()) }
     }
 
+    /** Saves the reflection and closes the study-diary card. */
+    fun updateLastSessionNote(note: String) {
+        val id = _uiState.value.lastSessionId ?: return
+        val cleaned = note.trim().take(SessionEntity.MAX_NOTE_LENGTH)
+        viewModelScope.launch(Dispatchers.IO) {
+            sessionDao.updateNote(id, cleaned)
+            withContext(Dispatchers.Main) {
+                _uiState.update { it.copy(lastSessionId = null) }
+            }
+        }
+    }
+
+    /** Removes an accidental session, including its reflection. */
+    fun deleteLastSession() {
+        val id = _uiState.value.lastSessionId ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            sessionDao.deleteById(id)
+            withContext(Dispatchers.Main) {
+                _uiState.update {
+                    it.copy(
+                        lastSessionId = null,
+                        justCompleted = false,
+                        elapsedSeconds = 0,
+                        hasStarted = false
+                    )
+                }
+                WidgetUpdater.refreshAsync(appContext)
+            }
+        }
+    }
+
+    /** Leaves the reflection empty; the session itself is already saved. */
+    fun dismissReflection() {
+        _uiState.update { it.copy(lastSessionId = null) }
+    }
+
     fun startOrResume() {
         val state = _uiState.value
         if (state.isRunning || state.phase == FocusPhase.BREAK) return
@@ -215,6 +254,8 @@ class FocusViewModel @Inject constructor(
             resetInternal()
             _uiState.update { it.copy(elapsedSeconds = 0, justCompleted = false) }
         }
+        // A new run gets its own diary entry.
+        _uiState.update { it.copy(lastSessionId = null) }
         sessionSaved = false
         runningSince = System.currentTimeMillis()
         _uiState.update {
@@ -580,7 +621,10 @@ class FocusViewModel @Inject constructor(
             tag = state.tag
         )
         viewModelScope.launch(Dispatchers.IO) {
-            sessionDao.insert(entity)
+            val id = sessionDao.insert(entity)
+            withContext(Dispatchers.Main) {
+                _uiState.update { it.copy(lastSessionId = id) }
+            }
             WidgetUpdater.refreshAsync(appContext)
         }
     }
