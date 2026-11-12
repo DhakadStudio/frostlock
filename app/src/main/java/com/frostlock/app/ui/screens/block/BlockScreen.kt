@@ -68,6 +68,7 @@ import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.BackgroundDark
 import com.frostlock.app.ui.theme.DangerRed
 import com.frostlock.app.ui.theme.GradientFrost
+import com.frostlock.app.ui.theme.InkOnIce
 import com.frostlock.app.ui.theme.PrimaryIce
 import com.frostlock.app.ui.theme.StrokeSoft
 import com.frostlock.app.ui.theme.SuccessGreen
@@ -76,6 +77,8 @@ import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.theme.WarnAmber
+import com.frostlock.app.ui.util.SUGGESTED_LIMIT_MINUTES
+import com.frostlock.app.ui.util.suggestedLimitApps
 
 private enum class BlockTab(val label: String) {
     BLOCKING("Focus blocking"),
@@ -117,6 +120,9 @@ fun BlockScreen(
         state.apps.filter {
             limitQuery.isBlank() || it.label.contains(limitQuery, ignoreCase = true)
         }
+    }
+    val suggestedApps = remember(state.apps, state.limits) {
+        suggestedLimitApps(state.apps, state.limits)
     }
 
     LazyColumn(
@@ -323,6 +329,33 @@ fun BlockScreen(
                     }
                 }
 
+                if (suggestedApps.isNotEmpty()) {
+                    item { SectionHeader(title = "Suggested limits") }
+                    item {
+                        AppCard {
+                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Text(
+                                    text = "The usual time sinks. One tap gives each a " +
+                                        "${SUGGESTED_LIMIT_MINUTES}-minute daily budget.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = TextSecondary
+                                )
+                                suggestedApps.forEach { app ->
+                                    SuggestedLimitRow(
+                                        app = app,
+                                        onAdd = {
+                                            viewModel.setLimit(
+                                                app.packageName,
+                                                SUGGESTED_LIMIT_MINUTES
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
                 item {
                     SearchField(
                         value = limitQuery,
@@ -457,7 +490,7 @@ private fun BlockingToggleCard(enabled: Boolean, onToggle: (Boolean) -> Unit) {
             Icon(
                 imageVector = Icons.Default.Shield,
                 contentDescription = null,
-                tint = if (enabled) Color.White else TextSecondary,
+                tint = if (enabled) InkOnIce else TextSecondary,
                 modifier = Modifier.size(22.dp)
             )
         }
@@ -666,6 +699,45 @@ private fun LimitAppRow(
                     color = AccentFrost
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun SuggestedLimitRow(
+    app: InstalledApp,
+    onAdd: () -> Unit
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        AppIdentity(app)
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = app.label,
+                style = MaterialTheme.typography.titleMedium,
+                color = TextPrimary,
+                maxLines = 1
+            )
+            Text(
+                text = "${SUGGESTED_LIMIT_MINUTES}m daily budget",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecondary
+            )
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Box(
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.extraLarge)
+                .background(Brush.linearGradient(GradientFrost))
+                .clickable(onClick = onAdd)
+                .padding(horizontal = 14.dp, vertical = 7.dp)
+        ) {
+            Text(
+                text = "Add ${SUGGESTED_LIMIT_MINUTES}m",
+                style = MaterialTheme.typography.labelMedium,
+                color = InkOnIce,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
