@@ -243,7 +243,7 @@ private fun QuickAction(
                 text = subtitle,
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextSecondary,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
         }
