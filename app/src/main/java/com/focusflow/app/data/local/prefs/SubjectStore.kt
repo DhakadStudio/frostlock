@@ -20,10 +20,27 @@ import javax.inject.Singleton
 data class FocusSubject(
     val id: Long,
     val name: String,
-    val packages: Set<String> = emptySet()
+    val packages: Set<String> = emptySet(),
+    /** ARGB colour used for chips, dots and the session badge. */
+    val colorArgb: Int = SUBJECT_COLORS.first()
 ) {
     /** True when this subject has its own app list instead of the global fallback. */
     val hasApps: Boolean get() = packages.isNotEmpty()
+
+    companion object {
+        val SUBJECT_COLORS = listOf(
+            0xFFFACC15.toInt(), // amber
+            0xFF60A5FA.toInt(), // blue
+            0xFFF472B6.toInt(), // pink
+            0xFF34D399.toInt(), // green
+            0xFFFB923C.toInt(), // orange
+            0xFFA78BFA.toInt(), // violet
+            0xFF22D3EE.toInt() // cyan
+        )
+
+        fun colorFor(index: Int): Int =
+            SUBJECT_COLORS[((index % SUBJECT_COLORS.size) + SUBJECT_COLORS.size) % SUBJECT_COLORS.size]
+    }
 }
 
 /**
@@ -76,7 +93,8 @@ class SubjectStore @Inject constructor(@ApplicationContext context: Context) {
                         FocusSubject(
                             id = obj.optLong(KEY_ID, name.hashCode().toLong()),
                             name = name,
-                            packages = packages
+                            packages = packages,
+                            colorArgb = obj.optInt(KEY_COLOR, FocusSubject.colorFor(i))
                         )
                     )
                 }
@@ -99,7 +117,8 @@ class SubjectStore @Inject constructor(@ApplicationContext context: Context) {
         val subject = FocusSubject(
             id = System.currentTimeMillis(),
             name = cleaned,
-            packages = emptySet()
+            packages = emptySet(),
+            colorArgb = FocusSubject.colorFor(subjects().size)
         )
         save(subjects() + subject)
         return subject
@@ -122,6 +141,7 @@ class SubjectStore @Inject constructor(@ApplicationContext context: Context) {
                     put(KEY_ID, subject.id)
                     put(KEY_NAME, subject.name)
                     put(KEY_PACKAGES, JSONArray(subject.packages.sorted()))
+                    put(KEY_COLOR, subject.colorArgb)
                 }
             )
         }
@@ -129,11 +149,11 @@ class SubjectStore @Inject constructor(@ApplicationContext context: Context) {
     }
 
     private fun defaults(): List<FocusSubject> = listOf(
-        FocusSubject(id = 1L, name = "Study"),
-        FocusSubject(id = 2L, name = "Work"),
-        FocusSubject(id = 3L, name = "Reading"),
-        FocusSubject(id = 4L, name = "Coding"),
-        FocusSubject(id = 5L, name = "Revision")
+        FocusSubject(id = 1L, name = "Study", colorArgb = FocusSubject.colorFor(0)),
+        FocusSubject(id = 2L, name = "Work", colorArgb = FocusSubject.colorFor(1)),
+        FocusSubject(id = 3L, name = "Reading", colorArgb = FocusSubject.colorFor(2)),
+        FocusSubject(id = 4L, name = "Coding", colorArgb = FocusSubject.colorFor(3)),
+        FocusSubject(id = 5L, name = "Revision", colorArgb = FocusSubject.colorFor(4))
     )
 
     companion object {
@@ -142,6 +162,7 @@ class SubjectStore @Inject constructor(@ApplicationContext context: Context) {
         private const val KEY_ID = "id"
         private const val KEY_NAME = "name"
         private const val KEY_PACKAGES = "packages"
+        private const val KEY_COLOR = "color"
         const val MAX_NAME_LENGTH = 24
     }
 }

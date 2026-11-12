@@ -255,12 +255,10 @@ fun FocusScreen(
                             )
                         },
                         label = {
-                            Text(
-                                if (subject.hasApps) {
-                                    "${subject.name} · ${subject.packages.size}"
-                                } else {
-                                    subject.name
-                                }
+                            SubjectChipLabel(
+                                name = subject.name,
+                                count = subject.packages.size.takeIf { subject.hasApps },
+                                colorArgb = subject.colorArgb
                             )
                         },
                         colors = subjectChipColors()
@@ -804,6 +802,22 @@ internal fun HoldToEndButton(
             style = MaterialTheme.typography.labelLarge,
             color = TextPrimary
         )
+    }
+}
+
+@Composable
+private fun SubjectChipLabel(name: String, count: Int?, colorArgb: Int) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(7.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(7.dp)
+                .clip(CircleShape)
+                .background(Color(colorArgb))
+        )
+        Text(if (count != null) "$name · $count" else name)
     }
 }
 

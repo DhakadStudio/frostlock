@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.focusflow.app.data.local.db.SessionDao
 import com.focusflow.app.data.local.db.SessionEntity
+import com.focusflow.app.data.local.prefs.SubjectStore
+import com.focusflow.app.data.local.prefs.subjectKey
 import com.focusflow.app.ui.util.computeStreak
 import com.focusflow.app.ui.util.localDateOf
 import com.focusflow.app.ui.util.tagBreakdown
@@ -51,7 +53,8 @@ private data class PartialStats(
 
 @HiltViewModel
 class StatsViewModel @Inject constructor(
-    sessionDao: SessionDao
+    sessionDao: SessionDao,
+    private val subjectStore: SubjectStore
 ) : ViewModel() {
 
     private val todayStart = startOfTodayMillis()
@@ -66,6 +69,8 @@ class StatsViewModel @Inject constructor(
     ) { recent, total, today, week, count ->
         PartialStats(recent, total, today, week, count)
     }.combine(sessionDao.completedCount()) { partial, completed ->
+        val subjectColors = subjectStore.subjects()
+            .associateBy { subjectKey(it.name) }
         StatsUiState(
             todaySeconds = partial.todaySeconds,
             weekSeconds = partial.weekSeconds,
@@ -74,7 +79,9 @@ class StatsViewModel @Inject constructor(
             completedSessions = completed,
             streak = computeStreak(partial.recent.map { it.startedAt }),
             days = buildDays(partial.recent),
-            tags = tagBreakdown(partial.recent),
+            tags = tagBreakdown(partial.recent) { tag ->
+                subjectColors[subjectKey(tag)]?.colorArgb
+            },
             recent = partial.recent.take(10)
         )
     }.stateIn(

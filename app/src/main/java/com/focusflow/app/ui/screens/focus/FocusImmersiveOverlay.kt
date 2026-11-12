@@ -121,7 +121,7 @@ fun FocusImmersiveOverlay(
                 ) {
                     SubjectBadge(
                         subject = state.tag,
-                        color = 0xFFA78BFA.toInt(),
+                        color = state.selectedSubject?.colorArgb ?: 0xFFA78BFA.toInt(),
                         isBreak = state.phase == FocusPhase.BREAK
                     )
                     Spacer(modifier = Modifier.weight(1f))

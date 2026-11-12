@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -247,7 +249,17 @@ private fun SubjectBreakdown(tags: List<TagTotal>) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         tags.forEach { tag ->
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Row(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(Color(tag.colorArgb))
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = tag.tag,
                         style = MaterialTheme.typography.bodyMedium,
@@ -276,7 +288,10 @@ private fun SubjectBreakdown(tags: List<TagTotal>) {
                             .clip(RoundedCornerShape(3.dp))
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(PrimaryPurple, PrimaryIndigo)
+                                    listOf(
+                                        Color(tag.colorArgb),
+                                        Color(tag.colorArgb).copy(alpha = 0.45f)
+                                    )
                                 )
                             )
                     )

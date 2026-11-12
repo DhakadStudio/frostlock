@@ -417,7 +417,18 @@ private fun ScheduleEditorDialog(
                                 selected = packages == subject.packages,
                                 onClick = { packages = subject.packages },
                                 label = {
-                                    Text("${subject.name} · ${subject.packages.size}")
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(7.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(subject.colorArgb))
+                                        )
+                                        Text("${subject.name} · ${subject.packages.size}")
+                                    }
                                 },
                                 colors = FilterChipDefaults.filterChipColors(
                                     containerColor = SurfaceHigh,
