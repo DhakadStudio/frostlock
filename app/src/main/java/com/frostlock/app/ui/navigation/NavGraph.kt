@@ -22,6 +22,7 @@ import com.frostlock.app.ui.screens.onboarding.OnboardingViewModel
 import com.frostlock.app.ui.screens.preview.DesignPreviewScreen
 import com.frostlock.app.ui.screens.profile.ProfileScreen
 import com.frostlock.app.ui.screens.schedule.ScheduleScreen
+import com.frostlock.app.ui.screens.stats.AchievementsScreen
 import com.frostlock.app.ui.screens.stats.StatsScreen
 
 @Composable
@@ -35,7 +36,8 @@ fun AppNavGraph(
 
     val showBottomBar = currentRoute != Screen.DesignPreview.route &&
         currentRoute != Screen.Onboarding.route &&
-        currentRoute != Screen.Schedules.route
+        currentRoute != Screen.Schedules.route &&
+        currentRoute != Screen.Achievements.route
 
     Scaffold(
         bottomBar = {
@@ -107,7 +109,18 @@ fun AppNavGraph(
                     )
                 }
                 composable(Screen.Focus.route) { FocusScreen() }
-                composable(Screen.Stats.route) { StatsScreen() }
+                composable(Screen.Stats.route) {
+                    StatsScreen(
+                        onOpenAchievements = {
+                            navController.navigate(Screen.Achievements.route) {
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
+                composable(Screen.Achievements.route) {
+                    AchievementsScreen(onBack = { navController.popBackStack() })
+                }
                 composable(Screen.Schedules.route) {
                     ScheduleScreen(onBack = { navController.popBackStack() })
                 }

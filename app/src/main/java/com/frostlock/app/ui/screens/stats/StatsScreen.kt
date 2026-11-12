@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.frostlock.app.ui.components.AchievementBadge
 import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.SectionHeader
 import com.frostlock.app.ui.components.SessionRow
@@ -49,14 +51,23 @@ import com.frostlock.app.ui.theme.StrokeSoft
 import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
+import com.frostlock.app.ui.util.AchievementCategory
 import com.frostlock.app.ui.util.TagTotal
 import com.frostlock.app.ui.util.formatDuration
 
 @Composable
 fun StatsScreen(
+    onOpenAchievements: () -> Unit,
     viewModel: StatsViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+
+    val previewBadges = remember(state.achievements) {
+        AchievementCategory.entries.mapNotNull { category ->
+            val inCategory = state.achievements.filter { it.category == category }
+            inCategory.lastOrNull { it.unlocked } ?: inCategory.firstOrNull()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -176,6 +187,52 @@ fun StatsScreen(
                 icon = Icons.Default.PlayCircle,
                 modifier = Modifier.weight(1f)
             )
+        }
+
+        // Achievements preview
+        AppCard {
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                SectionHeader(title = "Achievements") {
+                    androidx.compose.material3.TextButton(onClick = onOpenAchievements) {
+                        Text(
+                            text = "View all",
+                            color = AccentFrost,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
+                if (previewBadges.isEmpty()) {
+                    Text(
+                        text = "Finish a focus session to earn your first badge.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        previewBadges.forEach { achievement ->
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                AchievementBadge(achievement = achievement, size = 58.dp)
+                                Text(
+                                    text = achievement.title,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = if (achievement.unlocked) TextPrimary else TextSecondary
+                                )
+                            }
+                        }
+                    }
+                    Text(
+                        text = "${state.unlockedCount} of ${state.achievements.size} badges collected",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                }
+            }
         }
 
         // Weekly chart
