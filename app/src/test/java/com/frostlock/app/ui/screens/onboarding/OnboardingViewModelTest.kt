@@ -53,26 +53,26 @@ class OnboardingViewModelTest {
 
     @Test
     fun emptyGoalsBlocked() {
-        viewModel.onPageChanged(1)
+        viewModel.onPageChanged(OnboardingPages.GOALS)
         assertFalse(viewModel.canProceed())
     }
 
     @Test
     fun emptyTriggersBlocked() {
-        viewModel.onPageChanged(2)
+        viewModel.onPageChanged(OnboardingPages.TRIGGERS)
         assertFalse(viewModel.canProceed())
     }
 
     @Test
     fun reasonUnder10CharactersBlocked() {
-        viewModel.onPageChanged(3)
+        viewModel.onPageChanged(OnboardingPages.REASON)
         viewModel.onReasonChanged("Too short")
         assertFalse(viewModel.canProceed())
     }
 
     @Test
     fun reasonOver300CharactersBlocked() {
-        viewModel.onPageChanged(3)
+        viewModel.onPageChanged(OnboardingPages.REASON)
         val longReason = "a".repeat(301)
         viewModel.onReasonChanged(longReason)
         assertFalse(viewModel.canProceed())
@@ -80,11 +80,11 @@ class OnboardingViewModelTest {
 
     @Test
     fun validDataSaves() {
-        viewModel.onPageChanged(1)
+        viewModel.onPageChanged(OnboardingPages.GOALS)
         viewModel.onGoalToggled("Study focus")
-        viewModel.onPageChanged(2)
+        viewModel.onPageChanged(OnboardingPages.TRIGGERS)
         viewModel.onTriggerToggled("Stress")
-        viewModel.onPageChanged(3)
+        viewModel.onPageChanged(OnboardingPages.REASON)
         viewModel.onReasonChanged("This is a valid reason that exceeds 10 characters.")
         assertTrue(viewModel.canProceed())
 

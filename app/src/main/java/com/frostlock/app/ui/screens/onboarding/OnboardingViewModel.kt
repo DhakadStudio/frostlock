@@ -26,6 +26,20 @@ data class OnboardingUiState(
     val isCompleted: Boolean = false
 )
 
+/** Order of the intro slides plus the personalisation steps. */
+object OnboardingPages {
+    const val WELCOME = 0
+    const val FOCUS = 1
+    const val CONTROL = 2
+    const val SCHEDULE = 3
+    const val PROGRESS = 4
+    const val GOALS = 5
+    const val TRIGGERS = 6
+    const val REASON = 7
+    const val COMMITMENT = 8
+    const val COUNT = 9
+}
+
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val profileDao: ProfileDao,
@@ -71,12 +85,10 @@ class OnboardingViewModel @Inject constructor(
     fun canProceed(): Boolean {
         val state = _uiState.value
         return when (state.currentPage) {
-            0 -> true
-            1 -> state.selectedGoals.isNotEmpty()
-            2 -> state.selectedTriggers.isNotEmpty()
-            3 -> state.reason.trim().length in 10..300
-            4 -> true
-            else -> false
+            OnboardingPages.GOALS -> state.selectedGoals.isNotEmpty()
+            OnboardingPages.TRIGGERS -> state.selectedTriggers.isNotEmpty()
+            OnboardingPages.REASON -> state.reason.trim().length in 10..300
+            else -> true
         }
     }
 
