@@ -29,6 +29,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
@@ -67,6 +68,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.focusflow.app.data.InstalledApp
+import com.focusflow.app.data.local.prefs.FocusSettings
 import com.focusflow.app.ui.components.AppCard
 import com.focusflow.app.ui.components.AppPickerDialog
 import com.focusflow.app.ui.components.SessionReflectionDialog
@@ -323,6 +325,45 @@ fun FocusScreen(
                 }
             }
         }
+
+        // One concrete outcome keeps the session from drifting.
+        OutlinedTextField(
+            value = state.intent,
+            onValueChange = viewModel::setIntent,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !state.isRunning,
+            singleLine = true,
+            label = { Text("One thing for this session") },
+            placeholder = { Text("e.g. Finish chapter 4", color = TextSecondary) },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Flag,
+                    contentDescription = null,
+                    tint = AccentPurple,
+                    modifier = Modifier.size(18.dp)
+                )
+            },
+            supportingText = {
+                Text(
+                    text = if (state.intent.isBlank()) {
+                        "Optional — it appears on the focus screen so you don't drift."
+                    } else {
+                        "${state.intent.length}/${FocusSettings.MAX_INTENT_LENGTH}"
+                    },
+                    color = TextSecondary
+                )
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = PrimaryPurple,
+                unfocusedBorderColor = StrokeSoft,
+                focusedTextColor = TextPrimary,
+                unfocusedTextColor = TextPrimary,
+                cursorColor = AccentPurple,
+                focusedLabelColor = AccentPurple,
+                unfocusedLabelColor = TextSecondary
+            ),
+            shape = MaterialTheme.shapes.medium
+        )
 
         if (customTagOpen) {
             TagDialog(

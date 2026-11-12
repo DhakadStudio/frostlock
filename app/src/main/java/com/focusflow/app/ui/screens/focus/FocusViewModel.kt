@@ -51,6 +51,8 @@ data class FocusUiState(
     val breakMinutes: Int = FocusSettings.DEFAULT_BREAK_MINUTES,
     val breakFinished: Boolean = false,
     val tag: String = "",
+    /** The one outcome this session is for, shown on the immersive timer. */
+    val intent: String = "",
     val subjects: List<FocusSubject> = emptyList(),
     val installedApps: List<InstalledApp> = emptyList(),
     /** Id of the newest saved session, used for the study-diary reflection card. */
@@ -123,6 +125,7 @@ class FocusViewModel @Inject constructor(
             it.copy(
                 targetMinutes = focusSettings.lastDurationMinutes.value,
                 tag = savedTag,
+                intent = focusSettings.sessionIntent.value,
                 breaksEnabled = focusSettings.breaksEnabled.value,
                 breakMinutes = focusSettings.breakMinutes.value,
                 subjects = subjectStore.subjects()
@@ -211,6 +214,19 @@ class FocusViewModel @Inject constructor(
         if (_uiState.value.isRunning) return
         subjectStore.setPackages(subjectName, packages)
         _uiState.update { it.copy(subjects = subjectStore.subjects()) }
+    }
+
+    /** The one thing this session should finish. Optional, up to 80 chars. */
+    fun setIntent(intent: String) {
+        if (_uiState.value.isRunning) return
+        val cleaned = intent.take(FocusSettings.MAX_INTENT_LENGTH)
+        focusSettings.setSessionIntent(cleaned)
+        _uiState.update { it.copy(intent = cleaned) }
+    }
+
+    private fun clearIntent() {
+        focusSettings.setSessionIntent("")
+        _uiState.update { it.copy(intent = "") }
     }
 
     /** Saves the reflection and closes the study-diary card. */
@@ -320,6 +336,7 @@ class FocusViewModel @Inject constructor(
             sessionSaved = true
         }
         resetInternal()
+        clearIntent()
         _uiState.update {
             it.copy(
                 isRunning = false,
@@ -336,6 +353,7 @@ class FocusViewModel @Inject constructor(
         stopTimer()
         stopBlockingService()
         resetInternal()
+        clearIntent()
         _uiState.update {
             it.copy(
                 isRunning = false,

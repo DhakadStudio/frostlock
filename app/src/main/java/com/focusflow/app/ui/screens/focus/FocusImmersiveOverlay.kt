@@ -189,16 +189,21 @@ fun FocusImmersiveOverlay(
 
                 Spacer(modifier = Modifier.weight(1f))
 
+                val helper = when {
+                    state.phase == FocusPhase.BREAK ->
+                        "Breathe, stretch, and come back for round ${state.round + 1}."
+                    state.strictActive ->
+                        "No early exit. The timer is in charge."
+                    state.sessionPackages.isEmpty() ->
+                        "No apps selected yet — this is a pure focus timer."
+                    else ->
+                        "One task. No switching."
+                }
                 Text(
-                    text = when {
-                        state.phase == FocusPhase.BREAK ->
-                            "Breathe, stretch, and come back for round ${state.round + 1}."
-                        state.strictActive ->
-                            "No early exit. The timer is in charge."
-                        state.sessionPackages.isEmpty() ->
-                            "No apps selected yet — this is a pure focus timer."
-                        else ->
-                            "One task. No switching."
+                    text = if (state.intent.isNotBlank() && state.phase == FocusPhase.FOCUS) {
+                        "“${state.intent}”"
+                    } else {
+                        helper
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.58f),
