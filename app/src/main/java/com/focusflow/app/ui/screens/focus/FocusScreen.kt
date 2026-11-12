@@ -1,5 +1,6 @@
 package com.focusflow.app.ui.screens.focus
 
+import android.content.Intent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -57,6 +58,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
@@ -64,6 +66,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.focusflow.app.data.InstalledApp
 import com.focusflow.app.ui.components.AppCard
 import com.focusflow.app.ui.components.AppPickerDialog
 import com.focusflow.app.ui.components.SessionReflectionDialog
@@ -89,8 +92,43 @@ fun FocusScreen(
     viewModel: FocusViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
     var customTagOpen by remember { mutableStateOf(false) }
     var subjectPickerOpen by remember { mutableStateOf(false) }
+    var immersiveMinimized by remember { mutableStateOf(false) }
+    var testApp by remember { mutableStateOf<InstalledApp?>(null) }
+
+    // A new run opens the calm, full-screen timer again.
+    LaunchedEffect(state.isRunning) {
+        if (state.isRunning) immersiveMinimized = false
+    }
+
+    if (state.isRunning && !immersiveMinimized) {
+        FocusImmersiveOverlay(
+            state = state,
+            onMinimize = { immersiveMinimized = true },
+            onPause = viewModel::pause,
+            onResume = viewModel::startOrResume,
+            onStop = viewModel::stop,
+            onEndStrict = viewModel::endStrictSession,
+            onSkipBreak = viewModel::skipBreak,
+            onTestBlock = { testApp = it }
+        )
+    }
+
+    testApp?.let { app ->
+        TestBlockDialog(
+            app = app,
+            onOpen = {
+                context.packageManager.getLaunchIntentForPackage(app.packageName)?.let { intent ->
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                }
+                testApp = null
+            },
+            onDismiss = { testApp = null }
+        )
+    }
 
     if (state.lastSessionId != null && !state.isRunning) {
         SessionReflectionDialog(
@@ -718,7 +756,7 @@ private fun ActionCircle(
 }
 
 @Composable
-private fun HoldToEndButton(
+internal fun HoldToEndButton(
     onEnd: () -> Unit,
     modifier: Modifier = Modifier
 ) {

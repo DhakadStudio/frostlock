@@ -54,7 +54,9 @@ data class FocusUiState(
     val subjects: List<FocusSubject> = emptyList(),
     val installedApps: List<InstalledApp> = emptyList(),
     /** Id of the newest saved session, used for the study-diary reflection card. */
-    val lastSessionId: Long? = null
+    val lastSessionId: Long? = null,
+    /** The apps snapshotted for this session, shown in the immersive focus screen. */
+    val sessionPackages: Set<String> = emptySet()
 ) {
     /** The subject selected for this session, if it still exists. */
     val selectedSubject: FocusSubject?
@@ -471,11 +473,13 @@ class FocusViewModel @Inject constructor(
         // Snapshot the subject's apps for this session. The blocker reads this
         // snapshot so switching subjects later cannot change a running session.
         val subject = subjectStore.subjectFor(state.tag)
+        val packages = effectiveSessionPackages(
+            subject,
+            blockingPreferences.blockedPackages.value
+        )
+        _uiState.update { it.copy(sessionPackages = packages) }
         blockingPreferences.saveSessionApps(
-            packages = effectiveSessionPackages(
-                subject,
-                blockingPreferences.blockedPackages.value
-            ),
+            packages = packages,
             subject = subject?.name
         )
         FocusSessionService.start(
@@ -551,7 +555,8 @@ class FocusViewModel @Inject constructor(
                 hasStarted = true,
                 strictMode = strict,
                 tag = focusSettings.sessionTag.value,
-                subjects = subjectStore.subjects()
+                subjects = subjectStore.subjects(),
+                sessionPackages = blockingPreferences.sessionPackages()
             )
         }
 
