@@ -1,7 +1,10 @@
 package com.frostlock.app.ui.screens.onboarding
 
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.BackHandler
-import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -49,6 +52,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.State
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -61,10 +66,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -72,6 +78,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.drawable.toBitmap
+import com.frostlock.app.data.InstalledApp
 import com.frostlock.app.R
 import com.frostlock.app.ui.components.AchievementBadge
 import com.frostlock.app.ui.components.AppCard
@@ -95,7 +103,10 @@ import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.theme.WarnAmber
 import com.frostlock.app.ui.util.Achievement
 import com.frostlock.app.ui.util.AchievementCategory
+import com.frostlock.app.ui.util.onboardingShowcaseApps
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 @Composable
@@ -624,7 +635,11 @@ private fun MiniTimerRing(progress: Float, time: String, label: String) {
 
 @Composable
 private fun AppControlIllustration() {
-    ShowcaseCard(height = 238.dp) {
+    val apps by rememberInstalledShowcaseApps()
+    val limited = apps.take(2)
+    val blocked = apps.getOrNull(2)
+
+    ShowcaseCard(height = 214.dp) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -651,59 +666,97 @@ private fun AppControlIllustration() {
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = "2 active",
+                text = if (apps.isEmpty()) "Reading apps…" else "${limited.size} active",
                 style = MaterialTheme.typography.labelSmall,
                 color = SuccessGreen
             )
         }
         Spacer(modifier = Modifier.height(4.dp))
-        MockLimitRow(
-            iconRes = R.drawable.ic_brand_youtube,
-            label = "YouTube",
-            detail = "12 / 20 min",
-            fraction = 0.6f
+        if (apps.isEmpty()) {
+            repeat(3) { index ->
+                PlaceholderAppRow(blocked = index == 2)
+            }
+        } else {
+            limited.forEachIndexed { index, app ->
+                MockLimitRow(
+                    app = app,
+                    detail = if (index == 0) "12 / 20 min" else "8 / 15 min",
+                    fraction = if (index == 0) 0.6f else 0.53f
+                )
+            }
+            blocked?.let { app -> BlockedAppRow(app) }
+        }
+    }
+}
+
+/**
+ * Reads the real launcher icons from this device so the illustration shows
+ * genuine app artwork instead of bundled stand-ins. Only the three apps the
+ * card needs are kept.
+ */
+@Composable
+private fun rememberInstalledShowcaseApps(): State<List<InstalledApp>> {
+    val context = LocalContext.current
+    return produceState(initialValue = emptyList(), context) {
+        value = withContext(Dispatchers.IO) { loadShowcaseApps(context) }
+    }
+}
+
+private fun loadShowcaseApps(context: Context): List<InstalledApp> {
+    val packageManager = context.packageManager
+    val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+    val resolved = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        packageManager.queryIntentActivities(
+            launcherIntent,
+            PackageManager.ResolveInfoFlags.of(0L)
         )
-        MockLimitRow(
-            iconRes = R.drawable.ic_brand_instagram,
-            label = "Instagram",
-            detail = "8 / 15 min",
-            fraction = 0.53f
+    } else {
+        @Suppress("DEPRECATION")
+        packageManager.queryIntentActivities(launcherIntent, 0)
+    }
+
+    val installed = resolved
+        .mapNotNull { it.activityInfo?.applicationInfo }
+        .distinctBy { it.packageName }
+        .filter { it.packageName != context.packageName }
+        .map { info ->
+            InstalledApp(
+                packageName = info.packageName,
+                label = runCatching {
+                    packageManager.getApplicationLabel(info).toString()
+                }.getOrDefault(info.packageName),
+                icon = runCatching {
+                    packageManager.getApplicationIcon(info).toBitmap(96, 96).asImageBitmap()
+                }.getOrNull()
+            )
+        }
+
+    return onboardingShowcaseApps(installed)
+}
+
+@Composable
+private fun AppIcon(app: InstalledApp, size: Dp = 34.dp) {
+    if (app.icon != null) {
+        Image(
+            bitmap = app.icon,
+            contentDescription = app.label,
+            modifier = Modifier
+                .size(size)
+                .clip(RoundedCornerShape(10.dp))
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+    } else {
+        Box(
+            modifier = Modifier
+                .size(size)
+                .clip(RoundedCornerShape(10.dp))
+                .background(SurfaceHigh),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.ic_brand_chrome),
-                    contentDescription = null,
-                    modifier = Modifier.size(30.dp)
-                )
-            }
-            Spacer(modifier = Modifier.width(10.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Chrome",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextPrimary
-                )
-                Text(
-                    text = "Blocked during focus",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = TextSecondary
-                )
-            }
-            Icon(
-                imageVector = Icons.Default.Lock,
-                contentDescription = null,
-                tint = AccentFrost,
-                modifier = Modifier.size(15.dp)
+            Text(
+                text = app.label.take(1).uppercase(),
+                style = MaterialTheme.typography.labelLarge,
+                color = TextSecondary,
+                fontWeight = FontWeight.Bold
             )
         }
     }
@@ -711,8 +764,7 @@ private fun AppControlIllustration() {
 
 @Composable
 private fun MockLimitRow(
-    @DrawableRes iconRes: Int,
-    label: String,
+    app: InstalledApp,
     detail: String,
     fraction: Float
 ) {
@@ -720,18 +772,12 @@ private fun MockLimitRow(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(iconRes),
-            contentDescription = null,
-            modifier = Modifier
-                .size(34.dp)
-                .clip(RoundedCornerShape(10.dp))
-        )
+        AppIcon(app = app)
         Spacer(modifier = Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = label,
+                    text = app.label,
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextPrimary,
                     modifier = Modifier.weight(1f)
@@ -755,6 +801,72 @@ private fun MockLimitRow(
                         .height(4.dp)
                         .clip(CircleShape)
                         .background(Brush.horizontalGradient(GradientFrost))
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BlockedAppRow(app: InstalledApp) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AppIcon(app = app)
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = app.label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextPrimary
+            )
+            Text(
+                text = "Blocked during focus",
+                style = MaterialTheme.typography.labelSmall,
+                color = TextSecondary
+            )
+        }
+        Icon(
+            imageVector = Icons.Default.Lock,
+            contentDescription = null,
+            tint = AccentFrost,
+            modifier = Modifier.size(15.dp)
+        )
+    }
+}
+
+@Composable
+private fun PlaceholderAppRow(blocked: Boolean) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(34.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(SurfaceHigh)
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(if (blocked) 0.45f else 0.35f)
+                    .height(9.dp)
+                    .clip(CircleShape)
+                    .background(SurfaceHigh)
+            )
+            if (!blocked) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .clip(CircleShape)
+                        .background(SurfaceHigh)
                 )
             }
         }
