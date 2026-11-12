@@ -22,6 +22,7 @@ import com.frostlock.app.ui.screens.onboarding.OnboardingScreen
 import com.frostlock.app.ui.screens.onboarding.OnboardingViewModel
 import com.frostlock.app.ui.screens.preview.DesignPreviewScreen
 import com.frostlock.app.ui.screens.profile.ProfileScreen
+import com.frostlock.app.ui.screens.report.WeeklyReportScreen
 import com.frostlock.app.ui.screens.schedule.ScheduleScreen
 import com.frostlock.app.ui.screens.stats.AchievementsScreen
 import com.frostlock.app.ui.screens.stats.StatsScreen
@@ -39,7 +40,8 @@ fun AppNavGraph(
         currentRoute != Screen.Onboarding.route &&
         currentRoute != Screen.Schedules.route &&
         currentRoute != Screen.Achievements.route &&
-        currentRoute != Screen.Diary.route
+        currentRoute != Screen.Diary.route &&
+        currentRoute != Screen.WeeklyReport.route
 
     Scaffold(
         bottomBar = {
@@ -122,6 +124,11 @@ fun AppNavGraph(
                             navController.navigate(Screen.Diary.route) {
                                 launchSingleTop = true
                             }
+                        },
+                        onOpenWeeklyReport = {
+                            navController.navigate(Screen.WeeklyReport.route) {
+                                launchSingleTop = true
+                            }
                         }
                     )
                 }
@@ -131,6 +138,25 @@ fun AppNavGraph(
                 composable(Screen.Diary.route) {
                     DiaryScreen(
                         onBack = { navController.popBackStack() },
+                        onStartFocus = {
+                            navController.navigate(Screen.Focus.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
+                }
+                composable(Screen.WeeklyReport.route) {
+                    WeeklyReportScreen(
+                        onBack = { navController.popBackStack() },
+                        onOpenDiary = {
+                            navController.navigate(Screen.Diary.route) {
+                                launchSingleTop = true
+                            }
+                        },
                         onStartFocus = {
                             navController.navigate(Screen.Focus.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {

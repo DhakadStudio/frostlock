@@ -59,6 +59,7 @@ import com.frostlock.app.ui.util.formatDuration
 fun StatsScreen(
     onOpenAchievements: () -> Unit,
     onOpenDiary: () -> Unit,
+    onOpenWeeklyReport: () -> Unit,
     viewModel: StatsViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -239,11 +240,15 @@ fun StatsScreen(
         // Weekly chart
         AppCard {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    text = "Last 7 days",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = TextPrimary
-                )
+                SectionHeader(title = "Last 7 days") {
+                    androidx.compose.material3.TextButton(onClick = onOpenWeeklyReport) {
+                        Text(
+                            text = "Report",
+                            color = AccentFrost,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
                 WeeklyChart(days = state.days)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
