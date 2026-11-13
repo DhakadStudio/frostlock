@@ -110,6 +110,7 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 | UI | List of rules, “Active now” badge, edit/delete, empty state; add/edit opens a dedicated full-screen editor with named cards for name, apps, repeat and time window |
 | Time presets | One-tap Morning (06:00–09:00), Workday (09:00–17:00), Evening (18:00–22:00) and Night (22:00–02:00) windows |
 | Upcoming | A “Coming up” card lists the next 7 days of rule starts, with live countdowns and overnight-aware ends |
+| Overlap warnings | The editor warns when a window collides with another rule (including overnight tails and one-off dates) and names the shared days/dates; the rules list badges every colliding rule. Informational only — both rules stay active |
 | Reminders | Local notification when a rule starts **and** ends. Exact alarms when the OS allows them, with an inexact allow-while-idle fallback. Re-armed after boot, app update, clock/timezone changes and app launch. One toggle on the rules screen; no server involved |
 | Enforcement | Runs independently of the manual focus switch |
 
@@ -147,9 +148,9 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 
 ### 2.10 Engineering
 
-- 111 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, app-limit warnings, suggested limits, showcase logos, achievements, stats, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, notification decisions, inbox grouping and widget maths.
+- 122 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, app-limit warnings, suggested limits, showcase logos, achievements, stats, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, notification decisions, inbox grouping and widget maths.
 - Verified on emulator `Medium_Phone_API_37.0` including blocking and full onboarding.
-- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`.
+- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`.
 
 ---
 
@@ -219,7 +220,7 @@ Sources: installed APK v75.1.2113 (manifest activities/services, 96k resource li
 - Recurring focus schedules (“Zen mode”) with days, time windows, own blocked-app sets, habit apps, colours, emoji, break rules and strict flags.
 - Alarm reminders when a scheduled session starts. **FrostLock has this** (local start/end notifications, no account needed).
 - Calendar view of focus sessions and a monthly focus calendar widget. **FrostLock has the calendar screen** (month heat-map + day drill-down); the monthly widget is still missing.
-- Upcoming sessions, session-overlap detection, morning/afternoon/evening/night sessions. **FrostLock has the upcoming list and one-tap time presets**; overlap detection is still missing.
+- Upcoming sessions, session-overlap detection, morning/afternoon/evening/night sessions. **FrostLock has the upcoming list, one-tap time presets and overlap warnings.**
 - Exam date aware (“Only during exam”, “Exam month”); session streak separate from daily streak.
 
 ### 3.8 Stats & reports
@@ -285,7 +286,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 18 | Uninstall protection | **No** | Yes (device admin) | Gap; also anti-user | Regain (effectiveness) |
 | 19 | Schedule start alarms / reminders | **Yes** — local notifications at start and end, with exact-alarm fallback | Yes | Similar | Tie |
 | 20 | Schedule calendar view | **Yes** — month heat-map with per-day drill-down | Yes | Similar; FrostLock keeps it free and local | Tie |
-| 21 | Upcoming sessions / overlap detection | **Partial** — next 7 days of rule windows with countdowns; overlap detection still missing | Yes | FrostLock covers the planning view | Tie / Regain |
+| 21 | Upcoming sessions / overlap detection | **Yes** — next 7 days of rule windows with countdowns, plus editor/list overlap warnings | Yes | Similar planning view; FrostLock keeps it local | Tie |
 | 22 | Exam-aware onboarding | Goals/triggers only | Exam, date, region | Gap | Regain |
 | 23 | Focus groups / friends | **No** | Yes | Gap | Regain |
 | 24 | Weekly leaderboard | **No** | Yes | Gap | Regain |
@@ -334,6 +335,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | Focus calendar + upcoming sessions | Month heat-map with day drill-down, plus a next-7-days “Coming up” panel on the rules screen | `5b33fbc` |
 | Calendar home-screen widget | A locally drawn month heat-map widget with today ring and totals | `81d330d` |
 | Morning/afternoon/evening/night presets | One-tap Morning, Workday, Evening and Night windows in the rule editor | `5b33fbc` |
+| Rule overlap warnings | Amber heads-up in the editor and a badge on every colliding rule, including overnight and one-off cases | `091ba55` |
 | Research discipline | Earlier Regain research notes (since removed in rename) | `ab74654`, `fb74d3e` |
 
 Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e2c92e` replaced them with real icons.
@@ -366,7 +368,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [x] Alarm/notification when a scheduled session starts (and ends)
 - [x] Calendar view of sessions
 - [x] Upcoming-session list
-- [ ] Session-overlap detection
+- [x] Session-overlap detection
 - [ ] Exam date/month awareness
 - [x] Morning/afternoon/evening/night session presets (one-tap windows in the rule editor)
 - [ ] Schedule streak (separate from daily streak)
@@ -479,6 +481,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 - [x] **Session summary** (planned vs actual, subject, note, streak impact).
 - [x] **Focus calendar + upcoming sessions** — month heat-map with day drill-down and a next-7-days “Coming up” panel.
 - [x] **Time-window presets** — Morning, Workday, Evening and Night one-tap windows in the rule editor.
+- [x] **Rule overlap warnings** — the editor flags colliding windows and the list badges them.
 
 ### P1 — deeper blocking (needs design decisions)
 
@@ -507,7 +510,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 ## 11. Verified facts & commands
 
 - Build: `JAVA_HOME=/snap/android-studio/250/jbr ANDROID_HOME=/home/vishal/Android/Sdk ./gradlew :app:assembleDebug`
-- Tests: `:app:testDebugUnitTest` → **111 tests, 0 failures**
+- Tests: `:app:testDebugUnitTest` → **122 tests, 0 failures**
 - Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - Accessibility component: `com.frostlock.app/com.frostlock.app.blocking.FocusBlockAccessibilityService`
 - Re-enable service:
@@ -518,7 +521,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 - Regain APK inspected at `/tmp/opencode/regain.apk` (v75.1.2113, 58 MB base); it was not retained after the analysis.
 - FrostLock permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `RECEIVE_BOOT_COMPLETED`, `USE_EXACT_ALARM` only. Still **no INTERNET**.
 - FrostLock manifest: accessibility service, focus foreground service, schedule reminder receiver, notification listener service, four widget providers.
-- Test files: 18 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`).
+- Test files: 19 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`).
 - Current onboarding page count: 10 (`OnboardingPages.COUNT`).
 
 ---
