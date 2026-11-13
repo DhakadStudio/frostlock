@@ -41,6 +41,11 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
     private val _focusGuardEnabled = MutableStateFlow(prefs.getBoolean(KEY_FOCUS_GUARD, false))
     val focusGuardEnabled: StateFlow<Boolean> = _focusGuardEnabled.asStateFlow()
 
+    /** A local notification when a blocking rule starts and when it ends. */
+    private val _scheduleRemindersEnabled =
+        MutableStateFlow(prefs.getBoolean(KEY_SCHEDULE_REMINDERS, true))
+    val scheduleRemindersEnabled: StateFlow<Boolean> = _scheduleRemindersEnabled.asStateFlow()
+
     /** Last subject/tag, so repeated study sessions keep the same label. */
     private val _sessionTag = MutableStateFlow(prefs.getString(KEY_SESSION_TAG, "") ?: "")
     val sessionTag: StateFlow<String> = _sessionTag.asStateFlow()
@@ -69,6 +74,11 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
     fun setFocusGuardEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_FOCUS_GUARD, enabled).apply()
         _focusGuardEnabled.value = enabled
+    }
+
+    fun setScheduleRemindersEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_SCHEDULE_REMINDERS, enabled).apply()
+        _scheduleRemindersEnabled.value = enabled
     }
 
     fun setSessionTag(tag: String) {
@@ -103,6 +113,7 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
         const val KEY_BREAKS_ENABLED = "pomodoro_breaks_enabled"
         const val KEY_BREAK_MINUTES = "pomodoro_break_minutes"
         const val KEY_FOCUS_GUARD = "focus_guard_enabled"
+        const val KEY_SCHEDULE_REMINDERS = "schedule_reminders_enabled"
         const val KEY_SESSION_TAG = "last_session_tag"
         const val KEY_SESSION_INTENT = "session_intent"
         const val DEFAULT_GOAL_MINUTES = 120

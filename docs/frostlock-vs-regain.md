@@ -108,6 +108,7 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 | Per-rule apps | Every rule blocks its own app set; falls back to the focus-session list if empty |
 | Copy apps | “Copy apps from a subject” |
 | UI | List of rules, “Active now” badge, edit/delete, empty state |
+| Reminders | Local notification when a rule starts **and** ends. Exact alarms when the OS allows them, with an inexact allow-while-idle fallback. Re-armed after boot, app update, clock/timezone changes and app launch. One toggle on the rules screen; no server involved |
 | Enforcement | Runs independently of the manual focus switch |
 
 ### 2.7 Stats & achievements
@@ -118,7 +119,7 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 | Stats screen | Today / last 7 days chart, total sessions, streak, **breakdown by subject**, recent sessions |
 | Achievements | 16 offline badges: focus hours (1, 3, 5, 10, 25, 50, 100h), streaks (3, 7, 14, 30, 100 days), sessions (1, 10, 50, 100) |
 | Badge UI | Milestone cabinet, hexagon badges, progress labels, unlocked/locked states |
-| Notes | Post-session note saved to the DB (no diary screen yet) |
+| Notes | Post-session note saved to the DB, editable later in the study diary |
 
 ### 2.8 Home, profile, widget, notifications
 
@@ -127,14 +128,14 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 | Home | Greeting, today/week stats, quick actions (Block apps, Schedules), recent sessions |
 | Profile | Daily goal (15 min – 8 h), Strict Mode, Pomodoro breaks, Focus Guard, widget help, “FrostLock Pro — free forever”, Coming soon list, About |
 | Widget | One home-screen widget: today’s focus time, daily-goal progress, streak; tap opens the app; cached values |
-| Notifications | Ongoing focus notification, 80% limit warning, Focus Guard nudge |
+| Notifications | Ongoing focus notification, 80% limit warning, Focus Guard nudge, schedule start/end reminders |
 | Accessibility setup | In-app permission card with shortcut to system settings |
 
 ### 2.9 Engineering
 
-- 42 unit tests across onboarding, schedules, app-limit warnings, suggested limits, showcase logos, achievements, stats.
+- 62 unit tests across onboarding, schedules, schedule reminder triggers, app-limit warnings, suggested limits, showcase logos, achievements, stats, study diary, weekly reports and session summaries.
 - Verified on emulator `Medium_Phone_API_37.0` including blocking and full onboarding.
-- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`.
+- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`.
 
 ---
 
@@ -202,7 +203,7 @@ Sources: installed APK v75.1.2113 (manifest activities/services, 96k resource li
 ### 3.7 Schedules / Zen mode
 
 - Recurring focus schedules (“Zen mode”) with days, time windows, own blocked-app sets, habit apps, colours, emoji, break rules and strict flags.
-- Alarm reminders when a scheduled session starts.
+- Alarm reminders when a scheduled session starts. **FrostLock has this** (local start/end notifications, no account needed).
 - Calendar view of focus sessions and a monthly focus calendar widget.
 - Upcoming sessions, session-overlap detection, morning/afternoon/evening/night sessions.
 - Exam date aware (“Only during exam”, “Exam month”); session streak separate from daily streak.
@@ -268,7 +269,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 16 | Home-screen blocking | **No** | Yes (login required) | Gap | Regain |
 | 17 | Split-screen / floating-window blocking | **No** | Yes | Gap | Regain |
 | 18 | Uninstall protection | **No** | Yes (device admin) | Gap; also anti-user | Regain (effectiveness) |
-| 19 | Schedule start alarms / reminders | **No** (rules apply silently) | Yes | Gap | Regain |
+| 19 | Schedule start alarms / reminders | **Yes** — local notifications at start and end, with exact-alarm fallback | Yes | Similar | Tie |
 | 20 | Schedule calendar view | **No** (list only) | Yes | Gap | Regain |
 | 21 | Upcoming sessions / overlap detection | **No** | Yes | Gap | Regain |
 | 22 | Exam-aware onboarding | Goals/triggers only | Exam, date, region | Gap | Regain |
@@ -281,9 +282,9 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 29 | Focus music / themes | **No** | Yes (premium) | Gap | Regain |
 | 30 | Widgets | 1 (focus/goal/streak) | 8 types incl. usage, unlock count, calendar | Big gap | Regain |
 | 31 | Phone-unlock tracking | **No** | Yes (widget + stats) | Gap | Regain |
-| 32 | Weekly report | **No** | Yes | Gap | Regain |
-| 33 | Session notes | Yes (stored, not browsable) | Yes + study stamps/photos | Regain surfaces them | Regain |
-| 34 | Study diary | **No** (COMING SOON) | Yes (notes + stamps) | Gap | Regain |
+| 32 | Weekly report | **Yes** — week navigation, comparison, daily bars, best day, subjects | Yes (Pro for past days) | Similar; FrostLock keeps it free | Tie / FrostLock |
+| 33 | Session notes | Yes — editable from the diary and the post-session summary | Yes + study stamps/photos | FrostLock surfaces them too; Regain adds photos | Tie |
+| 34 | Study diary | **Yes** — day grouping, search, reflective notes | Yes (notes + stamps) | FrostLock matches the notes side; Regain adds stamps | Tie / Regain (stamps) |
 | 35 | Focus bubble / floating timer | **No** | Yes | Gap | Regain |
 | 36 | Accounts / cloud sync | **No** (local only) | Yes + backup/restore | Opposite design choices | FrostLock (privacy) |
 | 37 | Ads / analytics / tracking | **No** | Yes (SDKs) | Opposite | FrostLock |
@@ -343,7 +344,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 
 ### B. Routine, reminders & planning
 
-- [ ] Alarm/notification when a scheduled session starts
+- [x] Alarm/notification when a scheduled session starts (and ends)
 - [ ] Calendar view of sessions
 - [ ] Upcoming-session list
 - [ ] Session-overlap detection
@@ -351,7 +352,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [ ] Morning/afternoon/evening/night session presets
 - [ ] Schedule streak (separate from daily streak)
 - [ ] Session skip/discard + max-pause rules
-- [ ] Full session summary screen
+- [x] Full session summary screen
 
 ### C. Social & accountability
 
@@ -369,7 +370,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [ ] Premium themes (Crystal lock etc.)
 - [ ] Rewards, levels, difficulty levels
 - [ ] Focus stamps (photo after session)
-- [ ] Study diary (notes are saved but never shown again)
+- [x] Study diary (day grouping, search, editable reflections)
 - [ ] Phone-unlock tracking
 - [ ] Focus bubble / floating timer
 - [ ] Eight widget types (usage, unlock count, goal, calendar, Pro pass)
@@ -451,12 +452,12 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 
 ### P0 — close the most painful gaps without breaking privacy
 
-- [ ] **Schedule start/end alarms + notifications** (`AlarmManager` + boot receiver). Rules currently act silently.
-- [ ] **Study diary screen** to surface saved session notes (already in DB, no UI).
+- [x] **Schedule start/end alarms + notifications** (`AlarmManager` + boot receiver). Rules currently act silently.
+- [x] **Study diary screen** to surface saved session notes (already in DB, no UI).
 - [ ] **Notification blocking** via `NotificationListenerService` + a local “blocked notifications” inbox, with per-app pause and allow rules.
 - [ ] **More widgets**: usage today, phone-unlock count (needs a counter), study goal, calendar.
-- [ ] **Weekly report screen** (local aggregation of existing sessions).
-- [ ] **Session summary** (planned vs actual, subject, note, streak impact).
+- [x] **Weekly report screen** (local aggregation of existing sessions).
+- [x] **Session summary** (planned vs actual, subject, note, streak impact).
 
 ### P1 — deeper blocking (needs design decisions)
 

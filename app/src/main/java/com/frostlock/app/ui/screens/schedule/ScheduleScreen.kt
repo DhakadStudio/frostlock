@@ -32,6 +32,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
@@ -103,6 +104,7 @@ fun ScheduleScreen(
     val apps by viewModel.apps.collectAsState()
     val subjects by viewModel.subjects.collectAsState()
     val activeIds by viewModel.activeIds.collectAsState()
+    val remindersEnabled by viewModel.remindersEnabled.collectAsState()
 
     var editorOpen by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf<FocusSchedule?>(null) }
@@ -165,6 +167,51 @@ fun ScheduleScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = AccentFrost
                 )
+            }
+        }
+
+        item {
+            AppCard {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(SurfaceHigh),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.NotificationsActive,
+                            contentDescription = null,
+                            tint = AccentFrost,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Start & end reminders",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = TextPrimary
+                        )
+                        Text(
+                            text = "Local alerts when a rule starts or ends.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Switch(
+                        checked = remindersEnabled,
+                        onCheckedChange = viewModel::setRemindersEnabled,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = TextPrimary,
+                            checkedTrackColor = PrimaryIce,
+                            uncheckedThumbColor = TextSecondary,
+                            uncheckedTrackColor = SurfaceHigh
+                        )
+                    )
+                }
             }
         }
 

@@ -15,15 +15,19 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import com.frostlock.app.reminder.ScheduleReminderScheduler
 import com.frostlock.app.ui.navigation.AppNavGraph
 import com.frostlock.app.ui.navigation.Screen
 import com.frostlock.app.ui.theme.FrostLockTheme
 import com.frostlock.app.widget.WidgetUpdater
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val mainViewModel: MainViewModel by viewModels()
+
+    @Inject lateinit var scheduleReminders: ScheduleReminderScheduler
 
     private val notificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -32,6 +36,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         WidgetUpdater.refreshAsync(this)
+        scheduleReminders.rescheduleAll()
         requestNotificationPermissionIfNeeded()
         setContent {
             FrostLockTheme {
