@@ -468,7 +468,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 
 - [x] **Schedule start/end alarms + notifications** (`AlarmManager` + boot receiver). Rules currently act silently.
 - [x] **Study diary screen** to surface saved session notes (already in DB, no UI).
-- [x] **Notification blocking** via `NotificationListenerService` + a local “blocked notifications” inbox, with per-app pause and allow rules.
+- [x] **Notification blocking** via `NotificationListenerService` + a local “blocked notifications” inbox. Scoped automatically to apps blocked by focus, a rule or a reached limit (no manual per-app allowlist yet).
 - [~] **More widgets**: daily goal and week-at-a-glance shipped; usage today, phone-unlock count (needs a counter) and calendar remain.
 - [x] **Weekly report screen** (local aggregation of existing sessions).
 - [x] **Session summary** (planned vs actual, subject, note, streak impact).
