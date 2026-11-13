@@ -48,7 +48,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.PrimaryButton
-import com.frostlock.app.ui.components.SectionHeader
 import com.frostlock.app.ui.components.StatTile
 import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.BackgroundDark

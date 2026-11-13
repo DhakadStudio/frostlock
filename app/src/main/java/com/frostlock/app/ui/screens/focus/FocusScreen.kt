@@ -132,9 +132,10 @@ fun FocusScreen(
         )
     }
 
-    if (state.lastSessionId != null && !state.isRunning) {
+    state.lastSession?.let { session ->
         SessionReflectionDialog(
-            subject = state.tag,
+            session = session,
+            streakDays = state.lastSessionStreak,
             onSave = viewModel::updateLastSessionNote,
             onDelete = viewModel::deleteLastSession,
             onDismiss = viewModel::dismissReflection

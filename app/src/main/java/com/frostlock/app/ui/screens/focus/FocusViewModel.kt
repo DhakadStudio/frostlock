@@ -13,6 +13,7 @@ import com.frostlock.app.data.local.prefs.FocusSubject
 import com.frostlock.app.data.local.prefs.SubjectStore
 import com.frostlock.app.data.local.prefs.effectiveSessionPackages
 import com.frostlock.app.focus.FocusSessionService
+import com.frostlock.app.ui.util.computeStreak
 import com.frostlock.app.widget.WidgetUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -24,6 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -55,8 +57,10 @@ data class FocusUiState(
     val intent: String = "",
     val subjects: List<FocusSubject> = emptyList(),
     val installedApps: List<InstalledApp> = emptyList(),
-    /** Id of the newest saved session, used for the study-diary reflection card. */
-    val lastSessionId: Long? = null,
+    /** The newest saved session, shown in the post-session summary. */
+    val lastSession: SessionEntity? = null,
+    /** Current day streak after [lastSession] was saved. */
+    val lastSessionStreak: Int = 0,
     /** The apps snapshotted for this session, shown in the immersive focus screen. */
     val sessionPackages: Set<String> = emptySet()
 ) {
@@ -229,27 +233,28 @@ class FocusViewModel @Inject constructor(
         _uiState.update { it.copy(intent = "") }
     }
 
-    /** Saves the reflection and closes the study-diary card. */
+    /** Saves the reflection and closes the post-session summary. */
     fun updateLastSessionNote(note: String) {
-        val id = _uiState.value.lastSessionId ?: return
+        val session = _uiState.value.lastSession ?: return
         val cleaned = note.trim().take(SessionEntity.MAX_NOTE_LENGTH)
         viewModelScope.launch(Dispatchers.IO) {
-            sessionDao.updateNote(id, cleaned)
+            sessionDao.updateNote(session.id, cleaned)
             withContext(Dispatchers.Main) {
-                _uiState.update { it.copy(lastSessionId = null) }
+                _uiState.update { it.copy(lastSession = null, lastSessionStreak = 0) }
             }
         }
     }
 
     /** Removes an accidental session, including its reflection. */
     fun deleteLastSession() {
-        val id = _uiState.value.lastSessionId ?: return
+        val session = _uiState.value.lastSession ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            sessionDao.deleteById(id)
+            sessionDao.deleteById(session.id)
             withContext(Dispatchers.Main) {
                 _uiState.update {
                     it.copy(
-                        lastSessionId = null,
+                        lastSession = null,
+                        lastSessionStreak = 0,
                         justCompleted = false,
                         elapsedSeconds = 0,
                         hasStarted = false
@@ -262,7 +267,7 @@ class FocusViewModel @Inject constructor(
 
     /** Leaves the reflection empty; the session itself is already saved. */
     fun dismissReflection() {
-        _uiState.update { it.copy(lastSessionId = null) }
+        _uiState.update { it.copy(lastSession = null, lastSessionStreak = 0) }
     }
 
     fun startOrResume() {
@@ -273,7 +278,7 @@ class FocusViewModel @Inject constructor(
             _uiState.update { it.copy(elapsedSeconds = 0, justCompleted = false) }
         }
         // A new run gets its own diary entry.
-        _uiState.update { it.copy(lastSessionId = null) }
+        _uiState.update { it.copy(lastSession = null, lastSessionStreak = 0) }
         sessionSaved = false
         runningSince = System.currentTimeMillis()
         _uiState.update {
@@ -645,8 +650,14 @@ class FocusViewModel @Inject constructor(
         )
         viewModelScope.launch(Dispatchers.IO) {
             val id = sessionDao.insert(entity)
+            val saved = entity.copy(id = id)
+            val streak = computeStreak(
+                sessionDao.recentSessions(500).first().map { it.startedAt }
+            )
             withContext(Dispatchers.Main) {
-                _uiState.update { it.copy(lastSessionId = id) }
+                _uiState.update {
+                    it.copy(lastSession = saved, lastSessionStreak = streak)
+                }
             }
             WidgetUpdater.refreshAsync(appContext)
         }
