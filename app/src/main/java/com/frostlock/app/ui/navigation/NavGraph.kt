@@ -18,6 +18,7 @@ import com.frostlock.app.ui.screens.block.BlockScreen
 import com.frostlock.app.ui.screens.diary.DiaryScreen
 import com.frostlock.app.ui.screens.focus.FocusScreen
 import com.frostlock.app.ui.screens.home.HomeScreen
+import com.frostlock.app.ui.screens.notifications.NotificationsScreen
 import com.frostlock.app.ui.screens.onboarding.OnboardingScreen
 import com.frostlock.app.ui.screens.onboarding.OnboardingViewModel
 import com.frostlock.app.ui.screens.preview.DesignPreviewScreen
@@ -41,7 +42,8 @@ fun AppNavGraph(
         currentRoute != Screen.Schedules.route &&
         currentRoute != Screen.Achievements.route &&
         currentRoute != Screen.Diary.route &&
-        currentRoute != Screen.WeeklyReport.route
+        currentRoute != Screen.WeeklyReport.route &&
+        currentRoute != Screen.Notifications.route
 
     Scaffold(
         bottomBar = {
@@ -109,7 +111,12 @@ fun AppNavGraph(
                 }
                 composable(Screen.Block.route) {
                     BlockScreen(
-                        onOpenSchedules = { navController.navigate(Screen.Schedules.route) }
+                        onOpenSchedules = { navController.navigate(Screen.Schedules.route) },
+                        onOpenNotifications = {
+                            navController.navigate(Screen.Notifications.route) {
+                                launchSingleTop = true
+                            }
+                        }
                     )
                 }
                 composable(Screen.Focus.route) { FocusScreen() }
@@ -170,6 +177,9 @@ fun AppNavGraph(
                 }
                 composable(Screen.Schedules.route) {
                     ScheduleScreen(onBack = { navController.popBackStack() })
+                }
+                composable(Screen.Notifications.route) {
+                    NotificationsScreen(onBack = { navController.popBackStack() })
                 }
                 composable(Screen.Profile.route) {
                     ProfileScreen(

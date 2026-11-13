@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Timer
@@ -88,6 +89,7 @@ private enum class BlockTab(val label: String) {
 @Composable
 fun BlockScreen(
     onOpenSchedules: () -> Unit = {},
+    onOpenNotifications: () -> Unit = {},
     viewModel: BlockViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -103,6 +105,7 @@ fun BlockScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.refreshAccessibilityStatus()
+                viewModel.refreshNotificationAccess()
                 viewModel.refreshLimits()
                 viewModel.refreshSchedules()
             }
@@ -250,6 +253,15 @@ fun BlockScreen(
                             }
                         }
                     }
+                }
+
+                item {
+                    NotificationShieldCard(
+                        state = state.notifications,
+                        onToggle = viewModel::setNotificationBlocking,
+                        onOpenInbox = onOpenNotifications,
+                        onGrantAccess = viewModel::openNotificationAccessSettings
+                    )
                 }
 
                 item {
@@ -521,6 +533,108 @@ private fun BlockingToggleCard(enabled: Boolean, onToggle: (Boolean) -> Unit) {
                 uncheckedTrackColor = SurfaceHigh
             )
         )
+    }
+}
+
+@Composable
+private fun NotificationShieldCard(
+    state: NotificationUiState,
+    onToggle: (Boolean) -> Unit,
+    onOpenInbox: () -> Unit,
+    onGrantAccess: () -> Unit
+) {
+    val active = state.enabled && state.accessGranted
+
+    AppCard {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (active) {
+                                Brush.linearGradient(GradientFrost)
+                            } else {
+                                androidx.compose.ui.graphics.SolidColor(SurfaceHigh)
+                            }
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.NotificationsActive,
+                        contentDescription = null,
+                        tint = if (active) InkOnIce else TextSecondary,
+                        modifier = Modifier.size(19.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Notification shield",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = when {
+                            state.enabled && !state.accessGranted ->
+                                "On — notification access still needs to be granted"
+                            state.enabled ->
+                                "On — delaying alerts from blocked apps"
+                            else ->
+                                "Off — alerts arrive normally"
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = when {
+                            state.enabled && !state.accessGranted -> WarnAmber
+                            state.enabled -> SuccessGreen
+                            else -> TextSecondary
+                        }
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(
+                    checked = state.enabled,
+                    onCheckedChange = onToggle,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = PrimaryIce,
+                        uncheckedThumbColor = TextSecondary,
+                        uncheckedTrackColor = SurfaceHigh
+                    )
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (!state.accessGranted) {
+                    TextButton(onClick = onGrantAccess) {
+                        Text(text = "Grant notification access", color = AccentFrost)
+                    }
+                } else {
+                    TextButton(onClick = onOpenInbox) {
+                        Text(
+                            text = if (state.total > 0) {
+                                "Open inbox · ${state.total}"
+                            } else {
+                                "Open inbox"
+                            },
+                            color = AccentFrost
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    if (state.heldToday > 0) {
+                        Text(
+                            text = "${state.heldToday} held today",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextSecondary
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 

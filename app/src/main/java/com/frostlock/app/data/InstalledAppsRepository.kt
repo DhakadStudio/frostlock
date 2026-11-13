@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.drawable.toBitmap
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -28,6 +29,13 @@ class InstalledAppsRepository @Inject constructor(
     suspend fun apps(): List<InstalledApp> = withContext(Dispatchers.IO) {
         cache ?: load().also { cache = it }
     }
+
+    /** Icon for a package that may not be launchable (e.g. an archived notification). */
+    fun iconFor(packageName: String): ImageBitmap? = runCatching {
+        context.packageManager.getApplicationIcon(packageName)
+            .toBitmap(96, 96)
+            .asImageBitmap()
+    }.getOrNull()
 
     private fun load(): List<InstalledApp> {
         val pm = context.packageManager

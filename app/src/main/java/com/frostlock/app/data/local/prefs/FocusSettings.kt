@@ -46,6 +46,12 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
         MutableStateFlow(prefs.getBoolean(KEY_SCHEDULE_REMINDERS, true))
     val scheduleRemindersEnabled: StateFlow<Boolean> = _scheduleRemindersEnabled.asStateFlow()
 
+    /** Hold notifications from apps that are blocked right now. Needs listener access. */
+    private val _notificationBlockingEnabled =
+        MutableStateFlow(prefs.getBoolean(KEY_NOTIFICATION_BLOCKING, false))
+    val notificationBlockingEnabled: StateFlow<Boolean> =
+        _notificationBlockingEnabled.asStateFlow()
+
     /** Last subject/tag, so repeated study sessions keep the same label. */
     private val _sessionTag = MutableStateFlow(prefs.getString(KEY_SESSION_TAG, "") ?: "")
     val sessionTag: StateFlow<String> = _sessionTag.asStateFlow()
@@ -81,6 +87,11 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
         _scheduleRemindersEnabled.value = enabled
     }
 
+    fun setNotificationBlockingEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_NOTIFICATION_BLOCKING, enabled).apply()
+        _notificationBlockingEnabled.value = enabled
+    }
+
     fun setSessionTag(tag: String) {
         val cleaned = tag.trim().take(MAX_TAG_LENGTH)
         prefs.edit().putString(KEY_SESSION_TAG, cleaned).apply()
@@ -114,6 +125,7 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
         const val KEY_BREAK_MINUTES = "pomodoro_break_minutes"
         const val KEY_FOCUS_GUARD = "focus_guard_enabled"
         const val KEY_SCHEDULE_REMINDERS = "schedule_reminders_enabled"
+        const val KEY_NOTIFICATION_BLOCKING = "notification_blocking_enabled"
         const val KEY_SESSION_TAG = "last_session_tag"
         const val KEY_SESSION_INTENT = "session_intent"
         const val DEFAULT_GOAL_MINUTES = 120

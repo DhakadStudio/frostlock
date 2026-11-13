@@ -1,6 +1,6 @@
 # FrostLock vs Regain — complete feature inventory & gap analysis
 
-Last updated: **2026-11-12**
+Last updated: **2026-11-13**
 FrostLock `com.frostlock.app` v1.0 · Regain `ai.regainapp` v75.1.2113
 
 This file is the single source of truth for:
@@ -19,7 +19,7 @@ Legend: `[x]` shipped in FrostLock · `[ ]` missing · `[~]` partial · `[!]` de
 
 | Question | Answer |
 | --- | --- |
-| Which app blocks more surfaces? | **Regain.** It also blocks websites, YouTube Shorts/channels, notifications, the phone home screen, split screen, and floating windows. |
+| Which app blocks more surfaces? | **Regain.** It also blocks websites, YouTube Shorts/channels, the phone home screen, split screen, and floating windows. FrostLock now holds notifications from blocked apps as well. |
 | Which app is better for privacy? | **FrostLock, by a wide margin.** No internet permission, no account, no ads, no analytics, no billing. |
 | Which app is better for a free user? | **FrostLock.** Everything is free. Regain gates app-limit counts, unlimited schedules, premium stats, music and themes behind Pro. |
 | Which app models app sets better? | **FrostLock.** Subjects own app sets; rules have their own app sets; one-off dates and overnight windows exist. Regain tags sessions but keeps the blocklist per rule/schedule. |
@@ -128,12 +128,24 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 | Home | Greeting, today/week stats, quick actions (Block apps, Schedules), recent sessions |
 | Profile | Daily goal (15 min – 8 h), Strict Mode, Pomodoro breaks, Focus Guard, widget help, “FrostLock Pro — free forever”, Coming soon list, About |
 | Widget | One home-screen widget: today’s focus time, daily-goal progress, streak; tap opens the app; cached values |
-| Notifications | Ongoing focus notification, 80% limit warning, Focus Guard nudge, schedule start/end reminders |
+| Notifications | Ongoing focus notification, 80% limit warning, Focus Guard nudge, schedule start/end reminders, held-notification alerts |
 | Accessibility setup | In-app permission card with shortcut to system settings |
 
-### 2.9 Engineering
+### 2.9 Notification shield
 
-- 62 unit tests across onboarding, schedules, schedule reminder triggers, app-limit warnings, suggested limits, showcase logos, achievements, stats, study diary, weekly reports and session summaries.
+| Feature | Detail |
+| --- | --- |
+| Access | Optional, off by default. Needs Android “notification access”; the Block screen and inbox show whether it is granted and deep-link to the setting |
+| What is held | Only notifications from apps that are blocked **right now** — an active rule (reason shows the rule name), a reached daily limit, or a manual focus session |
+| Always passes | Calls, alarms, foreground-service/ongoing notifications, group summaries, non-clearable notifications and FrostLock’s own alerts |
+| Inbox | Day grouping (Today / Yesterday / date), real app icon, time, title, body, reason chip, delete one, clear all; capped at 200 entries |
+| Storage | Local SharedPreferences JSON only. Nothing is uploaded, and clearing the inbox deletes it permanently |
+| Scope | A single global toggle that follows focus sessions, rules and limits automatically — no separate schedule to maintain |
+| Enforcement detail | The notification is cancelled before it reaches the shade and archived in the same pass, so the shade never shows a blocked alert |
+
+### 2.10 Engineering
+
+- 72 unit tests across onboarding, schedules, schedule reminder triggers, app-limit warnings, suggested limits, showcase logos, achievements, stats, study diary, weekly reports, session summaries, notification decisions and inbox grouping.
 - Verified on emulator `Medium_Phone_API_37.0` including blocking and full onboarding.
 - Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`.
 
@@ -194,7 +206,7 @@ Sources: installed APK v75.1.2113 (manifest activities/services, 96k resource li
 ### 3.6 Notification blocking
 
 - Notification access + NotificationListener.
-- Block distracting notifications during focus and view them later in a Regain inbox.
+- Block distracting notifications during focus and view them later in a Regain inbox. **FrostLock has this** (local-only shield + inbox, enabled per blocked app).
 - Per-app notification ranking (“apps that send me most notifications”).
 - Pause notification blocking; schedule it; allowed-notification examples.
 - “Block notification & view later”, “block notifications from blocked apps”.
@@ -265,7 +277,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 12 | Shorts / Reels / Spotlight blocking | **No** | Yes | Big gap | Regain |
 | 13 | YouTube channel filtering | **No** | Yes + study channels | Big gap | Regain |
 | 14 | YouTube home-page blocking | **No** | Yes | Gap | Regain |
-| 15 | Notification blocking + inbox | **No** | Yes | Big gap | Regain |
+| 15 | Notification blocking + inbox | **Yes** — holds alerts from blocked apps, local inbox with reasons | Yes | Similar; FrostLock is free and fully local | Tie / FrostLock |
 | 16 | Home-screen blocking | **No** | Yes (login required) | Gap | Regain |
 | 17 | Split-screen / floating-window blocking | **No** | Yes | Gap | Regain |
 | 18 | Uninstall protection | **No** | Yes (device admin) | Gap; also anti-user | Regain (effectiveness) |
@@ -297,7 +309,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 44 | Usage tracking method | Accessibility foreground time | UsageStats permission | Both valid; FrostLock avoids a permission | FrostLock (privacy) |
 | 45 | Adult-content blocking | **No** | Yes | Gap | Regain |
 | 46 | Study websites/channels allowlist | **No** | Yes | Gap | Regain |
-| 47 | Session summary screen | Reflection dialog only | Full summary | Gap | Regain |
+| 47 | Session summary screen | **Yes** — planned vs actual, subject, note, streak impact | Full summary | Similar | Tie |
 | 48 | Pause limits | Strict disables pause | Max pauses per session | Gap | Regain |
 | 49 | Multi-language UI | **No** | Yes | Gap | Regain |
 | 50 | Data export / backup beyond OS | **No** | Cloud backup | Different | FrostLock (privacy) |
@@ -333,9 +345,9 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [ ] YouTube home-page blocking
 - [ ] YouTube channel blocking
 - [ ] Study-channel allowlist
-- [ ] Notification blocking + blocked-notification inbox
+- [x] Notification blocking + blocked-notification inbox
 - [ ] Per-app notification ranking
-- [ ] Pause/schedule notification blocking
+- [~] Pause/schedule notification blocking (the shield follows focus sessions and rules automatically)
 - [ ] Phone home-screen blocking during focus
 - [ ] Split-screen blocking
 - [ ] Floating-window blocking
@@ -454,7 +466,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 
 - [x] **Schedule start/end alarms + notifications** (`AlarmManager` + boot receiver). Rules currently act silently.
 - [x] **Study diary screen** to surface saved session notes (already in DB, no UI).
-- [ ] **Notification blocking** via `NotificationListenerService` + a local “blocked notifications” inbox, with per-app pause and allow rules.
+- [x] **Notification blocking** via `NotificationListenerService` + a local “blocked notifications” inbox, with per-app pause and allow rules.
 - [ ] **More widgets**: usage today, phone-unlock count (needs a counter), study goal, calendar.
 - [x] **Weekly report screen** (local aggregation of existing sessions).
 - [x] **Session summary** (planned vs actual, subject, note, streak impact).
@@ -486,7 +498,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 ## 11. Verified facts & commands
 
 - Build: `JAVA_HOME=/snap/android-studio/250/jbr ANDROID_HOME=/home/vishal/Android/Sdk ./gradlew :app:assembleDebug`
-- Tests: `:app:testDebugUnitTest` → **42 tests, 0 failures**
+- Tests: `:app:testDebugUnitTest` → **72 tests, 0 failures**
 - Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - Accessibility component: `com.frostlock.app/com.frostlock.app.blocking.FocusBlockAccessibilityService`
 - Re-enable service:
@@ -495,9 +507,9 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
   adb shell settings put secure accessibility_enabled 1
   ```
 - Regain APK inspected at `/tmp/opencode/regain.apk` (v75.1.2113, 58 MB base).
-- FrostLock permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE` only.
-- FrostLock manifest: accessibility service, focus foreground service, one widget receiver, no boot receiver, no alarm receiver, no notification listener.
-- Test files: 8 (`OnboardingViewModelTest`, `SuggestedLimitsTest`, `OnboardingShowcaseTest`, schedule/limit/achievement/stats tests).
+- FrostLock permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `RECEIVE_BOOT_COMPLETED`, `USE_EXACT_ALARM` only. Still **no INTERNET**.
+- FrostLock manifest: accessibility service, focus foreground service, schedule reminder receiver, notification listener service, widgets.
+- Test files: 14 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleTriggersTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `NotificationPolicyTest`, `NotificationInboxTest`).
 - Current onboarding page count: 10 (`OnboardingPages.COUNT`).
 
 ---
@@ -505,7 +517,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 ## 12. Decision log / open questions
 
 1. **Website blocking:** is a local VPN acceptable? It is the only reliable offline way. If not, website blocking stays out.
-2. **Notification blocking:** `NotificationListenerService` is powerful but sensitive; do we want it? Regain does. It would close a major gap.
+2. **Notification blocking:** shipped as an opt-in, local-only shield with a plain inbox; no ranking, no per-app training, nothing uploaded.
 3. **Schedule alarms:** adding `AlarmManager` + boot receiver is low risk and high value.
 4. **Diary:** the note field already exists; surfacing it is a small UI task.
 5. **Keep the strict no-network promise** even for widgets/reports — everything must remain local.
