@@ -107,7 +107,7 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 | Overnight windows | Supported (e.g. 22:00–02:00) |
 | Per-rule apps | Every rule blocks its own app set; falls back to the focus-session list if empty |
 | Copy apps | “Copy apps from a subject” |
-| UI | List of rules, “Active now” badge, edit/delete, empty state |
+| UI | List of rules, “Active now” badge, edit/delete, empty state; add/edit opens a dedicated full-screen editor with named cards for name, apps, repeat and time window |
 | Reminders | Local notification when a rule starts **and** ends. Exact alarms when the OS allows them, with an inexact allow-while-idle fallback. Re-armed after boot, app update, clock/timezone changes and app launch. One toggle on the rules screen; no server involved |
 | Enforcement | Runs independently of the manual focus switch |
 
@@ -145,9 +145,9 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 
 ### 2.10 Engineering
 
-- 78 unit tests across onboarding, schedules, schedule reminder triggers, app-limit warnings, suggested limits, showcase logos, achievements, stats, study diary, weekly reports, session summaries, notification decisions, inbox grouping and widget maths.
+- 91 unit tests across onboarding, schedules, rule editor helpers, schedule reminder triggers, app-limit warnings, suggested limits, showcase logos, achievements, stats, study diary, weekly reports, session summaries, notification decisions, inbox grouping and widget maths.
 - Verified on emulator `Medium_Phone_API_37.0` including blocking and full onboarding.
-- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`.
+- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`.
 
 ---
 
@@ -511,7 +511,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 - Regain APK inspected at `/tmp/opencode/regain.apk` (v75.1.2113, 58 MB base).
 - FrostLock permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `RECEIVE_BOOT_COMPLETED`, `USE_EXACT_ALARM` only. Still **no INTERNET**.
 - FrostLock manifest: accessibility service, focus foreground service, schedule reminder receiver, notification listener service, three widget providers.
-- Test files: 15 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleTriggersTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`).
+- Test files: 16 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`).
 - Current onboarding page count: 10 (`OnboardingPages.COUNT`).
 
 ---
