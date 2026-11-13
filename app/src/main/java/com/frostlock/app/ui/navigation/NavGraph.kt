@@ -15,6 +15,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.frostlock.app.ui.components.AppBottomBar
 import com.frostlock.app.ui.screens.block.BlockScreen
+import com.frostlock.app.ui.screens.calendar.CalendarScreen
 import com.frostlock.app.ui.screens.diary.DiaryScreen
 import com.frostlock.app.ui.screens.focus.FocusScreen
 import com.frostlock.app.ui.screens.home.HomeScreen
@@ -42,6 +43,7 @@ fun AppNavGraph(
         currentRoute != Screen.Schedules.route &&
         currentRoute != Screen.Achievements.route &&
         currentRoute != Screen.Diary.route &&
+        currentRoute != Screen.Calendar.route &&
         currentRoute != Screen.WeeklyReport.route &&
         currentRoute != Screen.Notifications.route
 
@@ -136,8 +138,16 @@ fun AppNavGraph(
                             navController.navigate(Screen.WeeklyReport.route) {
                                 launchSingleTop = true
                             }
+                        },
+                        onOpenCalendar = {
+                            navController.navigate(Screen.Calendar.route) {
+                                launchSingleTop = true
+                            }
                         }
                     )
+                }
+                composable(Screen.Calendar.route) {
+                    CalendarScreen(onBack = { navController.popBackStack() })
                 }
                 composable(Screen.Achievements.route) {
                     AchievementsScreen(onBack = { navController.popBackStack() })

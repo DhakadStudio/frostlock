@@ -1,7 +1,9 @@
 package com.frostlock.app.ui.screens.schedule
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** Pure helpers behind the dedicated blocking-rule editor page. */
@@ -84,5 +86,28 @@ class ScheduleEditorTest {
     @Test
     fun completeRuleIsValid() {
         assertNull(validateRule("Focus", setOf(1, 2, 3, 4, 5), emptySet(), 9 * 60, 17 * 60))
+    }
+
+    @Test
+    fun timePresetsAreDistinctValidWindows() {
+        assertTrue(TIME_PRESETS.isNotEmpty())
+        TIME_PRESETS.forEach { preset ->
+            assertTrue(preset.startMinutes in 0 until 24 * 60)
+            assertTrue(preset.endMinutes in 0 until 24 * 60)
+            assertNotEquals(preset.startMinutes, preset.endMinutes)
+        }
+    }
+
+    @Test
+    fun nightPresetCrossesMidnight() {
+        val night = matchingTimePreset(22 * 60, 2 * 60)
+
+        assertEquals("Night", night?.label)
+        assertEquals("4h", windowDuration(22 * 60, 2 * 60))
+    }
+
+    @Test
+    fun unknownWindowHasNoPreset() {
+        assertNull(matchingTimePreset(8 * 60, 10 * 60))
     }
 }

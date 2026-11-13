@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +31,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -53,7 +55,13 @@ import com.frostlock.app.ui.theme.SuccessGreen
 import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
+import com.frostlock.app.ui.util.UpcomingSession
+import com.frostlock.app.ui.util.upcomingCountdown
+import com.frostlock.app.ui.util.upcomingSessions
+import com.frostlock.app.ui.util.upcomingWhen
+import kotlinx.coroutines.delay
 import java.time.LocalDate
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -72,6 +80,15 @@ fun ScheduleScreen(
     var editing by remember { mutableStateOf<FocusSchedule?>(null) }
 
     val labels = remember(apps) { apps.associate { it.packageName to it.label } }
+
+    // Refresh the "Coming up" countdowns once a minute while the screen is open.
+    val now by produceState(initialValue = ZonedDateTime.now()) {
+        while (true) {
+            delay(60_000)
+            value = ZonedDateTime.now()
+        }
+    }
+    val upcoming = remember(schedules, now) { upcomingSessions(schedules, now) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -174,6 +191,12 @@ fun ScheduleScreen(
                         )
                     )
                 }
+            }
+        }
+
+        if (schedules.isNotEmpty()) {
+            item {
+                UpcomingCard(upcoming = upcoming, now = now)
             }
         }
 
@@ -324,6 +347,86 @@ private fun ScheduleRow(
                     Text(text = "Delete", color = DangerRed)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun UpcomingCard(upcoming: List<UpcomingSession>, now: ZonedDateTime) {
+    AppCard {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            SectionHeader(title = "Coming up") {
+                Text(
+                    text = "NEXT 7 DAYS",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = AccentFrost
+                )
+            }
+            if (upcoming.isEmpty()) {
+                Text(
+                    text = "No rule windows in the next 7 days. Paused rules and one-off dates that already passed are skipped.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
+            } else {
+                upcoming.forEach { session ->
+                    UpcomingRow(session = session, now = now)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun UpcomingRow(session: UpcomingSession, now: ZonedDateTime) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(34.dp)
+                .clip(CircleShape)
+                .background(SurfaceHigh),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Schedule,
+                contentDescription = null,
+                tint = AccentFrost,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = session.label,
+                style = MaterialTheme.typography.titleMedium,
+                color = TextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = upcomingWhen(session.start, now) + " · " + when (session.packageCount) {
+                    0 -> "focus apps"
+                    1 -> "1 app"
+                    else -> "${session.packageCount} apps"
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = TextSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Box(
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(SurfaceHigh)
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+        ) {
+            Text(
+                text = upcomingCountdown(session.start, now),
+                style = MaterialTheme.typography.labelSmall,
+                color = AccentFrost
+            )
         }
     }
 }

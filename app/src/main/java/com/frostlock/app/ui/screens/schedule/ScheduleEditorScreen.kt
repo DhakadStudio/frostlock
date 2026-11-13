@@ -30,6 +30,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lock
@@ -95,6 +96,25 @@ import java.time.ZoneId
 private enum class TimeField { START, END }
 
 private val WEEKDAYS = setOf(1, 2, 3, 4, 5)
+
+/** Named windows shown as one-tap presets in the rule editor. */
+internal data class TimePreset(
+    val label: String,
+    val startMinutes: Int,
+    val endMinutes: Int
+)
+
+internal val TIME_PRESETS = listOf(
+    TimePreset("Morning", 6 * 60, 9 * 60),
+    TimePreset("Workday", 9 * 60, 17 * 60),
+    TimePreset("Evening", 18 * 60, 22 * 60),
+    TimePreset("Night", 22 * 60, 2 * 60)
+)
+
+internal fun matchingTimePreset(startMinutes: Int, endMinutes: Int): TimePreset? =
+    TIME_PRESETS.firstOrNull {
+        it.startMinutes == startMinutes && it.endMinutes == endMinutes
+    }
 
 /**
  * Full-screen rule editor. Rules carry a lot of settings (name, apps, repeat,
@@ -196,7 +216,12 @@ fun ScheduleEditorScreen(
                 days = days,
                 dates = dates,
                 onEditStart = { timeField = TimeField.START },
-                onEditEnd = { timeField = TimeField.END }
+                onEditEnd = { timeField = TimeField.END },
+                onApplyPreset = { start, end ->
+                    startMinutes = start
+                    endMinutes = end
+                    error = null
+                }
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -641,6 +666,7 @@ private fun RepeatCard(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TimeCard(
     startMinutes: Int,
@@ -648,7 +674,8 @@ private fun TimeCard(
     days: Set<Int>,
     dates: Set<String>,
     onEditStart: () -> Unit,
-    onEditEnd: () -> Unit
+    onEditEnd: () -> Unit,
+    onApplyPreset: (Int, Int) -> Unit
 ) {
     val duration = windowDuration(startMinutes, endMinutes)
     val overnight = endMinutes <= startMinutes
@@ -705,12 +732,79 @@ private fun TimeCard(
             }
 
             Text(
+                text = "Quick windows",
+                style = MaterialTheme.typography.labelSmall,
+                color = TextSecondary
+            )
+
+            TIME_PRESETS.chunked(2).forEach { pair ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    pair.forEach { preset ->
+                        PresetTile(
+                            preset = preset,
+                            selected = matchingTimePreset(startMinutes, endMinutes) == preset,
+                            onClick = {
+                                onApplyPreset(preset.startMinutes, preset.endMinutes)
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    if (pair.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+
+            Text(
                 text = repeatSummary(days, dates) +
                     " · tap a time to change it. Overnight windows like 22:00 to 02:00 work too.",
                 style = MaterialTheme.typography.bodySmall,
                 color = TextSecondary
             )
         }
+    }
+}
+
+@Composable
+private fun PresetTile(
+    preset: TimePreset,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val shape = MaterialTheme.shapes.medium
+    Column(
+        modifier = modifier
+            .clip(shape)
+            .background(if (selected) PrimaryIce.copy(alpha = 0.16f) else SurfaceHigh)
+            .border(1.dp, if (selected) PrimaryIce else StrokeSoft, shape)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = preset.label,
+                style = MaterialTheme.typography.labelLarge,
+                color = if (selected) AccentFrost else TextPrimary,
+                modifier = Modifier.weight(1f)
+            )
+            if (selected) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = AccentFrost,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+        }
+        Text(
+            text = "${formatTime(preset.startMinutes)} – ${formatTime(preset.endMinutes)}",
+            style = MaterialTheme.typography.bodySmall,
+            color = TextSecondary
+        )
     }
 }
 
