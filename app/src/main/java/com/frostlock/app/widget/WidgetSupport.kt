@@ -12,6 +12,7 @@ import com.frostlock.app.R
 import com.frostlock.app.data.local.db.SessionDao
 import com.frostlock.app.data.local.prefs.FocusSettings
 import com.frostlock.app.ui.MainActivity
+import com.frostlock.app.ui.util.buildFocusMonth
 import com.frostlock.app.ui.util.computeStreak
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -25,7 +26,10 @@ import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /**
  * Refreshes every FrostLock widget from the database.
@@ -75,11 +79,18 @@ object WidgetUpdater {
                 }
             }
 
+        val month = YearMonth.now(zone)
+        val focusMonth = buildFocusMonth(month, recent)
+
         return WidgetData(
             todaySeconds = todaySeconds,
             goalMinutes = entryPoint.focusSettings().dailyGoalMinutes.value,
             streak = streak,
-            weekSeconds = weekSeconds.toList()
+            weekSeconds = weekSeconds.toList(),
+            monthSeconds = focusMonth.days.map { it.seconds },
+            monthLabel = month.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH)),
+            monthTotalSeconds = focusMonth.totalSeconds,
+            monthActiveDays = focusMonth.activeDays
         )
     }
 
@@ -87,6 +98,7 @@ object WidgetUpdater {
         render(context, FocusWidgetProvider::class.java) { buildFocusViews(context, data) }
         render(context, DailyGoalWidgetProvider::class.java) { buildGoalViews(context, data) }
         render(context, WeeklyWidgetProvider::class.java) { buildWeekViews(context, data) }
+        render(context, CalendarWidgetProvider::class.java) { buildCalendarViews(context, data) }
     }
 
     private fun render(
@@ -118,6 +130,10 @@ internal object WidgetCache {
     private const val KEY_GOAL_MINUTES = "goal_minutes"
     private const val KEY_STREAK = "streak"
     private const val KEY_WEEK_SECONDS = "week_seconds"
+    private const val KEY_MONTH_SECONDS = "month_seconds"
+    private const val KEY_MONTH_LABEL = "month_label"
+    private const val KEY_MONTH_TOTAL = "month_total"
+    private const val KEY_MONTH_ACTIVE = "month_active"
 
     fun read(context: Context): WidgetData {
         val prefs = prefs(context)
@@ -125,7 +141,11 @@ internal object WidgetCache {
             todaySeconds = prefs.getLong(KEY_TODAY_SECONDS, 0L),
             goalMinutes = prefs.getInt(KEY_GOAL_MINUTES, FocusSettings.DEFAULT_GOAL_MINUTES),
             streak = prefs.getInt(KEY_STREAK, 0),
-            weekSeconds = parseWeek(prefs.getString(KEY_WEEK_SECONDS, null))
+            weekSeconds = parseWeek(prefs.getString(KEY_WEEK_SECONDS, null)),
+            monthSeconds = parseMonth(prefs.getString(KEY_MONTH_SECONDS, null)),
+            monthLabel = prefs.getString(KEY_MONTH_LABEL, "").orEmpty(),
+            monthTotalSeconds = prefs.getLong(KEY_MONTH_TOTAL, 0L),
+            monthActiveDays = prefs.getInt(KEY_MONTH_ACTIVE, 0)
         )
     }
 
@@ -135,6 +155,10 @@ internal object WidgetCache {
             .putInt(KEY_GOAL_MINUTES, data.goalMinutes)
             .putInt(KEY_STREAK, data.streak)
             .putString(KEY_WEEK_SECONDS, data.weekSeconds.joinToString(","))
+            .putString(KEY_MONTH_SECONDS, data.monthSeconds.joinToString(","))
+            .putString(KEY_MONTH_LABEL, data.monthLabel)
+            .putLong(KEY_MONTH_TOTAL, data.monthTotalSeconds)
+            .putInt(KEY_MONTH_ACTIVE, data.monthActiveDays)
             .apply()
     }
 
@@ -142,6 +166,12 @@ internal object WidgetCache {
         if (raw.isNullOrBlank()) return List(WidgetData.DAYS_IN_WEEK) { 0L }
         val parsed = raw.split(",").mapNotNull { it.toLongOrNull() }
         return List(WidgetData.DAYS_IN_WEEK) { index -> parsed.getOrElse(index) { 0L } }
+    }
+
+    private fun parseMonth(raw: String?): List<Long> {
+        if (raw.isNullOrBlank()) return List(WidgetData.DAYS_IN_MONTH_GRID) { 0L }
+        val parsed = raw.split(",").mapNotNull { it.toLongOrNull() }
+        return List(WidgetData.DAYS_IN_MONTH_GRID) { index -> parsed.getOrElse(index) { 0L } }
     }
 
     private fun prefs(context: Context): SharedPreferences =
@@ -222,6 +252,24 @@ internal fun buildWeekViews(context: Context, data: WidgetData): RemoteViews {
         }
     }
     bindOpenApp(context, views, R.id.week_root)
+    return views
+}
+
+internal fun buildCalendarViews(context: Context, data: WidgetData): RemoteViews {
+    val views = RemoteViews(context.packageName, R.layout.widget_calendar)
+
+    views.setTextViewText(
+        R.id.calendar_month,
+        data.monthLabel.ifBlank {
+            YearMonth.now().format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH))
+        }
+    )
+    views.setTextViewText(
+        R.id.calendar_meta,
+        monthMetaLabel(data.monthTotalSeconds, data.monthActiveDays)
+    )
+    views.setImageViewBitmap(R.id.calendar_grid, buildCalendarBitmap(data))
+    bindOpenApp(context, views, R.id.calendar_root)
     return views
 }
 

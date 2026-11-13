@@ -65,4 +65,19 @@ class WidgetDataTest {
         assertEquals("2h", formatWidgetDuration(120 * minutes))
         assertEquals("2h 15m", formatWidgetDuration(135 * minutes))
     }
+
+    @Test
+    fun `calendar widget defaults to a full six-week grid`() {
+        assertEquals(42, WidgetData().monthSeconds.size)
+        assertEquals(42, WidgetData.DAYS_IN_MONTH_GRID)
+    }
+
+    @Test
+    fun `calendar meta labels time and active days`() {
+        assertEquals(
+            "10h 31m · 12 active days",
+            monthMetaLabel(10 * 60 * minutes + 31 * minutes, 12)
+        )
+        assertEquals("45m · 1 active day", monthMetaLabel(45 * minutes, 1))
+    }
 }

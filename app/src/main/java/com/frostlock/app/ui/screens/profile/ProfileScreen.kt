@@ -45,6 +45,7 @@ import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.MoodChip
 import com.frostlock.app.ui.components.SecondaryButton
 import com.frostlock.app.ui.components.SectionHeader
+import com.frostlock.app.widget.CalendarWidgetProvider
 import com.frostlock.app.widget.DailyGoalWidgetProvider
 import com.frostlock.app.widget.FocusWidgetProvider
 import com.frostlock.app.widget.WeeklyWidgetProvider
@@ -431,7 +432,7 @@ fun ProfileScreen(
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Three widgets: today's focus, daily-goal progress, and the week ahead. Everything stays on this device.",
+                        text = "Four widgets: today's focus, daily-goal progress, the week ahead, and a month heat-map. Everything stays on this device.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextSecondary
                     )
@@ -454,6 +455,10 @@ fun ProfileScreen(
                     SecondaryButton(
                         text = "This week",
                         onClick = { WidgetPinning.request(context, WeeklyWidgetProvider::class.java) }
+                    )
+                    SecondaryButton(
+                        text = "Focus calendar",
+                        onClick = { WidgetPinning.request(context, CalendarWidgetProvider::class.java) }
                     )
                 } else {
                     Text(

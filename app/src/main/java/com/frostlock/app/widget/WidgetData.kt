@@ -12,10 +12,16 @@ data class WidgetData(
     val goalMinutes: Int = FocusSettings.DEFAULT_GOAL_MINUTES,
     val streak: Int = 0,
     /** Focus seconds for the current week, Monday first. */
-    val weekSeconds: List<Long> = List(DAYS_IN_WEEK) { 0L }
+    val weekSeconds: List<Long> = List(DAYS_IN_WEEK) { 0L },
+    /** Focus seconds for the current month grid, Monday first (42 cells). */
+    val monthSeconds: List<Long> = List(DAYS_IN_MONTH_GRID) { 0L },
+    val monthLabel: String = "",
+    val monthTotalSeconds: Long = 0L,
+    val monthActiveDays: Int = 0
 ) {
     companion object {
         const val DAYS_IN_WEEK = 7
+        const val DAYS_IN_MONTH_GRID = 42
     }
 }
 
@@ -87,6 +93,12 @@ fun formatWidgetDuration(totalSeconds: Long): String {
         hours > 0 -> "${hours}h"
         else -> "${rest}m"
     }
+}
+
+/** "10h 31m · 12 active days" for the calendar widget. */
+fun monthMetaLabel(totalSeconds: Long, activeDays: Int): String {
+    val dayLabel = if (activeDays == 1) "active day" else "active days"
+    return "${formatWidgetDuration(totalSeconds)} · $activeDays $dayLabel"
 }
 
 private fun dayName(dayOfWeek: Int, style: TextStyle): String =

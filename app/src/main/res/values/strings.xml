@@ -45,4 +45,9 @@
     <string name="widget_week_title">THIS WEEK</string>
     <string name="widget_week_total_placeholder">4h 20m</string>
     <string name="widget_week_meta_placeholder">avg 37m/day · best Wed</string>
+    <string name="widget_calendar_name">Focus calendar</string>
+    <string name="widget_calendar_description">A month heat-map of your focus time.</string>
+    <string name="widget_calendar_title">FOCUS CALENDAR</string>
+    <string name="widget_calendar_month_placeholder">November 2026</string>
+    <string name="widget_calendar_meta_placeholder">10h 31m · 12 active days</string>
 </resources>

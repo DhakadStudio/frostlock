@@ -55,3 +55,19 @@ class WeeklyWidgetProvider : AppWidgetProvider() {
         WidgetUpdater.refreshAsync(context)
     }
 }
+
+/** Month heat-map with per-day intensity and the month's totals. */
+class CalendarWidgetProvider : AppWidgetProvider() {
+
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
+    ) {
+        val cached = WidgetCache.read(context)
+        appWidgetIds.forEach { id ->
+            appWidgetManager.updateAppWidget(id, buildCalendarViews(context, cached))
+        }
+        WidgetUpdater.refreshAsync(context)
+    }
+}
