@@ -147,7 +147,7 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 
 - 78 unit tests across onboarding, schedules, schedule reminder triggers, app-limit warnings, suggested limits, showcase logos, achievements, stats, study diary, weekly reports, session summaries, notification decisions, inbox grouping and widget maths.
 - Verified on emulator `Medium_Phone_API_37.0` including blocking and full onboarding.
-- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`.
+- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`.
 
 ---
 
@@ -327,7 +327,8 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | “Wall of distracting apps” at the start | Distraction Radar with 10 real brand logos | `45a6bb2` |
 | Real app icons in the flow | App Control slide reads launcher icons from the device | `2e2c92e` |
 | Session intention | “One thing for this session”, shown while focusing | `3753155` |
-| Multiple widgets | Focus, daily goal and week-at-a-glance widgets, pinnable from Profile | _pending_ |
+| Notification shield | Local listener + held-notification inbox | `1279084` |
+| Multiple widgets | Focus, daily goal and week-at-a-glance widgets, pinnable from Profile | `18ef9fc` |
 | Research discipline | Earlier Regain research notes (since removed in rename) | `ab74654`, `fb74d3e` |
 
 Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e2c92e` replaced them with real icons.
