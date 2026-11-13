@@ -1,0 +1,1002 @@
+package com.frostlock.app.ui.screens.schedule
+
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
+import androidx.compose.material3.TimePickerLayoutType
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.frostlock.app.data.InstalledApp
+import com.frostlock.app.data.local.prefs.FocusSchedule
+import com.frostlock.app.data.local.prefs.FocusSubject
+import com.frostlock.app.ui.components.AppCard
+import com.frostlock.app.ui.components.AppPickerDialog
+import com.frostlock.app.ui.components.PrimaryButton
+import com.frostlock.app.ui.theme.AccentFrost
+import com.frostlock.app.ui.theme.BackgroundDark
+import com.frostlock.app.ui.theme.DangerRed
+import com.frostlock.app.ui.theme.GradientFrost
+import com.frostlock.app.ui.theme.InkOnIce
+import com.frostlock.app.ui.theme.PrimaryIce
+import com.frostlock.app.ui.theme.StrokeSoft
+import com.frostlock.app.ui.theme.SurfaceCard
+import com.frostlock.app.ui.theme.SurfaceHigh
+import com.frostlock.app.ui.theme.TextPrimary
+import com.frostlock.app.ui.theme.TextSecondary
+import java.time.Instant
+import java.time.ZoneId
+
+private enum class TimeField { START, END }
+
+private val WEEKDAYS = setOf(1, 2, 3, 4, 5)
+
+/**
+ * Full-screen rule editor. Rules carry a lot of settings (name, apps, repeat,
+ * one-off dates and a time window), so they get a dedicated page instead of a
+ * cramped dialog.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun ScheduleEditorScreen(
+    initial: FocusSchedule?,
+    apps: List<InstalledApp>,
+    subjects: List<FocusSubject>,
+    onDismiss: () -> Unit,
+    onSave: (FocusSchedule) -> Unit
+) {
+    var label by remember { mutableStateOf(initial?.label ?: "Focus") }
+    var days by remember { mutableStateOf(initial?.days ?: WEEKDAYS) }
+    var dates by remember { mutableStateOf(initial?.dates ?: emptySet()) }
+    var packages by remember { mutableStateOf(initial?.packages ?: emptySet()) }
+    var startMinutes by remember { mutableIntStateOf(initial?.startMinutes ?: 9 * 60) }
+    var endMinutes by remember { mutableIntStateOf(initial?.endMinutes ?: 17 * 60) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var appPickerOpen by remember { mutableStateOf(false) }
+    var datePickerOpen by remember { mutableStateOf(false) }
+    var timeField by remember { mutableStateOf<TimeField?>(null) }
+
+    val appByPackage = remember(apps) { apps.associateBy { it.packageName } }
+    val reusableSubjects = remember(subjects) { subjects.filter { it.hasApps } }
+    val save = {
+        val problem = validateRule(label, days, dates, startMinutes, endMinutes)
+        error = problem
+        if (problem == null) {
+            onSave(
+                FocusSchedule(
+                    id = initial?.id ?: System.currentTimeMillis(),
+                    label = label.trim(),
+                    days = if (dates.isEmpty()) days else emptySet(),
+                    dates = dates,
+                    startMinutes = startMinutes,
+                    endMinutes = endMinutes,
+                    packages = packages,
+                    enabled = initial?.enabled ?: true
+                )
+            )
+        }
+    }
+
+    BackHandler(onBack = onDismiss)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundDark)
+            .imePadding()
+    ) {
+        EditorTopBar(editing = initial != null, onBack = onDismiss)
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            NameCard(
+                label = label,
+                onLabelChange = {
+                    label = it
+                    error = null
+                }
+            )
+
+            AppsCard(
+                packages = packages,
+                appByPackage = appByPackage,
+                reusableSubjects = reusableSubjects,
+                onChooseApps = { appPickerOpen = true },
+                onCopySubject = {
+                    packages = it
+                    error = null
+                },
+                onRemoveApp = { packages = packages - it }
+            )
+
+            RepeatCard(
+                days = days,
+                dates = dates,
+                onDaysChange = {
+                    days = it
+                    error = null
+                },
+                onAddDate = { datePickerOpen = true },
+                onRemoveDate = { dates = dates - it }
+            )
+
+            TimeCard(
+                startMinutes = startMinutes,
+                endMinutes = endMinutes,
+                days = days,
+                dates = dates,
+                onEditStart = { timeField = TimeField.START },
+                onEditEnd = { timeField = TimeField.END }
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            error?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = DangerRed
+                )
+            }
+            PrimaryButton(
+                text = if (initial == null) "Add rule" else "Save changes",
+                onClick = save
+            )
+        }
+    }
+
+    if (appPickerOpen) {
+        AppPickerDialog(
+            apps = apps,
+            selected = packages,
+            onDismiss = { appPickerOpen = false },
+            onConfirm = {
+                packages = it
+                appPickerOpen = false
+            }
+        )
+    }
+
+    if (datePickerOpen) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = System.currentTimeMillis()
+        )
+        DatePickerDialog(
+            onDismissRequest = { datePickerOpen = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val iso = Instant.ofEpochMilli(millis)
+                                .atZone(ZoneId.of("UTC"))
+                                .toLocalDate()
+                                .toString()
+                            dates = dates + iso
+                        }
+                        datePickerOpen = false
+                    }
+                ) {
+                    Text(text = "Add", color = AccentFrost)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { datePickerOpen = false }) {
+                    Text(text = "Cancel", color = TextSecondary)
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    timeField?.let { field ->
+        val initialMinutes = if (field == TimeField.START) startMinutes else endMinutes
+        FrostTimePickerDialog(
+            title = if (field == TimeField.START) "Start time" else "End time",
+            initialMinutes = initialMinutes,
+            onDismiss = { timeField = null },
+            onConfirm = { minutes ->
+                if (field == TimeField.START) startMinutes = minutes else endMinutes = minutes
+                timeField = null
+            }
+        )
+    }
+}
+
+@Composable
+private fun EditorTopBar(editing: Boolean, onBack: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 4.dp, end = 16.dp, top = 8.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onBack) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = TextPrimary
+            )
+        }
+        Spacer(modifier = Modifier.width(4.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = if (editing) "Edit rule" else "New rule",
+                style = MaterialTheme.typography.headlineMedium,
+                color = TextPrimary
+            )
+            Text(
+                text = "Name, apps, repeat and hours",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecondary
+            )
+        }
+        Box(
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(AccentFrost.copy(alpha = 0.14f))
+                .padding(horizontal = 10.dp, vertical = 4.dp)
+        ) {
+            Text(
+                text = "LOCAL",
+                style = MaterialTheme.typography.labelSmall,
+                color = AccentFrost,
+                letterSpacing = 0.12.em
+            )
+        }
+    }
+}
+
+@Composable
+private fun NameCard(label: String, onLabelChange: (String) -> Unit) {
+    AppCard {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            SectionTitle(
+                icon = Icons.Default.Edit,
+                title = "Rule name",
+                subtitle = "Only you see this name."
+            )
+            OutlinedTextField(
+                value = label,
+                onValueChange = onLabelChange,
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("e.g. Study block", color = TextSecondary) },
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodyLarge,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = PrimaryIce,
+                    unfocusedBorderColor = StrokeSoft,
+                    focusedTextColor = TextPrimary,
+                    unfocusedTextColor = TextPrimary,
+                    cursorColor = AccentFrost
+                ),
+                shape = MaterialTheme.shapes.medium
+            )
+        }
+    }
+}
+
+@Composable
+private fun AppsCard(
+    packages: Set<String>,
+    appByPackage: Map<String, InstalledApp>,
+    reusableSubjects: List<FocusSubject>,
+    onChooseApps: () -> Unit,
+    onCopySubject: (Set<String>) -> Unit,
+    onRemoveApp: (String) -> Unit
+) {
+    val chosen = packages.take(4).mapNotNull { appByPackage[it] }
+
+    AppCard {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            SectionTitle(
+                icon = Icons.Default.Lock,
+                title = "Apps to block",
+                subtitle = when {
+                    packages.isEmpty() -> "Falls back to the focus-session app list"
+                    packages.size == 1 -> "1 app selected"
+                    else -> "${packages.size} apps selected"
+                }
+            )
+
+            if (packages.isEmpty()) {
+                Text(
+                    text = "Pick apps to lock while this rule runs, or leave it empty to reuse your focus-session list.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    chosen.forEach { app ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            AppGlyph(app = app, size = 28.dp)
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = app.label,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextPrimary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(CircleShape)
+                                    .background(SurfaceHigh)
+                                    .clickable { onRemoveApp(app.packageName) },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Remove ${app.label}",
+                                    tint = TextSecondary,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                            }
+                        }
+                    }
+                    if (packages.size > chosen.size) {
+                        Text(
+                            text = "+${packages.size - chosen.size} more",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextSecondary
+                        )
+                    }
+                }
+            }
+
+            OutlinedButton(
+                onClick = onChooseApps,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp),
+                shape = CircleShape,
+                border = BorderStroke(1.dp, StrokeSoft),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = AccentFrost)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (packages.isEmpty()) "Choose apps" else "Edit selection",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+
+            if (reusableSubjects.isNotEmpty()) {
+                Text(
+                    text = "Or copy a subject’s app list",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    reusableSubjects.forEach { subject ->
+                        FilterChip(
+                            selected = packages == subject.packages,
+                            onClick = { onCopySubject(subject.packages) },
+                            label = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(7.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(subject.colorArgb))
+                                    )
+                                    Text("${subject.name} · ${subject.packages.size}")
+                                }
+                            },
+                            colors = FilterChipDefaults.filterChipColors(
+                                containerColor = SurfaceHigh,
+                                labelColor = TextSecondary,
+                                selectedContainerColor = PrimaryIce,
+                                selectedLabelColor = InkOnIce
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RepeatCard(
+    days: Set<Int>,
+    dates: Set<String>,
+    onDaysChange: (Set<Int>) -> Unit,
+    onAddDate: () -> Unit,
+    onRemoveDate: (String) -> Unit
+) {
+    AppCard {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            SectionTitle(
+                icon = Icons.Default.CalendarMonth,
+                title = "Repeat",
+                subtitle = repeatSummary(days, dates)
+            )
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                QuickPill(
+                    text = "Weekdays",
+                    selected = dates.isEmpty() && days == WEEKDAYS,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onDaysChange(WEEKDAYS) }
+                )
+                QuickPill(
+                    text = "Every day",
+                    selected = dates.isEmpty() && days.size == 7,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onDaysChange((1..7).toSet()) }
+                )
+                QuickPill(
+                    text = "Clear",
+                    selected = false,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onDaysChange(emptySet()) }
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                DAY_OPTIONS.forEach { (value, name) ->
+                    val selected = value in days
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(42.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (selected) {
+                                    Brush.linearGradient(GradientFrost)
+                                } else {
+                                    SolidColor(SurfaceHigh)
+                                }
+                            )
+                            .border(
+                                1.dp,
+                                if (selected) Color.Transparent else StrokeSoft,
+                                CircleShape
+                            )
+                            .clickable {
+                                onDaysChange(
+                                    if (selected) days - value else days + value
+                                )
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = name,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (selected) InkOnIce else TextSecondary,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                        )
+                    }
+                }
+            }
+
+            if (dates.isNotEmpty()) {
+                Text(
+                    text = "Date rules run once and ignore the weekdays above.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(StrokeSoft.copy(alpha = 0.6f))
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Specific dates",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = if (dates.isEmpty()) {
+                            "Optional one-off days"
+                        } else {
+                            "${dates.size} added"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                }
+                TextButton(onClick = onAddDate) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = "Add date", color = AccentFrost)
+                }
+            }
+
+            if (dates.isNotEmpty()) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    dates.sorted().forEach { iso ->
+                        FilterChip(
+                            selected = true,
+                            onClick = { onRemoveDate(iso) },
+                            label = { Text(text = formatDate(iso)) },
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Remove date",
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            },
+                            colors = FilterChipDefaults.filterChipColors(
+                                containerColor = SurfaceHigh,
+                                labelColor = TextPrimary,
+                                selectedContainerColor = PrimaryIce,
+                                selectedLabelColor = InkOnIce
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TimeCard(
+    startMinutes: Int,
+    endMinutes: Int,
+    days: Set<Int>,
+    dates: Set<String>,
+    onEditStart: () -> Unit,
+    onEditEnd: () -> Unit
+) {
+    val duration = windowDuration(startMinutes, endMinutes)
+    val overnight = endMinutes <= startMinutes
+
+    AppCard {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            SectionTitle(
+                icon = Icons.Default.Schedule,
+                title = "Time window",
+                subtitle = "${formatTime(startMinutes)} – ${formatTime(endMinutes)}"
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                TimeTile(
+                    label = "STARTS",
+                    minutes = startMinutes,
+                    onClick = onEditStart,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    tint = TextSecondary,
+                    modifier = Modifier.size(18.dp)
+                )
+                TimeTile(
+                    label = "ENDS",
+                    minutes = endMinutes,
+                    onClick = onEditEnd,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .background(SurfaceHigh)
+                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = buildString {
+                        append(duration)
+                        append(" window")
+                        if (overnight) append(" · crosses midnight")
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = AccentFrost
+                )
+            }
+
+            Text(
+                text = repeatSummary(days, dates) +
+                    " · tap a time to change it. Overnight windows like 22:00 to 02:00 work too.",
+                style = MaterialTheme.typography.bodySmall,
+                color = TextSecondary
+            )
+        }
+    }
+}
+
+@Composable
+private fun TimeTile(
+    label: String,
+    minutes: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clip(MaterialTheme.shapes.medium)
+            .background(SurfaceHigh)
+            .border(1.dp, StrokeSoft, MaterialTheme.shapes.medium)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = AccentFrost,
+                letterSpacing = 0.12.em,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(
+                imageVector = Icons.Default.Schedule,
+                contentDescription = null,
+                tint = AccentFrost,
+                modifier = Modifier.size(14.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = formatTime(minutes),
+            style = MaterialTheme.typography.headlineMedium,
+            color = TextPrimary
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FrostTimePickerDialog(
+    title: String,
+    initialMinutes: Int,
+    onDismiss: () -> Unit,
+    onConfirm: (Int) -> Unit
+) {
+    val state = rememberTimePickerState(
+        initialHour = initialMinutes / 60,
+        initialMinute = initialMinutes % 60,
+        is24Hour = true
+    )
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(SurfaceCard)
+                .border(1.dp, StrokeSoft, RoundedCornerShape(28.dp))
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(CircleShape)
+                        .background(SurfaceHigh),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Schedule,
+                        contentDescription = null,
+                        tint = AccentFrost,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = "24-hour · tap the dial or type",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            TimePicker(
+                state = state,
+                layoutType = TimePickerLayoutType.Vertical,
+                colors = TimePickerDefaults.colors(
+                    clockDialColor = SurfaceHigh,
+                    clockDialSelectedContentColor = InkOnIce,
+                    clockDialUnselectedContentColor = TextPrimary,
+                    selectorColor = PrimaryIce,
+                    containerColor = Color.Transparent,
+                    timeSelectorSelectedContainerColor = PrimaryIce,
+                    timeSelectorSelectedContentColor = InkOnIce,
+                    timeSelectorUnselectedContainerColor = SurfaceHigh,
+                    timeSelectorUnselectedContentColor = TextSecondary
+                )
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(text = "Cancel", color = TextSecondary)
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = 48.dp)
+                        .clip(CircleShape)
+                        .background(Brush.horizontalGradient(GradientFrost))
+                        .clickable { onConfirm(state.hour * 60 + state.minute) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Set ${formatTime(state.hour * 60 + state.minute)}",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = InkOnIce
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SectionTitle(icon: ImageVector, title: String, subtitle: String? = null) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(CircleShape)
+                .background(SurfaceHigh),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = AccentFrost,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = TextPrimary
+            )
+            subtitle?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuickPill(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .heightIn(min = 36.dp)
+            .clip(CircleShape)
+            .background(
+                if (selected) {
+                    Brush.linearGradient(GradientFrost)
+                } else {
+                    SolidColor(SurfaceHigh)
+                }
+            )
+            .border(
+                1.dp,
+                if (selected) Color.Transparent else StrokeSoft,
+                CircleShape
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = if (selected) InkOnIce else TextSecondary,
+            maxLines = 1
+        )
+    }
+}
+
+@Composable
+private fun AppGlyph(app: InstalledApp, size: androidx.compose.ui.unit.Dp) {
+    if (app.icon != null) {
+        Image(
+            bitmap = app.icon,
+            contentDescription = null,
+            modifier = Modifier
+                .size(size)
+                .clip(RoundedCornerShape(8.dp))
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .size(size)
+                .clip(RoundedCornerShape(8.dp))
+                .background(SurfaceHigh),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = app.label.take(1).uppercase(),
+                style = MaterialTheme.typography.labelMedium,
+                color = AccentFrost
+            )
+        }
+    }
+}
+
+internal fun repeatSummary(days: Set<Int>, dates: Set<String>): String = when {
+    dates.isNotEmpty() -> if (dates.size == 1) "Once, on 1 date" else "Once, on ${dates.size} dates"
+    days.isEmpty() -> "No days selected"
+    days.size == 7 -> "Every day"
+    days == WEEKDAYS -> "Weekdays"
+    else -> daysSummary(days)
+}
+
+internal fun validateRule(
+    label: String,
+    days: Set<Int>,
+    dates: Set<String>,
+    startMinutes: Int,
+    endMinutes: Int
+): String? = when {
+    label.isBlank() -> "Give this rule a name."
+    days.isEmpty() && dates.isEmpty() -> "Pick at least one day or date."
+    startMinutes == endMinutes -> "Start and end can't be the same."
+    else -> null
+}
+
+internal fun windowDuration(startMinutes: Int, endMinutes: Int): String {
+    val total = if (endMinutes > startMinutes) {
+        endMinutes - startMinutes
+    } else {
+        24 * 60 - startMinutes + endMinutes
+    }
+    val hours = total / 60
+    val minutes = total % 60
+    return when {
+        hours > 0 && minutes > 0 -> "${hours}h ${minutes}m"
+        hours > 0 -> "${hours}h"
+        else -> "${minutes}m"
+    }
+}

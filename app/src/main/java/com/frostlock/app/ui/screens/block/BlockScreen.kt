@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,7 +29,6 @@ import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -58,6 +58,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -867,92 +869,157 @@ private fun LimitDialog(
 ) {
     var minutes by remember { mutableIntStateOf(if (current > 0) current else DEFAULT_LIMIT_MINUTES) }
 
-    AlertDialog(
+    Dialog(
         onDismissRequest = onDismiss,
-        containerColor = SurfaceCard,
-        titleContentColor = TextPrimary,
-        textContentColor = TextSecondary,
-        title = {
-            Text(
-                text = "Daily limit",
-                style = MaterialTheme.typography.headlineMedium
-            )
-        },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Text(
-                    text = "How long can $appLabel be used each day?",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = TextSecondary
-                )
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(SurfaceCard)
+                .border(1.dp, StrokeSoft, RoundedCornerShape(28.dp))
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(SurfaceHigh),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Timer,
+                        contentDescription = null,
+                        tint = AccentFrost,
+                        modifier = Modifier.size(19.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Daily limit",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = appLabel,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .background(SurfaceHigh)
+                    .padding(horizontal = 10.dp, vertical = 5.dp)
+            ) {
                 Text(
                     text = "$usedMinutes min used today · resets at midnight",
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.labelSmall,
                     color = AccentFrost
                 )
+            }
 
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                StepperButton(text = "−", onClick = {
+                    minutes = (minutes - 5).coerceAtLeast(5)
+                })
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    LIMIT_PRESETS.forEach { preset ->
-                        FilterChip(
-                            selected = minutes == preset,
-                            onClick = { minutes = preset },
-                            label = { Text("${preset}m") },
-                            colors = FilterChipDefaults.filterChipColors(
-                                containerColor = SurfaceHigh,
-                                labelColor = TextSecondary,
-                                selectedContainerColor = PrimaryIce,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary
-                            )
-                        )
-                    }
+                    Text(
+                        text = "$minutes",
+                        style = MaterialTheme.typography.displayMedium,
+                        color = TextPrimary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "minutes / day",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
                 }
+                StepperButton(text = "+", onClick = {
+                    minutes = (minutes + 5).coerceAtMost(MAX_LIMIT_MINUTES)
+                })
+            }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    StepperButton(text = "−", onClick = {
-                        minutes = (minutes - 5).coerceAtLeast(5)
-                    })
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "$minutes",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = TextPrimary,
-                            fontWeight = FontWeight.Bold
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                LIMIT_PRESETS.forEach { preset ->
+                    FilterChip(
+                        selected = minutes == preset,
+                        onClick = { minutes = preset },
+                        label = { Text("${preset}m") },
+                        colors = FilterChipDefaults.filterChipColors(
+                            containerColor = SurfaceHigh,
+                            labelColor = TextSecondary,
+                            selectedContainerColor = PrimaryIce,
+                            selectedLabelColor = InkOnIce
                         )
-                        Text(
-                            text = "minutes",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = TextSecondary
-                        )
-                    }
-                    StepperButton(text = "+", onClick = {
-                        minutes = (minutes + 5).coerceAtMost(MAX_LIMIT_MINUTES)
-                    })
-                }
-
-                if (current > 0) {
-                    TextButton(onClick = { onSave(0) }) {
-                        Text(text = "Remove limit", color = DangerRed)
-                    }
+                    )
                 }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = { onSave(minutes) }) {
-                Text(text = "Save", color = AccentFrost)
+
+            if (current > 0) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(CircleShape)
+                        .border(1.dp, DangerRed.copy(alpha = 0.4f), CircleShape)
+                        .clickable { onSave(0) }
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Remove limit",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = DangerRed
+                    )
+                }
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(text = "Cancel", color = TextSecondary)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(text = "Cancel", color = TextSecondary)
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = 48.dp)
+                        .clip(CircleShape)
+                        .background(Brush.horizontalGradient(GradientFrost))
+                        .clickable { onSave(minutes) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Save limit",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = InkOnIce
+                    )
+                }
             }
         }
-    )
+    }
 }
 
 @Composable
