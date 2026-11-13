@@ -71,13 +71,38 @@
 
         <receiver
             android:name=".widget.FocusWidgetProvider"
-            android:exported="false">
+            android:exported="false"
+            android:label="@string/widget_focus_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/focus_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.DailyGoalWidgetProvider"
+            android:exported="false"
+            android:label="@string/widget_goal_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/daily_goal_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.WeeklyWidgetProvider"
+            android:exported="false"
+            android:label="@string/widget_week_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/week_widget_info" />
         </receiver>
 
         <receiver

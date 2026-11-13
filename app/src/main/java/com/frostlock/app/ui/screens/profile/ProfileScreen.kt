@@ -38,11 +38,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.MoodChip
+import com.frostlock.app.ui.components.SecondaryButton
 import com.frostlock.app.ui.components.SectionHeader
+import com.frostlock.app.widget.DailyGoalWidgetProvider
+import com.frostlock.app.widget.FocusWidgetProvider
+import com.frostlock.app.widget.WeeklyWidgetProvider
+import com.frostlock.app.widget.WidgetPinning
 import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.BackgroundDark
 import com.frostlock.app.ui.theme.GradientFrost
@@ -404,32 +410,58 @@ fun ProfileScreen(
             }
         }
 
-        SectionHeader(title = "Home screen widget")
+        SectionHeader(title = "Home screen widgets")
         AppCard {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(SurfaceHigh),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Widgets,
-                        contentDescription = null,
-                        tint = AccentFrost,
-                        modifier = Modifier.size(18.dp)
+            val context = LocalContext.current
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(SurfaceHigh),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Widgets,
+                            contentDescription = null,
+                            tint = AccentFrost,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Three widgets: today's focus, daily-goal progress, and the week ahead. Everything stays on this device.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
                     )
                 }
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = "Long-press your home screen → Widgets → FrostLock to see today's focus time, goal progress and streak at a glance.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
-                )
+
+                if (WidgetPinning.isSupported(context)) {
+                    Text(
+                        text = "Pin one straight to your home screen:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextPrimary
+                    )
+                    SecondaryButton(
+                        text = "Focus today",
+                        onClick = { WidgetPinning.request(context, FocusWidgetProvider::class.java) }
+                    )
+                    SecondaryButton(
+                        text = "Daily goal",
+                        onClick = { WidgetPinning.request(context, DailyGoalWidgetProvider::class.java) }
+                    )
+                    SecondaryButton(
+                        text = "This week",
+                        onClick = { WidgetPinning.request(context, WeeklyWidgetProvider::class.java) }
+                    )
+                } else {
+                    Text(
+                        text = "Long-press your home screen → Widgets → FrostLock to add one.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                }
             }
         }
 

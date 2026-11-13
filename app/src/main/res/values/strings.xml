@@ -33,4 +33,16 @@
     <string name="widget_description">Today\'s focus time, daily goal progress and streak.</string>
     <string name="widget_goal_placeholder">of 2h daily goal</string>
     <string name="widget_no_sessions">Start your first session</string>
+    <string name="widget_streak_placeholder">\uD83D\uDD25 13-day streak</string>
+    <string name="widget_focus_name">Focus today</string>
+    <string name="widget_goal_name">Daily goal</string>
+    <string name="widget_goal_description">How close you are to today\'s focus goal, with your streak.</string>
+    <string name="widget_goal_title">DAILY GOAL</string>
+    <string name="widget_goal_sub_placeholder">28m left of 1h 30m</string>
+    <string name="widget_goal_percent_placeholder">62%</string>
+    <string name="widget_week_name">This week</string>
+    <string name="widget_week_description">A Monday-first view of your focus time this week.</string>
+    <string name="widget_week_title">THIS WEEK</string>
+    <string name="widget_week_total_placeholder">4h 20m</string>
+    <string name="widget_week_meta_placeholder">avg 37m/day · best Wed</string>
 </resources>
