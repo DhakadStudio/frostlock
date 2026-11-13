@@ -129,7 +129,7 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 | --- | --- |
 | Home | Greeting, today/week stats, quick actions (Block apps, Schedules), recent sessions |
 | Profile | Daily goal (15 min – 8 h), Strict Mode, Pomodoro breaks, Focus Guard, widget help, “FrostLock Pro — free forever”, Coming soon list, About |
-| Widgets | Three home-screen widgets: **Focus today** (time, goal progress, streak), **Daily goal** (percent, time left, streak), **This week** (Monday-first bars, weekly total, average, best day). Tap opens the app; values cached so the first frame is never blank; can be pinned from Profile |
+| Widgets | Four home-screen widgets: **Focus today** (time, goal progress, streak), **Daily goal** (percent, time left, streak), **This week** (Monday-first bars, weekly total, average, best day) and **Focus calendar** (month heat-map with today ring and totals). Tap opens the app; values cached so the first frame is never blank; can be pinned from Profile |
 | Notifications | Ongoing focus notification, 80% limit warning, Focus Guard nudge, schedule start/end reminders, held-notification alerts |
 | Accessibility setup | In-app permission card with shortcut to system settings |
 
@@ -147,9 +147,9 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 
 ### 2.10 Engineering
 
-- 109 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, app-limit warnings, suggested limits, showcase logos, achievements, stats, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, notification decisions, inbox grouping and widget maths.
+- 111 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, app-limit warnings, suggested limits, showcase logos, achievements, stats, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, notification decisions, inbox grouping and widget maths.
 - Verified on emulator `Medium_Phone_API_37.0` including blocking and full onboarding.
-- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`.
+- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`.
 
 ---
 
@@ -294,7 +294,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 27 | Achievements | 16 offline badges | Badges + share + rewards | Regain more gamified | Regain (motivation) / FrostLock (offline) |
 | 28 | Rewards / levels / stamps | **No** | Yes | Gap | Regain |
 | 29 | Focus music / themes | **No** | Yes (premium) | Gap | Regain |
-| 30 | Widgets | **3** (focus, daily goal, week at a glance) | 8 types incl. usage, unlock count, calendar | Smaller gap; FrostLock avoids usage/unlock permissions | Regain (breadth) / FrostLock (privacy) |
+| 30 | Widgets | **4** (focus, daily goal, week at a glance, calendar) | 8 types incl. usage, unlock count, calendar | Smaller gap; FrostLock now covers the calendar and avoids usage/unlock permissions | Regain (breadth) / FrostLock (privacy) |
 | 31 | Phone-unlock tracking | **No** | Yes (widget + stats) | Gap | Regain |
 | 32 | Weekly report | **Yes** — week navigation, comparison, daily bars, best day, subjects | Yes (Pro for past days) | Similar; FrostLock keeps it free | Tie / FrostLock |
 | 33 | Session notes | Yes — editable from the diary and the post-session summary | Yes + study stamps/photos | FrostLock surfaces them too; Regain adds photos | Tie |
@@ -332,6 +332,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | Notification shield | Local listener + held-notification inbox | `1279084` |
 | Multiple widgets | Focus, daily goal and week-at-a-glance widgets, pinnable from Profile; focus/goal cards fill their full height so text never floats in empty bands | `18ef9fc`, `7baee2b` |
 | Focus calendar + upcoming sessions | Month heat-map with day drill-down, plus a next-7-days “Coming up” panel on the rules screen | `5b33fbc` |
+| Calendar home-screen widget | A locally drawn month heat-map widget with today ring and totals | `81d330d` |
 | Morning/afternoon/evening/night presets | One-tap Morning, Workday, Evening and Night windows in the rule editor | `5b33fbc` |
 | Research discipline | Earlier Regain research notes (since removed in rename) | `ab74654`, `fb74d3e` |
 
@@ -391,7 +392,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [x] Study diary (day grouping, search, editable reflections)
 - [ ] Phone-unlock tracking
 - [ ] Focus bubble / floating timer
-- [~] Eight widget types: **3 shipped** (focus today, daily goal, week at a glance); usage, unlock count, calendar and Pro pass are missing
+- [~] Eight widget types: **4 shipped** (focus today, daily goal, week at a glance, focus calendar); usage, unlock count and Pro pass are missing
 - [ ] Achievement sharing
 
 ### E. Data, accounts & platform
@@ -473,7 +474,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 - [x] **Schedule start/end alarms + notifications** (`AlarmManager` + boot receiver). Rules currently act silently.
 - [x] **Study diary screen** to surface saved session notes (already in DB, no UI).
 - [x] **Notification blocking** via `NotificationListenerService` + a local “blocked notifications” inbox. Scoped automatically to apps blocked by focus, a rule or a reached limit (no manual per-app allowlist yet).
-- [~] **More widgets**: daily goal and week-at-a-glance shipped; usage today, phone-unlock count (needs a counter) and calendar remain.
+- [~] **More widgets**: four shipped (focus today, daily goal, week at a glance, focus calendar); usage today, phone-unlock count and Pro pass remain.
 - [x] **Weekly report screen** (local aggregation of existing sessions).
 - [x] **Session summary** (planned vs actual, subject, note, streak impact).
 - [x] **Focus calendar + upcoming sessions** — month heat-map with day drill-down and a next-7-days “Coming up” panel.
@@ -506,7 +507,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 ## 11. Verified facts & commands
 
 - Build: `JAVA_HOME=/snap/android-studio/250/jbr ANDROID_HOME=/home/vishal/Android/Sdk ./gradlew :app:assembleDebug`
-- Tests: `:app:testDebugUnitTest` → **109 tests, 0 failures**
+- Tests: `:app:testDebugUnitTest` → **111 tests, 0 failures**
 - Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - Accessibility component: `com.frostlock.app/com.frostlock.app.blocking.FocusBlockAccessibilityService`
 - Re-enable service:
@@ -516,7 +517,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
   ```
 - Regain APK inspected at `/tmp/opencode/regain.apk` (v75.1.2113, 58 MB base); it was not retained after the analysis.
 - FrostLock permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `RECEIVE_BOOT_COMPLETED`, `USE_EXACT_ALARM` only. Still **no INTERNET**.
-- FrostLock manifest: accessibility service, focus foreground service, schedule reminder receiver, notification listener service, three widget providers.
+- FrostLock manifest: accessibility service, focus foreground service, schedule reminder receiver, notification listener service, four widget providers.
 - Test files: 18 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`).
 - Current onboarding page count: 10 (`OnboardingPages.COUNT`).
 
