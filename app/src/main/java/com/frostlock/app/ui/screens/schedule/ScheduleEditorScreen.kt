@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -90,6 +91,9 @@ import com.frostlock.app.ui.theme.SurfaceCard
 import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
+import com.frostlock.app.ui.theme.WarnAmber
+import com.frostlock.app.ui.util.RuleOverlap
+import com.frostlock.app.ui.util.ruleOverlaps
 import java.time.Instant
 import java.time.ZoneId
 
@@ -127,6 +131,7 @@ fun ScheduleEditorScreen(
     initial: FocusSchedule?,
     apps: List<InstalledApp>,
     subjects: List<FocusSubject>,
+    existing: List<FocusSchedule> = emptyList(),
     onDismiss: () -> Unit,
     onSave: (FocusSchedule) -> Unit
 ) {
@@ -143,6 +148,18 @@ fun ScheduleEditorScreen(
 
     val appByPackage = remember(apps) { apps.associateBy { it.packageName } }
     val reusableSubjects = remember(subjects) { subjects.filter { it.hasApps } }
+    val draft = remember(initial?.id, label, days, dates, startMinutes, endMinutes) {
+        FocusSchedule(
+            id = initial?.id ?: 0L,
+            label = label,
+            days = if (dates.isEmpty()) days else emptySet(),
+            dates = dates,
+            startMinutes = startMinutes,
+            endMinutes = endMinutes,
+            enabled = true
+        )
+    }
+    val overlaps = remember(draft, existing) { ruleOverlaps(draft, existing) }
     val save = {
         val problem = validateRule(label, days, dates, startMinutes, endMinutes)
         error = problem
@@ -223,6 +240,10 @@ fun ScheduleEditorScreen(
                     error = null
                 }
             )
+
+            if (overlaps.isNotEmpty()) {
+                OverlapCard(overlaps = overlaps)
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
         }
@@ -766,6 +787,70 @@ private fun TimeCard(
             )
         }
     }
+}
+
+@Composable
+private fun OverlapCard(overlaps: List<RuleOverlap>) {
+    AppCard {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = WarnAmber,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Overlaps another rule",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextPrimary
+                )
+            }
+            Text(
+                text = if (overlaps.size == 1) {
+                    "This window blocks at the same time as:"
+                } else {
+                    "This window blocks at the same time as ${overlaps.size} other rules:"
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecondary
+            )
+            overlaps.forEach { overlap ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "“${overlap.other.label}”",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = WarnAmber,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = overlapDetail(overlap),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextSecondary
+                    )
+                }
+            }
+            Text(
+                text = "Both rules stay active — this is only a heads-up so you can tell them apart.",
+                style = MaterialTheme.typography.labelSmall,
+                color = TextSecondary
+            )
+        }
+    }
+}
+
+private fun overlapDetail(overlap: RuleOverlap): String = when {
+    overlap.dates.isNotEmpty() ->
+        overlap.dates.sorted().joinToString(", ") { formatDate(it) }
+    overlap.days.isNotEmpty() -> daysSummary(overlap.days)
+    else -> ""
 }
 
 @Composable

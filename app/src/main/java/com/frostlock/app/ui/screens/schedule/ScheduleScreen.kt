@@ -55,7 +55,9 @@ import com.frostlock.app.ui.theme.SuccessGreen
 import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
+import com.frostlock.app.ui.theme.WarnAmber
 import com.frostlock.app.ui.util.UpcomingSession
+import com.frostlock.app.ui.util.hasOverlap
 import com.frostlock.app.ui.util.upcomingCountdown
 import com.frostlock.app.ui.util.upcomingSessions
 import com.frostlock.app.ui.util.upcomingWhen
@@ -226,6 +228,7 @@ fun ScheduleScreen(
                     schedule = schedule,
                     labels = labels,
                     isActive = schedule.id in activeIds,
+                    overlaps = hasOverlap(schedule, schedules),
                     onToggle = { viewModel.setEnabled(schedule.id, it) },
                     onEdit = {
                         editing = schedule
@@ -254,6 +257,7 @@ fun ScheduleScreen(
             initial = editing,
             apps = apps,
             subjects = subjects,
+            existing = schedules,
             onDismiss = { editorOpen = false },
             onSave = {
                 viewModel.save(it)
@@ -268,6 +272,7 @@ private fun ScheduleRow(
     schedule: FocusSchedule,
     labels: Map<String, String>,
     isActive: Boolean,
+    overlaps: Boolean,
     onToggle: (Boolean) -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
@@ -297,6 +302,21 @@ private fun ScheduleRow(
                                     text = "Active now",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = SuccessGreen
+                                )
+                            }
+                        }
+                        if (overlaps) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clip(MaterialTheme.shapes.extraLarge)
+                                    .background(WarnAmber.copy(alpha = 0.14f))
+                                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "Overlaps",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = WarnAmber
                                 )
                             }
                         }
