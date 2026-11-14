@@ -149,9 +149,9 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 
 ### 2.10 Engineering
 
-- 141 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, deadline countdowns, session stamps, freeze levels, app-limit warnings, suggested limits, showcase logos, achievements, stats, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, notification decisions, inbox grouping and widget maths.
+- 142 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, deadline countdowns, session stamps, freeze levels, achievement sharing, app-limit warnings, suggested limits, showcase logos, achievements, stats, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, notification decisions, inbox grouping and widget maths.
 - Verified on emulator `Medium_Phone_API_37.0` including blocking and full onboarding.
-- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`; freeze level `249975b`.
+- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`; freeze level `249975b`; achievement sharing `8b0d3d5`.
 
 ---
 
@@ -234,7 +234,7 @@ Sources: installed APK v75.1.2113 (manifest activities/services, 96k resource li
 ### 3.9 Streaks, achievements & rewards
 
 - Current streak, best streak, session streak, schedule streak, streak-loss warnings.
-- Achievement badges, “Your Achievements”, share achievement, achievement unlocked screens.
+- Achievement badges, “Your Achievements”, share achievement, achievement unlocked screens. FrostLock now shares unlocked badges through the system share sheet.
 - Focus stamps: collect badges per session from its start time, weekday and length; Regain also lets you attach a photo.
 - Levels: FrostLock derives a local freeze level from lifetime focus minutes, with no currency or store.
 - Milestones and invite milestones; rewards for focusing; creator rewards.
@@ -294,7 +294,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 24 | Weekly leaderboard | **No** | Yes | Gap | Regain |
 | 25 | Wake-up nudges / accountability | Focus Guard only | Group nudges + guilt trips | Different | Regain (social) |
 | 26 | Streaks | Daily streak + best | Daily/session/schedule streak | Similar | Tie |
-| 27 | Achievements | 16 offline badges | Badges + share + rewards | Regain more gamified | Regain (motivation) / FrostLock (offline) |
+| 27 | Achievements | 16 offline badges, tap to share unlocked ones | Badges + share + rewards | FrostLock now shares too, but keeps it text-only and offline | Tie / FrostLock (offline) |
 | 28 | Rewards / levels / stamps | **Partial** — five derived session stamps plus a freeze level; no rewards, currency, difficulty tiers or store | Yes | FrostLock covers stamps and levelling | Regain |
 | 29 | Focus music / themes | **No** | Yes (premium) | Gap | Regain |
 | 30 | Widgets | **4** (focus, daily goal, week at a glance, calendar) | 8 types incl. usage, unlock count, calendar | Smaller gap; FrostLock now covers the calendar and avoids usage/unlock permissions | Regain (breadth) / FrostLock (privacy) |
@@ -341,6 +341,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | Focus deadline | Local name + date countdown on Home and Profile, with a dedicated editor and themed date dialog | `31e69c3` |
 | Focus stamps | Per-session badges derived from start hour, weekday and length, shown in the post-session summary and diary | `1c27ae4` |
 | Freeze level | Lifetime focus minutes become widening levels with ice titles, shown on the stats screen with progress to the next | `249975b` |
+| Achievement sharing | Tap an unlocked badge for a themed detail card and share it through the system sheet | `8b0d3d5` |
 | Research discipline | Earlier Regain research notes (since removed in rename) | `ab74654`, `fb74d3e` |
 
 Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e2c92e` replaced them with real icons.
@@ -401,7 +402,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [ ] Phone-unlock tracking
 - [ ] Focus bubble / floating timer
 - [~] Eight widget types: **4 shipped** (focus today, daily goal, week at a glance, focus calendar); usage, unlock count and Pro pass are missing
-- [ ] Achievement sharing
+- [x] Achievement sharing (unlocked badges share plain text via the system sheet)
 
 ### E. Data, accounts & platform
 
@@ -503,6 +504,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 
 - [x] Focus stamps — derived locally from start time, weekday and length, shown in the summary and diary.
 - [x] Freeze level — local levelling from lifetime focus minutes, no currency or store.
+- [x] Achievement sharing — unlocked badges share plain text via the system sheet.
 - [ ] Session photos (local only, optional camera permission).
 - [ ] Reward/level layer on top of the existing badges (no currency, no store).
 - [ ] Focus bubble / floating timer.
@@ -519,7 +521,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 ## 11. Verified facts & commands
 
 - Build: `JAVA_HOME=/snap/android-studio/250/jbr ANDROID_HOME=/home/vishal/Android/Sdk ./gradlew :app:assembleDebug`
-- Tests: `:app:testDebugUnitTest` → **141 tests, 0 failures**
+- Tests: `:app:testDebugUnitTest` → **142 tests, 0 failures**
 - Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - Accessibility component: `com.frostlock.app/com.frostlock.app.blocking.FocusBlockAccessibilityService`
 - Re-enable service:
