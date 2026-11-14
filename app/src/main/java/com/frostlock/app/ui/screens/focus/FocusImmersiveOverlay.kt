@@ -41,7 +41,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -85,11 +87,13 @@ fun FocusImmersiveOverlay(
     onPause: () -> Unit,
     onResume: () -> Unit,
     onStop: () -> Unit,
+    onDiscard: () -> Unit,
     onEndStrict: () -> Unit,
     onSkipBreak: () -> Unit,
     onTestBlock: (InstalledApp) -> Unit
 ) {
     val dismissible = !state.strictActive
+    var confirmStop by remember { mutableStateOf(false) }
     val testApp = remember(state.sessionPackages, state.installedApps) {
         state.sessionPackages.firstOrNull()?.let { pkg ->
             state.installedApps.firstOrNull { it.packageName == pkg }
@@ -170,6 +174,8 @@ fun FocusImmersiveOverlay(
                     subtitle = when {
                         state.phase == FocusPhase.BREAK -> "Phones are allowed"
                         state.justCompleted -> "Session complete"
+                        state.isRunning && !state.strictActive && !state.pauseAllowance.canPause ->
+                            "Pause limit reached"
                         state.isRunning -> "Stay in the zone"
                         else -> "Paused"
                     },
@@ -194,6 +200,8 @@ fun FocusImmersiveOverlay(
                         "Breathe, stretch, and come back for round ${state.round + 1}."
                     state.strictActive ->
                         "No early exit. The timer is in charge."
+                    state.isRunning && !state.pauseAllowance.canPause ->
+                        "Pause limit reached — keep going or end the session."
                     state.sessionPackages.isEmpty() ->
                         "No apps selected yet — this is a pure focus timer."
                     else ->
@@ -231,17 +239,44 @@ fun FocusImmersiveOverlay(
                         RoundIconButton(
                             icon = Icons.Default.Stop,
                             contentDescription = "End session",
-                            onClick = onStop,
+                            onClick = {
+                                if (state.elapsedSeconds >= 5 && !state.justCompleted) {
+                                    confirmStop = true
+                                } else {
+                                    onStop()
+                                }
+                            },
                             tint = DangerRed
                         )
                         PrimaryOverlayButton(
-                            label = if (state.isRunning) "Pause" else "Resume",
+                            label = when {
+                                state.isRunning && !state.pauseAllowance.canPause -> "No pauses left"
+                                state.isRunning -> "Pause"
+                                else -> "Resume"
+                            },
                             icon = if (state.isRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
                             onClick = if (state.isRunning) onPause else onResume,
+                            enabled = !state.isRunning || state.pauseAllowance.canPause,
                             modifier = Modifier.weight(1f)
                         )
                     }
                 }
+            }
+
+            if (confirmStop) {
+                EndSessionDialog(
+                    elapsedSeconds = state.elapsedSeconds,
+                    plannedSeconds = state.totalSeconds,
+                    onKeepGoing = { confirmStop = false },
+                    onSave = {
+                        confirmStop = false
+                        onStop()
+                    },
+                    onDiscard = {
+                        confirmStop = false
+                        onDiscard()
+                    }
+                )
             }
         }
     }
@@ -302,14 +337,15 @@ private fun PrimaryOverlayButton(
     label: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     Row(
         modifier = modifier
             .height(58.dp)
             .clip(CircleShape)
-            .background(Color.White)
-            .clickable(onClick = onClick)
+            .background(Color.White.copy(alpha = if (enabled) 1f else 0.28f))
+            .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center

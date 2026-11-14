@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.frostlock.app.data.local.prefs.DeadlineStore
 import com.frostlock.app.data.local.prefs.FocusDeadline
 import com.frostlock.app.data.local.prefs.FocusSettings
+import com.frostlock.app.ui.util.PausePolicy
 import com.frostlock.app.widget.WidgetUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -20,6 +21,7 @@ data class ProfileUiState(
     val dailyGoalMinutes: Int = FocusSettings.DEFAULT_GOAL_MINUTES,
     val breaksEnabled: Boolean = true,
     val breakMinutes: Int = FocusSettings.DEFAULT_BREAK_MINUTES,
+    val maxPauses: Int = PausePolicy.DEFAULT,
     val focusGuardEnabled: Boolean = false,
     val bubbleEnabled: Boolean = false,
     val deadline: FocusDeadline? = null
@@ -50,6 +52,8 @@ class ProfileViewModel @Inject constructor(
         state.copy(deadline = deadline)
     }.combine(focusSettings.bubbleEnabled) { state, bubble ->
         state.copy(bubbleEnabled = bubble)
+    }.combine(focusSettings.maxPauses) { state, pauses ->
+        state.copy(maxPauses = pauses)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -61,6 +65,8 @@ class ProfileViewModel @Inject constructor(
     fun setBreaksEnabled(enabled: Boolean) = focusSettings.setBreaksEnabled(enabled)
 
     fun setBreakMinutes(minutes: Int) = focusSettings.setBreakMinutes(minutes)
+
+    fun setMaxPauses(count: Int) = focusSettings.setMaxPauses(count)
 
     fun setFocusGuardEnabled(enabled: Boolean) = focusSettings.setFocusGuardEnabled(enabled)
 

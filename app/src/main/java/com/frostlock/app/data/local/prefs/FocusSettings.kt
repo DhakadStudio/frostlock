@@ -2,6 +2,7 @@ package com.frostlock.app.data.local.prefs
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.frostlock.app.ui.util.PausePolicy
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,6 +37,12 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
 
     private val _breakMinutes = MutableStateFlow(prefs.getInt(KEY_BREAK_MINUTES, DEFAULT_BREAK_MINUTES))
     val breakMinutes: StateFlow<Int> = _breakMinutes.asStateFlow()
+
+    /** How many times a normal (non-strict) session may be paused. -1 means no cap. */
+    private val _maxPauses = MutableStateFlow(
+        prefs.getInt(KEY_MAX_PAUSES, PausePolicy.DEFAULT)
+    )
+    val maxPauses: StateFlow<Int> = _maxPauses.asStateFlow()
 
     /** Opt-in reminder during long focus sessions. */
     private val _focusGuardEnabled = MutableStateFlow(prefs.getBoolean(KEY_FOCUS_GUARD, false))
@@ -86,6 +93,17 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
         _focusGuardEnabled.value = enabled
     }
 
+    /** Stores the pause cap; -1 means unlimited, otherwise 0–5 pauses. */
+    fun setMaxPauses(count: Int) {
+        val clamped = if (count < 0) {
+            PausePolicy.UNLIMITED
+        } else {
+            count.coerceIn(0, PausePolicy.MAX)
+        }
+        prefs.edit().putInt(KEY_MAX_PAUSES, clamped).apply()
+        _maxPauses.value = clamped
+    }
+
     fun setBubbleEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_FOCUS_BUBBLE, enabled).apply()
         _bubbleEnabled.value = enabled
@@ -133,6 +151,7 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
         const val KEY_BREAKS_ENABLED = "pomodoro_breaks_enabled"
         const val KEY_BREAK_MINUTES = "pomodoro_break_minutes"
         const val KEY_FOCUS_GUARD = "focus_guard_enabled"
+        const val KEY_MAX_PAUSES = "max_pauses_per_session"
         const val KEY_FOCUS_BUBBLE = "focus_bubble_enabled"
         const val KEY_SCHEDULE_REMINDERS = "schedule_reminders_enabled"
         const val KEY_NOTIFICATION_BLOCKING = "notification_blocking_enabled"

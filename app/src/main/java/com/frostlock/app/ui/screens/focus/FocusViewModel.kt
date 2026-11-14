@@ -15,7 +15,10 @@ import com.frostlock.app.data.local.prefs.FocusSubject
 import com.frostlock.app.data.local.prefs.SubjectStore
 import com.frostlock.app.data.local.prefs.effectiveSessionPackages
 import com.frostlock.app.focus.FocusSessionService
+import com.frostlock.app.ui.util.PauseAllowance
+import com.frostlock.app.ui.util.PausePolicy
 import com.frostlock.app.ui.util.computeStreak
+import com.frostlock.app.ui.util.pauseAllowance as pauseAllowanceFor
 import com.frostlock.app.widget.WidgetUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -54,6 +57,10 @@ data class FocusUiState(
     val breaksEnabled: Boolean = true,
     val breakMinutes: Int = FocusSettings.DEFAULT_BREAK_MINUTES,
     val breakFinished: Boolean = false,
+    /** Pause cap for this session; -1 means no limit. */
+    val maxPauses: Int = PausePolicy.DEFAULT,
+    /** How many pauses this session has already used. */
+    val pausesUsed: Int = 0,
     val tag: String = "",
     /** The one outcome this session is for, shown on the immersive timer. */
     val intent: String = "",
@@ -77,6 +84,14 @@ data class FocusUiState(
     /** True while a Strict Mode session is running, so the UI can hide early exits. */
     val strictActive: Boolean
         get() = strictMode && isRunning && phase == FocusPhase.FOCUS
+
+    /** How many pauses this session has left. */
+    val pauseAllowance: PauseAllowance
+        get() = pauseAllowanceFor(pausesUsed, maxPauses)
+
+    /** Normal-mode pause button state; Strict Mode disables pausing separately. */
+    val canPause: Boolean
+        get() = !strictActive && pauseAllowance.canPause
 
     val breakSeconds: Int
         get() = breakMinutes * 60
@@ -134,6 +149,7 @@ class FocusViewModel @Inject constructor(
                 intent = focusSettings.sessionIntent.value,
                 breaksEnabled = focusSettings.breaksEnabled.value,
                 breakMinutes = focusSettings.breakMinutes.value,
+                maxPauses = focusSettings.maxPauses.value,
                 subjects = subjectStore.subjects()
             )
         }
@@ -161,6 +177,15 @@ class FocusViewModel @Inject constructor(
                 }
             }
         }
+        viewModelScope.launch {
+            focusSettings.maxPauses.collect { count ->
+                // Only idle timers pick up the new cap; a running or paused session
+                // keeps the allowance it started with.
+                if (!_uiState.value.hasStarted) {
+                    _uiState.update { it.copy(maxPauses = count) }
+                }
+            }
+        }
     }
 
     fun selectMode(mode: FocusMode) {
@@ -175,7 +200,8 @@ class FocusViewModel @Inject constructor(
                 elapsedSeconds = 0,
                 hasStarted = false,
                 justCompleted = false,
-                breakFinished = false
+                breakFinished = false,
+                pausesUsed = 0
             )
         }
     }
@@ -197,7 +223,8 @@ class FocusViewModel @Inject constructor(
                 elapsedSeconds = 0,
                 hasStarted = false,
                 justCompleted = false,
-                breakFinished = false
+                breakFinished = false,
+                pausesUsed = 0
             )
         }
     }
@@ -308,6 +335,8 @@ class FocusViewModel @Inject constructor(
             resetInternal()
             _uiState.update { it.copy(elapsedSeconds = 0, justCompleted = false) }
         }
+        // A fresh run gets a fresh pause allowance. Resuming keeps the used count.
+        val freshRun = !state.hasStarted || state.elapsedSeconds == 0 || state.justCompleted
         // A new run gets its own diary entry.
         _uiState.update { it.copy(lastSession = null, lastSessionStreak = 0) }
         sessionSaved = false
@@ -318,6 +347,8 @@ class FocusViewModel @Inject constructor(
                 hasStarted = true,
                 justCompleted = false,
                 breakFinished = false,
+                pausesUsed = if (freshRun) 0 else it.pausesUsed,
+                maxPauses = if (freshRun) focusSettings.maxPauses.value else it.maxPauses,
                 strictMode = focusSettings.strictMode.value && it.mode != FocusMode.STOPWATCH
             )
         }
@@ -330,13 +361,20 @@ class FocusViewModel @Inject constructor(
         val state = _uiState.value
         if (!state.isRunning || state.phase == FocusPhase.BREAK) return
         if (state.strictActive) return
+        if (!state.pauseAllowance.canPause) return
         accumulatedMs += System.currentTimeMillis() - runningSince
         runningSince = 0L
         stopTimer()
         stopBlockingService()
-        persistTimerState()
         val elapsed = currentElapsedSeconds()
-        _uiState.update { it.copy(isRunning = false, elapsedSeconds = elapsed) }
+        _uiState.update {
+            it.copy(
+                isRunning = false,
+                elapsedSeconds = elapsed,
+                pausesUsed = it.pausesUsed + 1
+            )
+        }
+        persistTimerState()
     }
 
     fun stop() {
@@ -349,6 +387,32 @@ class FocusViewModel @Inject constructor(
 
     /** Escape hatch for Strict Mode: the UI requires a deliberate press-and-hold. */
     fun endStrictSession() = stopInternal(force = true)
+
+    /**
+     * Ends the current run without writing a session. Used by the stop
+     * confirmation so an interrupted attempt never lands in stats or the diary.
+     */
+    fun discardSession() {
+        if (_uiState.value.phase == FocusPhase.BREAK) {
+            skipBreak()
+            return
+        }
+        stopTimer()
+        stopBlockingService()
+        resetInternal()
+        clearIntent()
+        _uiState.update {
+            it.copy(
+                isRunning = false,
+                elapsedSeconds = 0,
+                hasStarted = false,
+                justCompleted = false,
+                phase = FocusPhase.FOCUS,
+                breakFinished = false,
+                pausesUsed = 0
+            )
+        }
+    }
 
     /** Ends the break early and returns to the focus phase. */
     fun skipBreak() {
@@ -380,7 +444,8 @@ class FocusViewModel @Inject constructor(
                 hasStarted = false,
                 justCompleted = false,
                 phase = FocusPhase.FOCUS,
-                breakFinished = false
+                breakFinished = false,
+                pausesUsed = 0
             )
         }
     }
@@ -397,7 +462,8 @@ class FocusViewModel @Inject constructor(
                 hasStarted = false,
                 justCompleted = false,
                 phase = FocusPhase.FOCUS,
-                breakFinished = false
+                breakFinished = false,
+                pausesUsed = 0
             )
         }
     }
@@ -491,7 +557,8 @@ class FocusViewModel @Inject constructor(
                 elapsedSeconds = 0,
                 hasStarted = false,
                 justCompleted = false,
-                breakFinished = completed
+                breakFinished = completed,
+                pausesUsed = 0
             )
         }
     }
@@ -560,7 +627,9 @@ class FocusViewModel @Inject constructor(
             phase = state.phase.name,
             round = state.round,
             breakMinutes = state.breakMinutes,
-            breaksEnabled = state.breaksEnabled
+            breaksEnabled = state.breaksEnabled,
+            pausesUsed = state.pausesUsed,
+            maxPauses = state.maxPauses
         )
     }
 
@@ -582,6 +651,8 @@ class FocusViewModel @Inject constructor(
         val round = blockingPreferences.savedTimerRound()
         val breakMinutes = blockingPreferences.savedTimerBreakMinutes()
         val breaksEnabled = blockingPreferences.savedTimerBreaksEnabled()
+        val pausesUsed = blockingPreferences.savedTimerPausesUsed()
+        val maxPauses = blockingPreferences.savedTimerMaxPauses()
         val totalSeconds = blockingPreferences.savedTimerTotalSeconds()
         accumulatedMs = blockingPreferences.savedTimerAccumulatedMs()
         runningSince = blockingPreferences.savedTimerRunningSince()
@@ -604,6 +675,8 @@ class FocusViewModel @Inject constructor(
                 round = round,
                 breakMinutes = breakMinutes,
                 breaksEnabled = breaksEnabled,
+                pausesUsed = pausesUsed,
+                maxPauses = maxPauses,
                 isRunning = isRunning,
                 elapsedSeconds = elapsed,
                 hasStarted = true,

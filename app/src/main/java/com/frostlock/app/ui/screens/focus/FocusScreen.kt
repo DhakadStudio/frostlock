@@ -99,6 +99,7 @@ fun FocusScreen(
     var subjectPickerOpen by remember { mutableStateOf(false) }
     var immersiveMinimized by remember { mutableStateOf(false) }
     var testApp by remember { mutableStateOf<InstalledApp?>(null) }
+    var stopConfirmOpen by remember { mutableStateOf(false) }
 
     // A new run opens the calm, full-screen timer again.
     LaunchedEffect(state.isRunning) {
@@ -112,6 +113,7 @@ fun FocusScreen(
             onPause = viewModel::pause,
             onResume = viewModel::startOrResume,
             onStop = viewModel::stop,
+            onDiscard = viewModel::discardSession,
             onEndStrict = viewModel::endStrictSession,
             onSkipBreak = viewModel::skipBreak,
             onTestBlock = { testApp = it }
@@ -141,6 +143,22 @@ fun FocusScreen(
             onRemovePhoto = viewModel::removeLastSessionPhoto,
             onDelete = viewModel::deleteLastSession,
             onDismiss = viewModel::dismissReflection
+        )
+    }
+
+    if (stopConfirmOpen) {
+        EndSessionDialog(
+            elapsedSeconds = state.elapsedSeconds,
+            plannedSeconds = state.totalSeconds,
+            onKeepGoing = { stopConfirmOpen = false },
+            onSave = {
+                stopConfirmOpen = false
+                viewModel.stop()
+            },
+            onDiscard = {
+                stopConfirmOpen = false
+                viewModel.discardSession()
+            }
         )
     }
 
@@ -392,8 +410,8 @@ fun FocusScreen(
             )
         }
 
-        if (state.mode == FocusMode.POMODORO) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (state.mode == FocusMode.POMODORO) {
                 InfoPill(text = "Round ${state.round}")
                 InfoPill(
                     text = if (state.breaksEnabled) {
@@ -402,6 +420,9 @@ fun FocusScreen(
                         "Breaks off"
                     }
                 )
+            }
+            if (state.maxPauses >= 0) {
+                InfoPill(text = state.pauseAllowance.usageLabel)
             }
         }
 
@@ -416,6 +437,8 @@ fun FocusScreen(
                 state.phase == FocusPhase.BREAK -> "Break — step away"
                 state.breakFinished -> "Break over — round ${state.round} ready"
                 state.justCompleted -> "Session complete"
+                state.isRunning && !state.strictActive && !state.pauseAllowance.canPause ->
+                    "Pause limit reached — keep going"
                 state.isRunning -> "Stay in the zone…"
                 state.hasStarted && state.elapsedSeconds > 0 -> "Paused"
                 state.mode == FocusMode.STOPWATCH -> "Elapsed"
@@ -483,10 +506,10 @@ fun FocusScreen(
                 if (state.isRunning) {
                     ActionCircle(
                         icon = Icons.Default.Pause,
-                        contentDescription = "Pause",
+                        contentDescription = if (state.canPause) "Pause" else "Pause limit reached",
                         container = Color(0xFF20394F),
-                        tint = TextPrimary,
-                        onClick = { viewModel.pause() },
+                        tint = if (state.canPause) TextPrimary else TextSecondary.copy(alpha = 0.45f),
+                        onClick = { if (state.canPause) viewModel.pause() },
                         modifier = Modifier.weight(1f)
                     )
                 } else {
@@ -511,7 +534,13 @@ fun FocusScreen(
                         contentDescription = "Stop",
                         container = Color(0xFF20394F),
                         tint = com.frostlock.app.ui.theme.DangerRed,
-                        onClick = { viewModel.stop() },
+                        onClick = {
+                            if (state.elapsedSeconds >= 5 && !state.justCompleted) {
+                                stopConfirmOpen = true
+                            } else {
+                                viewModel.stop()
+                            }
+                        },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -948,6 +977,68 @@ private fun TagDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(text = "Cancel", color = TextSecondary)
+            }
+        }
+    )
+}
+
+@Composable
+internal fun EndSessionDialog(
+    elapsedSeconds: Int,
+    plannedSeconds: Int,
+    onKeepGoing: () -> Unit,
+    onSave: () -> Unit,
+    onDiscard: () -> Unit
+) {
+    val focused = formatDuration(elapsedSeconds.toLong())
+    val planned = if (plannedSeconds > 0) formatDuration(plannedSeconds.toLong()) else null
+
+    AlertDialog(
+        onDismissRequest = onKeepGoing,
+        containerColor = SurfaceCard,
+        titleContentColor = TextPrimary,
+        textContentColor = TextSecondary,
+        title = {
+            Text(
+                text = "End this session?",
+                style = MaterialTheme.typography.headlineMedium
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    text = if (planned != null) {
+                        "You've focused $focused of $planned."
+                    } else {
+                        "You've focused $focused."
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = TextPrimary
+                )
+                Text(
+                    text = "Save it to your diary and stats, or discard it so it leaves no trace. " +
+                        "Discarding cannot be undone.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onSave) {
+                Text(text = "Save & end", color = AccentFrost)
+            }
+        },
+        dismissButton = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                TextButton(onClick = onDiscard) {
+                    Text(text = "Discard", color = com.frostlock.app.ui.theme.DangerRed)
+                }
+                TextButton(onClick = onKeepGoing) {
+                    Text(text = "Keep going", color = TextSecondary)
+                }
             }
         }
     )

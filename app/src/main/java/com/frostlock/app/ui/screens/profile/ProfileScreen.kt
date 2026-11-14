@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material3.Icon
@@ -65,6 +66,7 @@ import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.util.deadlineCountdown
+import com.frostlock.app.ui.util.pauseOptionLabel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -219,6 +221,62 @@ fun ProfileScreen(
                         uncheckedTrackColor = SurfaceHigh
                     )
                 )
+            }
+        }
+
+        SectionHeader(title = "Pause allowance")
+        AppCard {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(SurfaceHigh),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Pause,
+                            contentDescription = null,
+                            tint = AccentFrost,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Pauses per session",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = TextPrimary
+                        )
+                        Text(
+                            text = "Cap how often a normal session can be paused. Strict Mode already blocks pausing entirely.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary
+                        )
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(0, 1, 2).forEach { count ->
+                        MoodChip(
+                            text = pauseOptionLabel(count),
+                            selected = state.maxPauses == count,
+                            onClick = { viewModel.setMaxPauses(count) }
+                        )
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(3, -1).forEach { count ->
+                        MoodChip(
+                            text = pauseOptionLabel(count),
+                            selected = state.maxPauses == count,
+                            onClick = { viewModel.setMaxPauses(count) }
+                        )
+                    }
+                }
             }
         }
 

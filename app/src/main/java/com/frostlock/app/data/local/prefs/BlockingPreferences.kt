@@ -114,7 +114,9 @@ class BlockingPreferences @Inject constructor(@ApplicationContext context: Conte
         phase: String = "FOCUS",
         round: Int = 1,
         breakMinutes: Int = 5,
-        breaksEnabled: Boolean = true
+        breaksEnabled: Boolean = true,
+        pausesUsed: Int = 0,
+        maxPauses: Int = 2
     ) {
         prefs.edit()
             .putString(KEY_TIMER_MODE, mode)
@@ -126,6 +128,8 @@ class BlockingPreferences @Inject constructor(@ApplicationContext context: Conte
             .putInt(KEY_TIMER_ROUND, round)
             .putInt(KEY_TIMER_BREAK_MINUTES, breakMinutes)
             .putBoolean(KEY_TIMER_BREAKS_ENABLED, breaksEnabled)
+            .putInt(KEY_TIMER_PAUSES_USED, pausesUsed)
+            .putInt(KEY_TIMER_MAX_PAUSES, maxPauses)
             .apply()
     }
 
@@ -140,6 +144,8 @@ class BlockingPreferences @Inject constructor(@ApplicationContext context: Conte
             .remove(KEY_TIMER_ROUND)
             .remove(KEY_TIMER_BREAK_MINUTES)
             .remove(KEY_TIMER_BREAKS_ENABLED)
+            .remove(KEY_TIMER_PAUSES_USED)
+            .remove(KEY_TIMER_MAX_PAUSES)
             .apply()
     }
 
@@ -162,6 +168,10 @@ class BlockingPreferences @Inject constructor(@ApplicationContext context: Conte
 
     fun savedTimerBreaksEnabled(): Boolean = prefs.getBoolean(KEY_TIMER_BREAKS_ENABLED, true)
 
+    fun savedTimerPausesUsed(): Int = prefs.getInt(KEY_TIMER_PAUSES_USED, 0)
+
+    fun savedTimerMaxPauses(): Int = prefs.getInt(KEY_TIMER_MAX_PAUSES, 2)
+
     companion object {
         const val PREFS_NAME = "frostlock_blocking"
         const val KEY_ENABLED = "blocking_enabled"
@@ -179,6 +189,8 @@ class BlockingPreferences @Inject constructor(@ApplicationContext context: Conte
         const val KEY_TIMER_ROUND = "timer_round"
         const val KEY_TIMER_BREAK_MINUTES = "timer_break_minutes"
         const val KEY_TIMER_BREAKS_ENABLED = "timer_breaks_enabled"
+        const val KEY_TIMER_PAUSES_USED = "timer_pauses_used"
+        const val KEY_TIMER_MAX_PAUSES = "timer_max_pauses"
 
         /** How long a single heartbeat keeps blocking alive. */
         const val HEARTBEAT_WINDOW_MS = 5_000L
