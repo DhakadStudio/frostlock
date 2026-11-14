@@ -7,7 +7,9 @@ import com.frostlock.app.data.local.db.SessionEntity
 import com.frostlock.app.data.local.prefs.SubjectStore
 import com.frostlock.app.data.local.prefs.subjectKey
 import com.frostlock.app.ui.util.Achievement
+import com.frostlock.app.ui.util.FocusLevel
 import com.frostlock.app.ui.util.buildAchievements
+import com.frostlock.app.ui.util.focusLevelFor
 import com.frostlock.app.ui.util.computeStreak
 import com.frostlock.app.ui.util.localDateOf
 import com.frostlock.app.ui.util.tagBreakdown
@@ -40,6 +42,7 @@ data class StatsUiState(
     val days: List<DayBar> = emptyList(),
     val tags: List<TagTotal> = emptyList(),
     val achievements: List<Achievement> = emptyList(),
+    val level: FocusLevel = focusLevelFor(0L),
     val recent: List<SessionEntity> = emptyList()
 ) {
     val averageSeconds: Long
@@ -93,6 +96,7 @@ class StatsViewModel @Inject constructor(
                 totalSessions = partial.totalSessions,
                 startTimes = partial.recent.map { it.startedAt }
             ),
+            level = focusLevelFor(partial.totalSeconds),
             recent = partial.recent.take(10)
         )
     }.stateIn(

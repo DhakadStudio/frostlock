@@ -55,6 +55,7 @@ import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.util.AchievementCategory
+import com.frostlock.app.ui.util.FocusLevel
 import com.frostlock.app.ui.util.TagTotal
 import com.frostlock.app.ui.util.formatDuration
 
@@ -175,6 +176,8 @@ fun StatsScreen(
                 }
             }
         }
+
+        LevelCard(level = state.level)
 
         // Grid stats
         Row(
@@ -350,6 +353,82 @@ fun StatsScreen(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun LevelCard(level: FocusLevel) {
+    AppCard {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(SurfaceHigh),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AcUnit,
+                        contentDescription = null,
+                        tint = AccentFrost,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "FREEZE LEVEL",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextSecondary
+                    )
+                    Text(
+                        text = "Level ${level.level} · ${level.title}",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = TextPrimary
+                    )
+                }
+                Text(
+                    text = if (level.totalMinutes >= 60) {
+                        "${level.totalMinutes / 60}h ${level.totalMinutes % 60}m total"
+                    } else {
+                        "${level.totalMinutes}m total"
+                    },
+                    style = MaterialTheme.typography.labelLarge,
+                    color = AccentFrost
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(SurfaceHigh)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(level.progress.coerceIn(0f, 1f))
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Brush.horizontalGradient(listOf(PrimaryIce, GlacierBlue)))
+                )
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "${level.minutesIntoLevel}m / ${level.minutesForNextLevel}m",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "${level.minutesToNextLevel}m to level ${level.level + 1}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AccentFrost
+                )
+            }
+        }
     }
 }
 
