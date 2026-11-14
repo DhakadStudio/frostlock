@@ -36,7 +36,7 @@ Legend: `[x]` shipped in FrostLock · `[ ]` missing · `[~]` partial · `[!]` de
 | Feature | Detail |
 | --- | --- |
 | App identity | FrostLock, `com.frostlock.app`, ice/freezer theme, custom frozen-lock launcher + round icon |
-| Offline guarantees | Only permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`. **No INTERNET.** No ads, analytics, billing or accounts |
+| Offline guarantees | Only permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, exact alarms, boot, and an optional overlay permission for the floating timer. **No INTERNET.** No ads, analytics, billing or accounts |
 | Storage | Room (sessions, streaks, profile) + SharedPreferences (limits, schedules, subjects, blocking, focus settings) + DataStore (onboarding done) |
 | Backup | Android local backup only (`allowBackup`, extraction rules) |
 | Localisation | English only (no `values-xx` folders) |
@@ -149,9 +149,9 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 
 ### 2.10 Engineering
 
-- 151 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, schedule streaks, deadline countdowns, session stamps, freeze levels, achievement sharing, app-limit warnings, suggested limits, showcase logos, achievements, stats, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, notification decisions, inbox grouping and widget maths.
+- 154 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, schedule streaks, deadline countdowns, session stamps, freeze levels, achievement sharing, bubble labels, app-limit warnings, suggested limits, showcase logos, achievements, stats, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, notification decisions, inbox grouping and widget maths.
 - Verified on emulator `Medium_Phone_API_37.0` including blocking and full onboarding.
-- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`; freeze level `249975b`; achievement sharing `8b0d3d5`; schedule streak `95de98b`.
+- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`; freeze level `249975b`; achievement sharing `8b0d3d5`; schedule streak `95de98b`; floating focus bubble `b00e586`.
 
 ---
 
@@ -175,7 +175,7 @@ Sources: installed APK v75.1.2113 (manifest activities/services, 96k resource li
 - Strict mode (“no cheating till timer ends”), “make this session stricter”.
 - Session summary at the end; session tags; skip/discard session.
 - Focus music/ambience (rain, deep-focus, “science-backed”) and premium themes (“Crystal lock” UI).
-- Floating focus bubble/button and a focus widget.
+- Floating focus bubble/button and a focus widget. FrostLock now has an opt-in draggable bubble.
 - Scheduled-session alarms (“alarm for your scheduled focus sessions”).
 - “C68 focus experience” (special full-screen timer experience).
 
@@ -302,7 +302,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 32 | Weekly report | **Yes** — week navigation, comparison, daily bars, best day, subjects | Yes (Pro for past days) | Similar; FrostLock keeps it free | Tie / FrostLock |
 | 33 | Session notes | Yes — editable from the diary and the post-session summary | Yes + study stamps/photos | FrostLock surfaces them too; Regain adds photos | Tie |
 | 34 | Study diary | **Yes** — day grouping, search, reflective notes, derived stamps | Yes (notes + stamps/photos) | FrostLock now shows stamps too; Regain adds photos | Tie |
-| 35 | Focus bubble / floating timer | **No** | Yes | Gap | Regain |
+| 35 | Focus bubble / floating timer | **Yes** — opt-in draggable overlay during focus | Yes | Similar; FrostLock asks for the overlay permission only when enabled | Tie |
 | 36 | Accounts / cloud sync | **No** (local only) | Yes + backup/restore | Opposite design choices | FrostLock (privacy) |
 | 37 | Ads / analytics / tracking | **No** | Yes (SDKs) | Opposite | FrostLock |
 | 38 | Subscription / paywall | **No** — everything free | Pro tier + free caps | Opposite | FrostLock |
@@ -310,7 +310,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 40 | Onboarding effort | 10 quick slides | Long conversational + permissions + login | FrostLock faster | FrostLock |
 | 41 | APK size | ~21 MB debug | ~58 MB base + splits | FrostLock smaller | FrostLock |
 | 42 | Localisation | English only | Many languages | Gap | Regain |
-| 43 | Permission footprint | 3 permissions | 15+ incl. usage, notifications, admin | FrostLock safer | FrostLock |
+| 43 | Permission footprint | A short list; overlay only if the floating bubble is enabled | 15+ incl. usage, notifications, admin | FrostLock safer | FrostLock |
 | 44 | Usage tracking method | Accessibility foreground time | UsageStats permission | Both valid; FrostLock avoids a permission | FrostLock (privacy) |
 | 45 | Adult-content blocking | **No** | Yes | Gap | Regain |
 | 46 | Study websites/channels allowlist | **No** | Yes | Gap | Regain |
@@ -342,6 +342,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | Focus stamps | Per-session badges derived from start hour, weekday and length, shown in the post-session summary and diary | `1c27ae4` |
 | Freeze level | Lifetime focus minutes become widening levels with ice titles, shown on the stats screen with progress to the next | `249975b` |
 | Schedule streak | Consecutive scheduled days with a session inside a rule window, shown on the rules screen | `95de98b` |
+| Floating focus bubble | Opt-in draggable timer overlay during focus, drawn by the foreground service | `b00e586` |
 | Achievement sharing | Tap an unlocked badge for a themed detail card and share it through the system sheet | `8b0d3d5` |
 | Research discipline | Earlier Regain research notes (since removed in rename) | `ab74654`, `fb74d3e` |
 
@@ -401,7 +402,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [ ] Session photos (optional camera, local only)
 - [x] Study diary (day grouping, search, editable reflections)
 - [ ] Phone-unlock tracking
-- [ ] Focus bubble / floating timer
+- [x] Focus bubble / floating timer (opt-in overlay, hidden during breaks)
 - [~] Eight widget types: **4 shipped** (focus today, daily goal, week at a glance, focus calendar); usage, unlock count and Pro pass are missing
 - [x] Achievement sharing (unlocked badges share plain text via the system sheet)
 
@@ -423,7 +424,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - **Fully offline.** No INTERNET permission; blocking, stats, badges and onboarding all work in airplane mode.
 - **No account.** No sign-in wall; the app is usable seconds after install.
 - **No ads, analytics, billing, or Pro tier.** “Free forever” is literal.
-- **3 permissions vs 15+.** No usage-access, notification-listener, device-admin or camera permissions.
+- **A short permission list vs 15+.** No usage-access, notification-listener, device-admin or camera permissions; overlay access is optional.
 - **Subject profiles own app sets.** “Physics” and “Work” can block different apps; sessions reuse them.
 - **One-off date rules.** Block only on an exam day, not every week.
 - **Per-rule app sets + overnight windows.** More flexible than Regain's schedule model in these two respects.
@@ -508,10 +509,10 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 - [x] Achievement sharing — unlocked badges share plain text via the system sheet.
 - [x] Schedule streak — consecutive scheduled days with a session inside a rule window.
 - [ ] Session photos (local only, optional camera permission).
-- [ ] Reward/level layer on top of the existing badges (no currency, no store).
-- [ ] Focus bubble / floating timer.
+- [~] Reward/level layer on top of the existing badges (a freeze level ships; no currency, no store).
+- [x] Focus bubble / floating timer — opt-in draggable overlay, tap to return.
 - [~] Exam/goal profiles stored locally (no exam-data upload). **A local deadline countdown ships**; exam-tuned schedules are still missing.
-- [ ] Schedule streak.
+- [x] Schedule streak.
 - [ ] Multi-language resources.
 
 ### Never
@@ -523,7 +524,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 ## 11. Verified facts & commands
 
 - Build: `JAVA_HOME=/snap/android-studio/250/jbr ANDROID_HOME=/home/vishal/Android/Sdk ./gradlew :app:assembleDebug`
-- Tests: `:app:testDebugUnitTest` → **151 tests, 0 failures**
+- Tests: `:app:testDebugUnitTest` → **154 tests, 0 failures**
 - Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - Accessibility component: `com.frostlock.app/com.frostlock.app.blocking.FocusBlockAccessibilityService`
 - Re-enable service:
@@ -532,9 +533,9 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
   adb shell settings put secure accessibility_enabled 1
   ```
 - Regain APK inspected at `/tmp/opencode/regain.apk` (v75.1.2113, 58 MB base); it was not retained after the analysis.
-- FrostLock permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `RECEIVE_BOOT_COMPLETED`, `USE_EXACT_ALARM` only. Still **no INTERNET**.
+- FrostLock permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `RECEIVE_BOOT_COMPLETED`, `USE_EXACT_ALARM`, and an optional `SYSTEM_ALERT_WINDOW` for the floating bubble. Still **no INTERNET**.
 - FrostLock manifest: accessibility service, focus foreground service, schedule reminder receiver, notification listener service, four widget providers.
-- Test files: 23 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `ScheduleStreakTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `FocusLevelTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`).
+- Test files: 24 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `ScheduleStreakTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `FocusLevelTest`, `FocusBubbleTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`).
 - Current onboarding page count: 10 (`OnboardingPages.COUNT`).
 
 ---
