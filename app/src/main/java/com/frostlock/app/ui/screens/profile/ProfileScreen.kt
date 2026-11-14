@@ -525,7 +525,7 @@ fun ProfileScreen(
         AppCard {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("•  Website & Shorts blocker", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
-                Text("•  Session photos & focus stamps", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+                Text("•  Session photos", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
                 Text("•  Focus groups & leaderboards", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
             }
         }

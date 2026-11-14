@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -66,6 +68,7 @@ import com.frostlock.app.ui.util.formatDuration
 import com.frostlock.app.ui.util.formatSessionTime
 import com.frostlock.app.ui.util.modeIcon
 import com.frostlock.app.ui.util.modeLabel
+import com.frostlock.app.ui.util.stampsFor
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -284,6 +287,7 @@ private fun DayHeader(day: DiaryDay) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DiaryEntryCard(session: SessionEntity, onEdit: () -> Unit) {
     AppCard(modifier = Modifier.clickable(onClick = onEdit)) {
@@ -330,6 +334,29 @@ private fun DiaryEntryCard(session: SessionEntity, onEdit: () -> Unit) {
                         style = MaterialTheme.typography.bodySmall,
                         color = if (session.completed) SuccessGreen else TextSecondary
                     )
+                }
+            }
+
+            val stamps = stampsFor(session)
+            if (stamps.isNotEmpty()) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    stamps.forEach { stamp ->
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(100.dp))
+                                .background(AccentFrost.copy(alpha = 0.10f))
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = stamp.label,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = AccentFrost
+                            )
+                        }
+                    }
                 }
             }
 

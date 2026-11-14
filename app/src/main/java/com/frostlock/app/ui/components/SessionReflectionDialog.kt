@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -48,11 +50,13 @@ import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.util.buildSessionSummary
 import com.frostlock.app.ui.util.formatDuration
+import com.frostlock.app.ui.util.stampsFor
 
 /**
  * The post-session summary: what was planned, what was actually focused, the
  * subject/mode, the streak after saving, and a local study-diary reflection.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SessionReflectionDialog(
     session: SessionEntity,
@@ -170,6 +174,36 @@ fun SessionReflectionDialog(
                                 icon = true,
                                 modifier = Modifier.weight(1f)
                             )
+                        }
+                    }
+                }
+
+                val stamps = stampsFor(session)
+                if (stamps.isNotEmpty()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            text = "STAMPS EARNED",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = TextSecondary
+                        )
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            stamps.forEach { stamp ->
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(100.dp))
+                                        .background(AccentFrost.copy(alpha = 0.12f))
+                                        .padding(horizontal = 9.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = stamp.label,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = AccentFrost
+                                    )
+                                }
+                            }
                         }
                     }
                 }
