@@ -81,6 +81,26 @@ class AchievementsTest {
     }
 
     @Test
+    fun `share text names the badge and keeps the offline pitch`() {
+        val achievement = Achievement(
+            id = "streak_7d",
+            badge = "7D",
+            title = "Streak 7d",
+            description = "Focus on 7 days in a row",
+            current = 7L,
+            target = 7L,
+            category = AchievementCategory.STREAK
+        )
+
+        val text = achievementShareText(achievement)
+
+        assertTrue(text.contains("Streak 7d"))
+        assertTrue(text.contains("Focus on 7 days in a row"))
+        assertTrue(text.contains("7 / 7 days"))
+        assertTrue(text.contains("offline focus timer"))
+    }
+
+    @Test
     fun `badge progress is clamped and labelled per category`() {
         val achievement = Achievement(
             id = "focus_10h",

@@ -112,6 +112,12 @@ fun longestStreak(startTimes: List<Long>): Int {
     return best
 }
 
+/** Copy used by the local share sheet. No image or network is needed. */
+fun achievementShareText(achievement: Achievement): String =
+    "I unlocked \"${achievement.title}\" in FrostLock — " +
+        "${achievement.description} (${achievement.progressLabel}).\n\n" +
+        "FrostLock: offline focus timer and app blocker."
+
 fun achievementCategoryLabel(category: AchievementCategory): String = when (category) {
     AchievementCategory.FOCUS -> "Focus milestones"
     AchievementCategory.STREAK -> "Streak milestones"
