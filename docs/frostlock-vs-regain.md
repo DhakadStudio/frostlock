@@ -1,6 +1,6 @@
 # FrostLock vs Regain — complete feature inventory & gap analysis
 
-Last updated: **2026-11-13**
+Last updated: **2026-11-14**
 FrostLock `com.frostlock.app` v1.0 · Regain `ai.regainapp` v75.1.2113
 
 This file is the single source of truth for:
@@ -66,11 +66,13 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 | Modes | Pomodoro, Timer (countdown), Stopwatch |
 | Length | 1 minute – 8 hours; last chosen duration remembered |
 | Pomodoro | Rounds + configurable breaks (1–30 min), skip break, “Round N”, break countdown |
-| Pause / resume | Available in normal mode; disabled in strict mode |
+| Pause / resume | Available in normal mode; capped by a per-session pause allowance (Off, 1, 2, 3, or no limit) |
+| Pause allowance | Set on Profile; defaults to 2 pauses per session and resets each round. Strict Mode ignores it and blocks pausing outright |
 | Strict mode | No pause, no early exit until the timer ends; hold-to-end override |
 | Session intent | “One thing for this session”, visible on timer + immersive screen |
 | Subject/tag | Pick a subject for the session; each subject owns an app set |
 | Post-session reflection | Note (max 280 chars), save, delete/discard last session |
+| End / discard | Stopping a 5s+ session asks whether to save it or discard it with no diary or stats entry |
 | Focus Guard | Optional reminder every 10 minutes during a session |
 | Immersive mode | Frosted disc, snowdrifts, ambient animation, minimisable |
 | Background | Foreground service keeps timer + blocking alive with screen off |
@@ -268,7 +270,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 
 | # | Capability | FrostLock | Regain | Difference | Better |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Focus timer (Pomodoro/countdown/stopwatch) | Yes | Yes | Regain adds skip/discard and session summary | Tie |
+| 1 | Focus timer (Pomodoro/countdown/stopwatch) | Yes + save/discard on stop + pause cap | Yes | Regain adds skip/discard and session summary; FrostLock now has both plus a local pause allowance | Tie |
 | 2 | Configurable breaks | Yes (1–30 min) | Yes | Similar | Tie |
 | 3 | Strict mode (no early exit) | Yes + hold-to-end | Yes, “end only during break” | Similar intent | Tie |
 | 4 | Subject/tags per session | Subject owns an app set | Tag label only | **FrostLock stronger** | FrostLock |
@@ -316,7 +318,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 46 | Adult-content blocking | **No** | Yes | Gap | Regain |
 | 47 | Study websites/channels allowlist | **No** | Yes | Gap | Regain |
 | 48 | Session summary screen | **Yes** — planned vs actual, subject, note, streak impact | Full summary | Similar | Tie |
-| 49 | Pause limits | Strict disables pause | Max pauses per session | Gap | Regain |
+| 49 | Pause limits | **Yes** — Off/1/2/3/no-limit per session; Strict Mode blocks pausing entirely | Max pauses per session | Similar, and FrostLock keeps it local | Tie |
 | 50 | Multi-language UI | **No** | Yes | Gap | Regain |
 | 51 | Data export / backup beyond OS | **No** | Cloud backup | Different | FrostLock (privacy) |
 
@@ -345,6 +347,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | Schedule streak | Consecutive scheduled days with a session inside a rule window, shown on the rules screen | `95de98b` |
 | Floating focus bubble | Opt-in draggable timer overlay during focus, drawn by the foreground service | `b00e586` |
 | Session photos | One optional local photo per session, picked with the system picker, shown as a diary banner with a full-screen viewer | `8915202` |
+| Pause limits + discard | A per-session pause allowance on Profile, plus a save/discard choice when stopping a partial session | `b45488f` |
 | Achievement sharing | Tap an unlocked badge for a themed detail card and share it through the system sheet | `8b0d3d5` |
 | Research discipline | Earlier Regain research notes (since removed in rename) | `ab74654`, `fb74d3e` |
 
@@ -382,7 +385,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [~] Exam date/month awareness (a local deadline countdown ships; exam-tuned scheduling is still missing)
 - [x] Morning/afternoon/evening/night session presets (one-tap windows in the rule editor)
 - [x] Schedule streak (separate from daily streak)
-- [ ] Session skip/discard + max-pause rules
+- [x] Session skip/discard + max-pause rules
 - [x] Full session summary screen
 
 ### C. Social & accountability
@@ -515,6 +518,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 - [x] Focus bubble / floating timer — opt-in draggable overlay, tap to return.
 - [~] Exam/goal profiles stored locally (no exam-data upload). **A local deadline countdown ships**; exam-tuned schedules are still missing.
 - [x] Schedule streak.
+- [x] **Session skip/discard + max pauses** — stop asks save or discard, breaks can be skipped, and Profile caps normal-session pauses.
 - [ ] Multi-language resources.
 
 ### Never
@@ -526,7 +530,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 ## 11. Verified facts & commands
 
 - Build: `JAVA_HOME=/snap/android-studio/250/jbr ANDROID_HOME=/home/vishal/Android/Sdk ./gradlew :app:assembleDebug`
-- Tests: `:app:testDebugUnitTest` → **160 tests, 0 failures**
+- Tests: `:app:testDebugUnitTest` → **167 tests, 0 failures**
 - Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - Accessibility component: `com.frostlock.app/com.frostlock.app.blocking.FocusBlockAccessibilityService`
 - Re-enable service:
@@ -537,7 +541,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 - Regain APK inspected at `/tmp/opencode/regain.apk` (v75.1.2113, 58 MB base); it was not retained after the analysis.
 - FrostLock permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `RECEIVE_BOOT_COMPLETED`, `USE_EXACT_ALARM`, and an optional `SYSTEM_ALERT_WINDOW` for the floating bubble. Photos go through the system picker, so no camera or storage permission is declared. Still **no INTERNET**.
 - FrostLock manifest: accessibility service, focus foreground service, schedule reminder receiver, notification listener service, four widget providers.
-- Test files: 25 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `ScheduleStreakTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `FocusLevelTest`, `FocusBubbleTest`, `SessionPhotosTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`).
+- Test files: 26 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `ScheduleStreakTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `FocusLevelTest`, `FocusBubbleTest`, `FocusPausesTest`, `SessionPhotosTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`).
 - Current onboarding page count: 10 (`OnboardingPages.COUNT`).
 
 ---
