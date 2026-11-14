@@ -149,9 +149,9 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 
 ### 2.10 Engineering
 
-- 134 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, deadline countdowns, session stamps, app-limit warnings, suggested limits, showcase logos, achievements, stats, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, notification decisions, inbox grouping and widget maths.
+- 141 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, deadline countdowns, session stamps, freeze levels, app-limit warnings, suggested limits, showcase logos, achievements, stats, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, notification decisions, inbox grouping and widget maths.
 - Verified on emulator `Medium_Phone_API_37.0` including blocking and full onboarding.
-- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`.
+- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`; freeze level `249975b`.
 
 ---
 
@@ -236,6 +236,7 @@ Sources: installed APK v75.1.2113 (manifest activities/services, 96k resource li
 - Current streak, best streak, session streak, schedule streak, streak-loss warnings.
 - Achievement badges, “Your Achievements”, share achievement, achievement unlocked screens.
 - Focus stamps: collect badges per session from its start time, weekday and length; Regain also lets you attach a photo.
+- Levels: FrostLock derives a local freeze level from lifetime focus minutes, with no currency or store.
 - Milestones and invite milestones; rewards for focusing; creator rewards.
 - Difficulty levels, levels, avatar creation (“Creating your avatar”), focus wizard offers.
 
@@ -294,7 +295,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 25 | Wake-up nudges / accountability | Focus Guard only | Group nudges + guilt trips | Different | Regain (social) |
 | 26 | Streaks | Daily streak + best | Daily/session/schedule streak | Similar | Tie |
 | 27 | Achievements | 16 offline badges | Badges + share + rewards | Regain more gamified | Regain (motivation) / FrostLock (offline) |
-| 28 | Rewards / levels / stamps | **Partial** — five derived session stamps; no rewards, levels or currency | Yes | FrostLock covers the stamp side only | Regain |
+| 28 | Rewards / levels / stamps | **Partial** — five derived session stamps plus a freeze level; no rewards, currency, difficulty tiers or store | Yes | FrostLock covers stamps and levelling | Regain |
 | 29 | Focus music / themes | **No** | Yes (premium) | Gap | Regain |
 | 30 | Widgets | **4** (focus, daily goal, week at a glance, calendar) | 8 types incl. usage, unlock count, calendar | Smaller gap; FrostLock now covers the calendar and avoids usage/unlock permissions | Regain (breadth) / FrostLock (privacy) |
 | 31 | Phone-unlock tracking | **No** | Yes (widget + stats) | Gap | Regain |
@@ -339,6 +340,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | Rule overlap warnings | Amber heads-up in the editor and a badge on every colliding rule, including overnight and one-off cases | `091ba55` |
 | Focus deadline | Local name + date countdown on Home and Profile, with a dedicated editor and themed date dialog | `31e69c3` |
 | Focus stamps | Per-session badges derived from start hour, weekday and length, shown in the post-session summary and diary | `1c27ae4` |
+| Freeze level | Lifetime focus minutes become widening levels with ice titles, shown on the stats screen with progress to the next | `249975b` |
 | Research discipline | Earlier Regain research notes (since removed in rename) | `ab74654`, `fb74d3e` |
 
 Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e2c92e` replaced them with real icons.
@@ -392,7 +394,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 
 - [ ] Focus music / ambience
 - [ ] Premium themes (Crystal lock etc.)
-- [ ] Rewards, levels, difficulty levels
+- [~] Rewards, levels, difficulty levels (a freeze level ships; no currency, store or difficulty tiers)
 - [x] Focus stamps (time, weekend and length badges)
 - [ ] Session photos (optional camera, local only)
 - [x] Study diary (day grouping, search, editable reflections)
@@ -500,6 +502,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 ### P2 — motivation & polish
 
 - [x] Focus stamps — derived locally from start time, weekday and length, shown in the summary and diary.
+- [x] Freeze level — local levelling from lifetime focus minutes, no currency or store.
 - [ ] Session photos (local only, optional camera permission).
 - [ ] Reward/level layer on top of the existing badges (no currency, no store).
 - [ ] Focus bubble / floating timer.
@@ -516,7 +519,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 ## 11. Verified facts & commands
 
 - Build: `JAVA_HOME=/snap/android-studio/250/jbr ANDROID_HOME=/home/vishal/Android/Sdk ./gradlew :app:assembleDebug`
-- Tests: `:app:testDebugUnitTest` → **134 tests, 0 failures**
+- Tests: `:app:testDebugUnitTest` → **141 tests, 0 failures**
 - Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - Accessibility component: `com.frostlock.app/com.frostlock.app.blocking.FocusBlockAccessibilityService`
 - Re-enable service:
@@ -527,7 +530,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 - Regain APK inspected at `/tmp/opencode/regain.apk` (v75.1.2113, 58 MB base); it was not retained after the analysis.
 - FrostLock permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `RECEIVE_BOOT_COMPLETED`, `USE_EXACT_ALARM` only. Still **no INTERNET**.
 - FrostLock manifest: accessibility service, focus foreground service, schedule reminder receiver, notification listener service, four widget providers.
-- Test files: 21 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`).
+- Test files: 22 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `FocusLevelTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`).
 - Current onboarding page count: 10 (`OnboardingPages.COUNT`).
 
 ---
