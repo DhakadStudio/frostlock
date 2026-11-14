@@ -8,6 +8,7 @@
     <!-- Schedule reminders are time-critical, so ask for exact alarm delivery.
          The scheduler still falls back to an inexact alarm if this is denied. -->
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- Needed to list launchable apps for the app picker on Android 11+. -->
     <queries>

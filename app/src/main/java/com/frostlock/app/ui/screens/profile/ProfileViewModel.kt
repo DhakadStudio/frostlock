@@ -21,6 +21,7 @@ data class ProfileUiState(
     val breaksEnabled: Boolean = true,
     val breakMinutes: Int = FocusSettings.DEFAULT_BREAK_MINUTES,
     val focusGuardEnabled: Boolean = false,
+    val bubbleEnabled: Boolean = false,
     val deadline: FocusDeadline? = null
 )
 
@@ -47,6 +48,8 @@ class ProfileViewModel @Inject constructor(
         )
     }.combine(deadlineStore.deadline) { state, deadline ->
         state.copy(deadline = deadline)
+    }.combine(focusSettings.bubbleEnabled) { state, bubble ->
+        state.copy(bubbleEnabled = bubble)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -60,6 +63,8 @@ class ProfileViewModel @Inject constructor(
     fun setBreakMinutes(minutes: Int) = focusSettings.setBreakMinutes(minutes)
 
     fun setFocusGuardEnabled(enabled: Boolean) = focusSettings.setFocusGuardEnabled(enabled)
+
+    fun setBubbleEnabled(enabled: Boolean) = focusSettings.setBubbleEnabled(enabled)
 
     fun setDailyGoalMinutes(minutes: Int) {
         focusSettings.setDailyGoalMinutes(minutes)

@@ -41,6 +41,10 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
     private val _focusGuardEnabled = MutableStateFlow(prefs.getBoolean(KEY_FOCUS_GUARD, false))
     val focusGuardEnabled: StateFlow<Boolean> = _focusGuardEnabled.asStateFlow()
 
+    /** A small draggable timer floating over other apps during a focus session. */
+    private val _bubbleEnabled = MutableStateFlow(prefs.getBoolean(KEY_FOCUS_BUBBLE, false))
+    val bubbleEnabled: StateFlow<Boolean> = _bubbleEnabled.asStateFlow()
+
     /** A local notification when a blocking rule starts and when it ends. */
     private val _scheduleRemindersEnabled =
         MutableStateFlow(prefs.getBoolean(KEY_SCHEDULE_REMINDERS, true))
@@ -80,6 +84,11 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
     fun setFocusGuardEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_FOCUS_GUARD, enabled).apply()
         _focusGuardEnabled.value = enabled
+    }
+
+    fun setBubbleEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_FOCUS_BUBBLE, enabled).apply()
+        _bubbleEnabled.value = enabled
     }
 
     fun setScheduleRemindersEnabled(enabled: Boolean) {
@@ -124,6 +133,7 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
         const val KEY_BREAKS_ENABLED = "pomodoro_breaks_enabled"
         const val KEY_BREAK_MINUTES = "pomodoro_break_minutes"
         const val KEY_FOCUS_GUARD = "focus_guard_enabled"
+        const val KEY_FOCUS_BUBBLE = "focus_bubble_enabled"
         const val KEY_SCHEDULE_REMINDERS = "schedule_reminders_enabled"
         const val KEY_NOTIFICATION_BLOCKING = "notification_blocking_enabled"
         const val KEY_SESSION_TAG = "last_session_tag"

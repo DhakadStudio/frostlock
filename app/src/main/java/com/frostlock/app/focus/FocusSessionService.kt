@@ -5,13 +5,26 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.graphics.Color
+import android.graphics.PixelFormat
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.content.Context
 import android.content.Intent
+import android.provider.Settings
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
+import android.view.Gravity
+import android.view.MotionEvent
+import android.view.WindowManager
+import android.widget.TextView
 import androidx.core.app.NotificationCompat
 import com.frostlock.app.R
 import com.frostlock.app.data.local.prefs.BlockingPreferences
+import com.frostlock.app.data.local.prefs.FocusSettings
 import com.frostlock.app.ui.MainActivity
+import com.frostlock.app.ui.util.focusBubbleLabel
 import com.frostlock.app.ui.util.formatClock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +34,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 /**
  * Keeps a focus session alive while the app is in the background.
@@ -38,6 +52,10 @@ class FocusSessionService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var job: Job? = null
     private lateinit var prefs: BlockingPreferences
+
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var bubble: TextView? = null
+    private var bubbleParams: WindowManager.LayoutParams? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -66,6 +84,7 @@ class FocusSessionService : Service() {
         createChannels()
         prefs.setSessionEndsAt(if (openEnded) 0L else until)
         startForeground(NOTIFICATION_ID, buildNotification(openEnded, 0L))
+        showBubble()
 
         job?.cancel()
         job = scope.launch {
@@ -77,6 +96,7 @@ class FocusSessionService : Service() {
                 prefs.setFocusWindow(now + BlockingPreferences.HEARTBEAT_WINDOW_MS)
                 val remaining = if (openEnded) 0L else (until - now).coerceAtLeast(0L)
                 notifyProgress(openEnded, remaining)
+                updateBubble(openEnded, remaining)
 
                 // Focus Guard: an opt-in nudge every ten minutes.
                 if (focusGuard && now - lastGuardAt >= FOCUS_GUARD_INTERVAL_MS) {
@@ -94,6 +114,7 @@ class FocusSessionService : Service() {
     private fun startBreak(until: Long) {
         createChannels()
         job?.cancel()
+        hideBubble()
         prefs.clearSession()
         startForeground(NOTIFICATION_ID, buildBreakNotification(0L))
 
@@ -115,6 +136,7 @@ class FocusSessionService : Service() {
     private fun stopSession() {
         job?.cancel()
         job = null
+        hideBubble()
         prefs.clearSession()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
@@ -122,6 +144,7 @@ class FocusSessionService : Service() {
 
     override fun onDestroy() {
         job?.cancel()
+        hideBubble()
         prefs.clearSession()
         stopForeground(STOP_FOREGROUND_REMOVE)
         scope.cancel()
@@ -162,6 +185,121 @@ class FocusSessionService : Service() {
             }
         )
     }
+
+    private fun bubbleEnabled(): Boolean =
+        getSharedPreferences(FocusSettings.PREFS_NAME, MODE_PRIVATE)
+            .getBoolean(FocusSettings.KEY_FOCUS_BUBBLE, false) &&
+            Settings.canDrawOverlays(this)
+
+    /**
+     * A small draggable pill above other apps. It is purely informational:
+     * tapping it returns to FrostLock, and it disappears when the session ends
+     * or a break starts.
+     */
+    private fun showBubble() {
+        if (!bubbleEnabled()) return
+        mainHandler.post {
+            if (bubble != null) return@post
+            val manager = getSystemService(WindowManager::class.java) ?: return@post
+            val view = TextView(this).apply {
+                setTextColor(Color.WHITE)
+                textSize = 17f
+                typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+                text = focusBubbleLabel(openEnded = true, remainingMs = 0L)
+                setPadding(dp(16), dp(8), dp(16), dp(8))
+                background = GradientDrawable().apply {
+                    cornerRadius = dp(24).toFloat()
+                    setColor(Color.parseColor("#E60E1B28"))
+                    setStroke(dp(1), Color.parseColor("#6638BDF8"))
+                }
+                elevation = dp(6).toFloat()
+            }
+            val params = WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                PixelFormat.TRANSLUCENT
+            ).apply {
+                gravity = Gravity.TOP or Gravity.END
+                x = dp(16)
+                y = dp(72)
+            }
+            attachDrag(view, params, manager)
+            runCatching { manager.addView(view, params) }.onSuccess {
+                bubble = view
+                bubbleParams = params
+            }
+        }
+    }
+
+    private fun attachDrag(
+        view: TextView,
+        params: WindowManager.LayoutParams,
+        manager: WindowManager
+    ) {
+        val slop = dp(8).toFloat()
+        var startX = 0
+        var startY = 0
+        var downX = 0f
+        var downY = 0f
+        var moved = false
+
+        view.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    startX = params.x
+                    startY = params.y
+                    downX = event.rawX
+                    downY = event.rawY
+                    moved = false
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val dx = event.rawX - downX
+                    val dy = event.rawY - downY
+                    if (abs(dx) > slop || abs(dy) > slop) moved = true
+                    params.x = (startX - dx).toInt().coerceAtLeast(0)
+                    params.y = (startY + dy).toInt().coerceAtLeast(0)
+                    runCatching { manager.updateViewLayout(view, params) }
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    if (!moved) openApp()
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun updateBubble(openEnded: Boolean, remainingMs: Long) {
+        val text = focusBubbleLabel(openEnded, remainingMs)
+        mainHandler.post { bubble?.text = text }
+    }
+
+    private fun hideBubble() {
+        mainHandler.post {
+            bubble?.let { view ->
+                runCatching {
+                    getSystemService(WindowManager::class.java)?.removeView(view)
+                }
+            }
+            bubble = null
+            bubbleParams = null
+        }
+    }
+
+    private fun openApp() {
+        startActivity(
+            Intent(this, MainActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        )
+    }
+
+    private fun dp(value: Int): Int =
+        (value * resources.displayMetrics.density).toInt()
 
     private fun contentIntent(): PendingIntent = PendingIntent.getActivity(
         this,
