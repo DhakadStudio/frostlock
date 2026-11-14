@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Icon
@@ -76,6 +77,7 @@ fun ScheduleScreen(
     val apps by viewModel.apps.collectAsState()
     val subjects by viewModel.subjects.collectAsState()
     val activeIds by viewModel.activeIds.collectAsState()
+    val scheduleStreak by viewModel.scheduleStreak.collectAsState()
     val remindersEnabled by viewModel.remindersEnabled.collectAsState()
 
     var editorOpen by remember { mutableStateOf(false) }
@@ -98,6 +100,7 @@ fun ScheduleScreen(
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.refreshActive()
                 viewModel.refreshSubjects()
+                viewModel.refreshStreak()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -199,6 +202,9 @@ fun ScheduleScreen(
         if (schedules.isNotEmpty()) {
             item {
                 UpcomingCard(upcoming = upcoming, now = now)
+            }
+            item {
+                StreakCard(days = scheduleStreak)
             }
         }
 
@@ -366,6 +372,49 @@ private fun ScheduleRow(
                 TextButton(onClick = onDelete) {
                     Text(text = "Delete", color = DangerRed)
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StreakCard(days: Int) {
+    AppCard {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(SurfaceHigh),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AcUnit,
+                    contentDescription = null,
+                    tint = if (days > 0) AccentFrost else TextSecondary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = if (days > 0) {
+                        "Schedule streak · $days ${if (days == 1) "day" else "days"}"
+                    } else {
+                        "Schedule streak"
+                    },
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextPrimary
+                )
+                Text(
+                    text = if (days > 0) {
+                        "You focused inside a rule window on $days scheduled ${if (days == 1) "day" else "days"} in a row."
+                    } else {
+                        "Start a session during a rule window to build one."
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
             }
         }
     }
