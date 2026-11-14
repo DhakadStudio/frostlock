@@ -2,23 +2,25 @@ package com.frostlock.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Base surfaces — polar night with frozen depth
-val BackgroundDark = Color(0xFF050B12)
-val BackgroundElevated = Color(0xFF0A1520)
-val SurfaceCard = Color(0xFF0E1B28)
-val SurfaceHigh = Color(0xFF152838)
-val StrokeSoft = Color(0xFF20394F)
+// Base surfaces — polar night with frozen depth. These read the active
+// IcePalette so switching themes restyles every screen without touching each
+// composable. Feedback colours stay constant for recognisability.
+val BackgroundDark: Color get() = FrostThemeState.palette.background
+val BackgroundElevated: Color get() = FrostThemeState.palette.backgroundElevated
+val SurfaceCard: Color get() = FrostThemeState.palette.surfaceCard
+val SurfaceHigh: Color get() = FrostThemeState.palette.surfaceHigh
+val StrokeSoft: Color get() = FrostThemeState.palette.strokeSoft
 
 // Accents — ice, glacier and frost
-val PrimaryIce = Color(0xFF38BDF8)
-val GlacierBlue = Color(0xFF0EA5E9)
-val AccentFrost = Color(0xFF7DD3FC)
-val GlowIce = Color(0xFFBAE6FD)
-val InkOnIce = Color(0xFF04202E)
+val PrimaryIce: Color get() = FrostThemeState.palette.primary
+val GlacierBlue: Color get() = FrostThemeState.palette.glacier
+val AccentFrost: Color get() = FrostThemeState.palette.accent
+val GlowIce: Color get() = FrostThemeState.palette.glow
+val InkOnIce: Color get() = FrostThemeState.palette.ink
 
 // Text
-val TextPrimary = Color(0xFFEAF7FF)
-val TextSecondary = Color(0xFF93AEC4)
+val TextPrimary: Color get() = FrostThemeState.palette.textPrimary
+val TextSecondary: Color get() = FrostThemeState.palette.textSecondary
 
 // Feedback
 val SuccessGreen = Color(0xFF2DD4BF)
@@ -26,5 +28,5 @@ val DangerRed = Color(0xFFFB7185)
 val WarnAmber = Color(0xFFFCD34D)
 
 // Gradients
-val GradientFrost = listOf(PrimaryIce, GlacierBlue)
-val GradientHero = listOf(Color(0xFF0B3B52), Color(0xFF071A28))
+val GradientFrost: List<Color> get() = FrostThemeState.palette.gradient
+val GradientHero: List<Color> get() = FrostThemeState.palette.heroGradient

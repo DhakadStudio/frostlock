@@ -5,35 +5,39 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    background = BackgroundDark,
-    onBackground = TextPrimary,
-    surface = SurfaceCard,
-    onSurface = TextPrimary,
-    surfaceVariant = SurfaceHigh,
-    onSurfaceVariant = TextSecondary,
-    surfaceContainer = SurfaceCard,
-    surfaceContainerHigh = SurfaceHigh,
-    surfaceContainerHighest = SurfaceHigh,
-    primary = PrimaryIce,
-    onPrimary = InkOnIce,
-    secondary = AccentFrost,
-    onSecondary = InkOnIce,
-    tertiary = GlowIce,
-    outline = StrokeSoft,
-    outlineVariant = StrokeSoft,
-    error = DangerRed
-)
-
 @Composable
 fun FrostLockTheme(
+    palette: IcePalette = FrostThemeState.palette,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = DarkColorScheme
+    // Assign before composing the content so every screen sees the new palette
+    // in the same frame. The colour getters read this state, so a change
+    // recomposes the whole tree.
+    FrostThemeState.palette = palette
+
+    val colorScheme = darkColorScheme(
+        background = palette.background,
+        onBackground = palette.textPrimary,
+        surface = palette.surfaceCard,
+        onSurface = palette.textPrimary,
+        surfaceVariant = palette.surfaceHigh,
+        onSurfaceVariant = palette.textSecondary,
+        surfaceContainer = palette.surfaceCard,
+        surfaceContainerHigh = palette.surfaceHigh,
+        surfaceContainerHighest = palette.surfaceHigh,
+        primary = palette.primary,
+        onPrimary = palette.ink,
+        secondary = palette.accent,
+        onSecondary = palette.ink,
+        tertiary = palette.glow,
+        outline = palette.strokeSoft,
+        outlineVariant = palette.strokeSoft,
+        error = DangerRed
+    )
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {

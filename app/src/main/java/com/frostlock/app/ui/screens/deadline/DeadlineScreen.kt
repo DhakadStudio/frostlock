@@ -58,6 +58,7 @@ import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SectionHeader
 import com.frostlock.app.ui.theme.AccentFrost
+import com.frostlock.app.ui.theme.GradientHero
 import com.frostlock.app.ui.theme.BackgroundDark
 import com.frostlock.app.ui.theme.DangerRed
 import com.frostlock.app.ui.theme.GradientFrost
@@ -417,7 +418,7 @@ private fun PreviewCard(title: String, date: String, today: LocalDate) {
             .clip(MaterialTheme.shapes.large)
             .background(
                 Brush.verticalGradient(
-                    listOf(Color(0xFF0B3B52), Color(0xFF071A28))
+                    GradientHero
                 )
             )
             .border(1.dp, StrokeSoft, MaterialTheme.shapes.large)

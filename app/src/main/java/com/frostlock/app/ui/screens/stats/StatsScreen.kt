@@ -47,6 +47,7 @@ import com.frostlock.app.ui.components.SectionHeader
 import com.frostlock.app.ui.components.SessionRow
 import com.frostlock.app.ui.components.StatTile
 import com.frostlock.app.ui.theme.AccentFrost
+import com.frostlock.app.ui.theme.GradientHero
 import com.frostlock.app.ui.theme.BackgroundDark
 import com.frostlock.app.ui.theme.GlacierBlue
 import com.frostlock.app.ui.theme.PrimaryIce
@@ -108,7 +109,7 @@ fun StatsScreen(
                     .clip(MaterialTheme.shapes.medium)
                     .background(
                         Brush.verticalGradient(
-                            listOf(Color(0xFF0B3B52), Color(0xFF071A28))
+                            GradientHero
                         )
                     )
                     .border(1.dp, StrokeSoft, MaterialTheme.shapes.medium)
@@ -140,7 +141,7 @@ fun StatsScreen(
                     .clip(MaterialTheme.shapes.medium)
                     .background(
                         Brush.verticalGradient(
-                            listOf(Color(0xFF0B3B52), Color(0xFF071A28))
+                            GradientHero
                         )
                     )
                     .border(1.dp, StrokeSoft, MaterialTheme.shapes.medium)

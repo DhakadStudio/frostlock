@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.frostlock.app.data.local.prefs.DeadlineStore
 import com.frostlock.app.data.local.prefs.FocusDeadline
 import com.frostlock.app.data.local.prefs.FocusSettings
+import com.frostlock.app.data.local.prefs.ThemeStore
+import com.frostlock.app.ui.theme.IcePalettes
 import com.frostlock.app.ui.util.PausePolicy
 import com.frostlock.app.widget.WidgetUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +26,7 @@ data class ProfileUiState(
     val maxPauses: Int = PausePolicy.DEFAULT,
     val focusGuardEnabled: Boolean = false,
     val bubbleEnabled: Boolean = false,
+    val themeKey: String = IcePalettes.Frost.key,
     val deadline: FocusDeadline? = null
 )
 
@@ -31,6 +34,7 @@ data class ProfileUiState(
 class ProfileViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val focusSettings: FocusSettings,
+    private val themeStore: ThemeStore,
     deadlineStore: DeadlineStore
 ) : ViewModel() {
 
@@ -54,6 +58,8 @@ class ProfileViewModel @Inject constructor(
         state.copy(bubbleEnabled = bubble)
     }.combine(focusSettings.maxPauses) { state, pauses ->
         state.copy(maxPauses = pauses)
+    }.combine(themeStore.paletteKey) { state, themeKey ->
+        state.copy(themeKey = themeKey)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -67,6 +73,8 @@ class ProfileViewModel @Inject constructor(
     fun setBreakMinutes(minutes: Int) = focusSettings.setBreakMinutes(minutes)
 
     fun setMaxPauses(count: Int) = focusSettings.setMaxPauses(count)
+
+    fun setTheme(key: String) = themeStore.setPalette(key)
 
     fun setFocusGuardEnabled(enabled: Boolean) = focusSettings.setFocusGuardEnabled(enabled)
 

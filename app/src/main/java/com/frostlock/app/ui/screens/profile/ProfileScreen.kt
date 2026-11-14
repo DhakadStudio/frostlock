@@ -57,8 +57,10 @@ import com.frostlock.app.widget.FocusWidgetProvider
 import com.frostlock.app.widget.WeeklyWidgetProvider
 import com.frostlock.app.widget.WidgetPinning
 import com.frostlock.app.ui.theme.AccentFrost
+import com.frostlock.app.ui.theme.GradientHero
 import com.frostlock.app.ui.theme.BackgroundDark
 import com.frostlock.app.ui.theme.GradientFrost
+import com.frostlock.app.ui.theme.IcePalettes
 import com.frostlock.app.ui.theme.PrimaryIce
 import com.frostlock.app.ui.theme.StrokeSoft
 import com.frostlock.app.ui.theme.SuccessGreen
@@ -113,7 +115,7 @@ fun ProfileScreen(
                 .clip(MaterialTheme.shapes.medium)
                 .background(
                     Brush.horizontalGradient(
-                        listOf(Color(0xFF0B3B52), Color(0xFF071A28))
+                        GradientHero
                     )
                 )
                 .border(1.dp, StrokeSoft, MaterialTheme.shapes.medium)
@@ -145,6 +147,54 @@ fun ProfileScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = SuccessGreen
                 )
+            }
+        }
+
+        SectionHeader(title = "Ice theme")
+        AppCard {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "Pick the palette that keeps you cool. It applies instantly across the app.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    IcePalettes.all.forEach { palette ->
+                        val selected = state.themeKey == palette.key
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(if (selected) SurfaceHigh else Color.Transparent)
+                                .border(
+                                    1.dp,
+                                    if (selected) palette.primary else StrokeSoft,
+                                    MaterialTheme.shapes.medium
+                                )
+                                .clickable { viewModel.setTheme(palette.key) }
+                                .padding(vertical = 10.dp, horizontal = 4.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .clip(CircleShape)
+                                    .background(Brush.linearGradient(palette.gradient))
+                                    .border(1.dp, palette.glow.copy(alpha = 0.5f), CircleShape)
+                            )
+                            Text(
+                                text = palette.name,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (selected) TextPrimary else TextSecondary,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
             }
         }
 

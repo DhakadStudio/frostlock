@@ -480,7 +480,7 @@ fun FocusScreen(
                 ActionCircle(
                     icon = Icons.Default.SkipNext,
                     label = "Skip break",
-                    container = Color(0xFF20394F),
+                    container = SurfaceHigh,
                     tint = TextPrimary,
                     onClick = { viewModel.skipBreak() },
                     modifier = Modifier.fillMaxWidth()
@@ -507,7 +507,7 @@ fun FocusScreen(
                     ActionCircle(
                         icon = Icons.Default.Pause,
                         contentDescription = if (state.canPause) "Pause" else "Pause limit reached",
-                        container = Color(0xFF20394F),
+                        container = SurfaceHigh,
                         tint = if (state.canPause) TextPrimary else TextSecondary.copy(alpha = 0.45f),
                         onClick = { if (state.canPause) viewModel.pause() },
                         modifier = Modifier.weight(1f)
@@ -532,7 +532,7 @@ fun FocusScreen(
                     ActionCircle(
                         icon = Icons.Default.Stop,
                         contentDescription = "Stop",
-                        container = Color(0xFF20394F),
+                        container = SurfaceHigh,
                         tint = com.frostlock.app.ui.theme.DangerRed,
                         onClick = {
                             if (state.elapsedSeconds >= 5 && !state.justCompleted) {
@@ -1076,7 +1076,7 @@ private fun TimerRing(
             val arcSize = Size(size.width, size.height)
 
             drawArc(
-                color = Color(0xFF152838),
+                color = SurfaceHigh,
                 startAngle = -90f,
                 sweepAngle = 360f,
                 useCenter = false,

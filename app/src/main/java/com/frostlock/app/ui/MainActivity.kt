@@ -19,6 +19,7 @@ import com.frostlock.app.reminder.ScheduleReminderScheduler
 import com.frostlock.app.ui.navigation.AppNavGraph
 import com.frostlock.app.ui.navigation.Screen
 import com.frostlock.app.ui.theme.FrostLockTheme
+import com.frostlock.app.ui.theme.IcePalettes
 import com.frostlock.app.widget.WidgetUpdater
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -39,7 +40,8 @@ class MainActivity : ComponentActivity() {
         scheduleReminders.rescheduleAll()
         requestNotificationPermissionIfNeeded()
         setContent {
-            FrostLockTheme {
+            val themeKey by mainViewModel.themeKey.collectAsState()
+            FrostLockTheme(palette = IcePalettes.fromKey(themeKey)) {
                 val onboardingDone by mainViewModel.onboardingDone.collectAsState()
                 if (onboardingDone != null) {
                     AppNavGraph(

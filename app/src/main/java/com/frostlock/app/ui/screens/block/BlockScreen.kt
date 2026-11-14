@@ -68,6 +68,7 @@ import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SectionHeader
 import com.frostlock.app.ui.theme.AccentFrost
+import com.frostlock.app.ui.theme.GradientHero
 import com.frostlock.app.ui.theme.BackgroundDark
 import com.frostlock.app.ui.theme.DangerRed
 import com.frostlock.app.ui.theme.GradientFrost
@@ -483,7 +484,7 @@ private fun BlockingToggleCard(enabled: Boolean, onToggle: (Boolean) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.medium)
-            .background(Brush.horizontalGradient(listOf(Color(0xFF0B3B52), Color(0xFF071A28))))
+            .background(Brush.horizontalGradient(GradientHero))
             .border(1.dp, StrokeSoft, MaterialTheme.shapes.medium)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically

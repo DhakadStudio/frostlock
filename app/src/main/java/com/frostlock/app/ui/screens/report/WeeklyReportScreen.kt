@@ -50,6 +50,7 @@ import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.StatTile
 import com.frostlock.app.ui.theme.AccentFrost
+import com.frostlock.app.ui.theme.GradientHero
 import com.frostlock.app.ui.theme.BackgroundDark
 import com.frostlock.app.ui.theme.DangerRed
 import com.frostlock.app.ui.theme.GlacierBlue
@@ -332,7 +333,7 @@ private fun HeroCard(report: WeeklyReport, isCurrentWeek: Boolean) {
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.large)
             .background(
-                Brush.verticalGradient(listOf(Color(0xFF0B3B52), Color(0xFF071A28)))
+                Brush.verticalGradient(GradientHero)
             )
             .border(1.dp, StrokeSoft, MaterialTheme.shapes.large)
             .padding(18.dp)

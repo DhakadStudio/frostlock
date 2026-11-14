@@ -47,6 +47,7 @@ import com.frostlock.app.ui.components.SessionRow
 import com.frostlock.app.ui.components.StatTile
 import com.frostlock.app.ui.components.StreakRing
 import com.frostlock.app.ui.theme.AccentFrost
+import com.frostlock.app.ui.theme.GradientHero
 import com.frostlock.app.ui.theme.BackgroundDark
 import com.frostlock.app.ui.theme.StrokeSoft
 import com.frostlock.app.ui.theme.SurfaceHigh
@@ -102,7 +103,7 @@ fun HomeScreen(
                 .clip(MaterialTheme.shapes.large)
                 .background(
                     Brush.verticalGradient(
-                        listOf(Color(0xFF0B3B52), Color(0xFF071A28))
+                        GradientHero
                     )
                 )
                 .border(1.dp, StrokeSoft, MaterialTheme.shapes.large)
