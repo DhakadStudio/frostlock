@@ -35,7 +35,7 @@ Legend: `[x]` shipped in FrostLock · `[ ]` missing · `[~]` partial · `[!]` de
 
 | Feature | Detail |
 | --- | --- |
-| App identity | FrostLock, `com.frostlock.app`, ice/freezer theme, custom frozen-lock launcher + round icon |
+| App identity | FrostLock, `com.frostlock.app`, ice/freezer theme, custom frozen-lock launcher + round icon, four selectable ice palettes (Frost, Aurora, Midnight, Crystal) |
 | Offline guarantees | Only permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, exact alarms, boot, and an optional overlay permission for the floating timer. Photos use the system picker, so there is **no camera or storage permission**. **No INTERNET.** No ads, analytics, billing or accounts |
 | Storage | Room (sessions, streaks, profile) + SharedPreferences (limits, schedules, subjects, blocking, focus settings) + DataStore (onboarding done) + app-private JPEGs for session photos |
 | Backup | Android local backup only (`allowBackup`, extraction rules) |
@@ -298,7 +298,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 26 | Streaks | Daily streak + best + schedule streak | Daily/session/schedule streak | FrostLock now has both daily and schedule streaks | Tie |
 | 27 | Achievements | 16 offline badges, tap to share unlocked ones | Badges + share + rewards | FrostLock now shares too, but keeps it text-only and offline | Tie / FrostLock (offline) |
 | 28 | Rewards / levels / stamps | **Partial** — five derived session stamps plus a freeze level; no rewards, currency, difficulty tiers or store | Yes | FrostLock covers stamps and levelling | Regain |
-| 29 | Focus music / themes | **No** | Yes (premium) | Gap | Regain |
+| 29 | Focus music / themes | **Partial** — 4 free ice palettes; no music | Yes (premium) | FrostLock covers theme variety; Regain adds ambience | Tie / Regain (music) |
 | 30 | Widgets | **4** (focus, daily goal, week at a glance, calendar) | 8 types incl. usage, unlock count, calendar | Smaller gap; FrostLock now covers the calendar and avoids usage/unlock permissions | Regain (breadth) / FrostLock (privacy) |
 | 31 | Phone-unlock tracking | **No** | Yes (widget + stats) | Gap | Regain |
 | 32 | Weekly report | **Yes** — week navigation, comparison, daily bars, best day, subjects | Yes (Pro for past days) | Similar; FrostLock keeps it free | Tie / FrostLock |
@@ -348,6 +348,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | Floating focus bubble | Opt-in draggable timer overlay during focus, drawn by the foreground service | `b00e586` |
 | Session photos | One optional local photo per session, picked with the system picker, shown as a diary banner with a full-screen viewer | `8915202` |
 | Pause limits + discard | A per-session pause allowance on Profile, plus a save/discard choice when stopping a partial session | `b45488f` |
+| Ice theme variants | Four local palettes that restyle surfaces, accents and hero gradients instantly; choice persists in SharedPreferences | `d0a5075` |
 | Achievement sharing | Tap an unlocked badge for a themed detail card and share it through the system sheet | `8b0d3d5` |
 | Research discipline | Earlier Regain research notes (since removed in rename) | `ab74654`, `fb74d3e` |
 
@@ -401,7 +402,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 ### D. Habit, motivation & content
 
 - [ ] Focus music / ambience
-- [ ] Premium themes (Crystal lock etc.)
+- [x] Ice theme variants (Frost, Aurora, Midnight, Crystal) with instant switching
 - [~] Rewards, levels, difficulty levels (a freeze level ships; no currency, store or difficulty tiers)
 - [x] Focus stamps (time, weekend and length badges)
 - [x] Session photos (system photo picker, app-private storage, no camera or storage permission)
@@ -505,7 +506,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 - [ ] **YouTube channel/home filtering.** Heuristics only; document limitations.
 - [ ] **Home-screen blocking** and **split-screen/floating-window blocking** on top of the existing accessibility service.
 - [ ] **Focus music/ambience** with bundled local audio (no streaming).
-- [ ] **Theme variants** (more ice palettes).
+- [x] **Theme variants** (more ice palettes) — Frost, Aurora, Midnight and Crystal, selectable on Profile.
 
 ### P2 — motivation & polish
 
@@ -530,7 +531,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 ## 11. Verified facts & commands
 
 - Build: `JAVA_HOME=/snap/android-studio/250/jbr ANDROID_HOME=/home/vishal/Android/Sdk ./gradlew :app:assembleDebug`
-- Tests: `:app:testDebugUnitTest` → **167 tests, 0 failures**
+- Tests: `:app:testDebugUnitTest` → **171 tests, 0 failures**
 - Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - Accessibility component: `com.frostlock.app/com.frostlock.app.blocking.FocusBlockAccessibilityService`
 - Re-enable service:
@@ -541,7 +542,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 - Regain APK inspected at `/tmp/opencode/regain.apk` (v75.1.2113, 58 MB base); it was not retained after the analysis.
 - FrostLock permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `RECEIVE_BOOT_COMPLETED`, `USE_EXACT_ALARM`, and an optional `SYSTEM_ALERT_WINDOW` for the floating bubble. Photos go through the system picker, so no camera or storage permission is declared. Still **no INTERNET**.
 - FrostLock manifest: accessibility service, focus foreground service, schedule reminder receiver, notification listener service, four widget providers.
-- Test files: 26 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `ScheduleStreakTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `FocusLevelTest`, `FocusBubbleTest`, `FocusPausesTest`, `SessionPhotosTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`).
+- Test files: 27 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `ScheduleStreakTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `FocusLevelTest`, `FocusBubbleTest`, `FocusPausesTest`, `SessionPhotosTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`, `IcePaletteTest`).
 - Current onboarding page count: 10 (`OnboardingPages.COUNT`).
 
 ---
