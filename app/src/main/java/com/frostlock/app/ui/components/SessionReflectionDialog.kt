@@ -1,5 +1,6 @@
 package com.frostlock.app.ui.components
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,6 +63,8 @@ fun SessionReflectionDialog(
     session: SessionEntity,
     streakDays: Int,
     onSave: (String) -> Unit,
+    onPickPhoto: (Uri) -> Unit,
+    onRemovePhoto: () -> Unit,
     onDelete: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -208,6 +211,12 @@ fun SessionReflectionDialog(
                     }
                 }
 
+                SessionPhotoEditor(
+                    name = session.photoPath,
+                    onPick = onPickPhoto,
+                    onRemove = onRemovePhoto
+                )
+
                 OutlinedTextField(
                     value = note,
                     onValueChange = {
@@ -261,6 +270,7 @@ fun SessionReflectionDialog(
             }
         }
     )
+
 }
 
 @Composable

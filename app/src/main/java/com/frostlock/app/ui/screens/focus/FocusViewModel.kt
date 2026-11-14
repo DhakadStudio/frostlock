@@ -1,10 +1,12 @@
 package com.frostlock.app.ui.screens.focus
 
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.frostlock.app.data.InstalledApp
 import com.frostlock.app.data.InstalledAppsRepository
+import com.frostlock.app.data.SessionPhotoStore
 import com.frostlock.app.data.local.db.SessionDao
 import com.frostlock.app.data.local.db.SessionEntity
 import com.frostlock.app.data.local.prefs.BlockingPreferences
@@ -245,11 +247,40 @@ class FocusViewModel @Inject constructor(
         }
     }
 
-    /** Removes an accidental session, including its reflection. */
+    /** Copies a picked photo into local storage and attaches it to the session. */
+    fun attachLastSessionPhoto(uri: Uri) {
+        val session = _uiState.value.lastSession ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            val name = SessionPhotoStore.save(appContext, session.id, uri) ?: return@launch
+            sessionDao.updatePhoto(session.id, name)
+            withContext(Dispatchers.Main) {
+                _uiState.update {
+                    it.copy(lastSession = it.lastSession?.copy(photoPath = name))
+                }
+            }
+        }
+    }
+
+    /** Detaches and deletes the session photo. */
+    fun removeLastSessionPhoto() {
+        val session = _uiState.value.lastSession ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            sessionDao.updatePhoto(session.id, "")
+            SessionPhotoStore.delete(appContext, session.photoPath)
+            withContext(Dispatchers.Main) {
+                _uiState.update {
+                    it.copy(lastSession = it.lastSession?.copy(photoPath = ""))
+                }
+            }
+        }
+    }
+
+    /** Removes an accidental session, including its reflection and photo. */
     fun deleteLastSession() {
         val session = _uiState.value.lastSession ?: return
         viewModelScope.launch(Dispatchers.IO) {
             sessionDao.deleteById(session.id)
+            SessionPhotoStore.delete(appContext, session.photoPath)
             withContext(Dispatchers.Main) {
                 _uiState.update {
                     it.copy(

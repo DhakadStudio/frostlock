@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [StreakEntity::class, ProfileEntity::class, SessionEntity::class],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -30,6 +30,15 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
                     "ALTER TABLE focus_sessions ADD COLUMN note TEXT NOT NULL DEFAULT ''"
+                )
+            }
+        }
+
+        /** Adds the optional local photo attached after a session. */
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE focus_sessions ADD COLUMN photoPath TEXT NOT NULL DEFAULT ''"
                 )
             }
         }

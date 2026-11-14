@@ -53,6 +53,9 @@ import com.frostlock.app.data.local.db.SessionEntity
 import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.MoodChip
 import com.frostlock.app.ui.components.PrimaryButton
+import com.frostlock.app.ui.components.SessionPhotoEditor
+import com.frostlock.app.ui.components.SessionPhotoThumbnail
+import com.frostlock.app.ui.components.SessionPhotoViewer
 import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.BackgroundDark
 import com.frostlock.app.ui.theme.DangerRed
@@ -85,7 +88,7 @@ fun DiaryScreen(
     viewModel: DiaryViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
-    var editing by remember { mutableStateOf<SessionEntity?>(null) }
+    var editingId by remember { mutableStateOf<Long?>(null) }
 
     LazyColumn(
         modifier = Modifier
@@ -179,7 +182,7 @@ fun DiaryScreen(
                 items(day.sessions, key = { "session-${it.id}" }) { session ->
                     DiaryEntryCard(
                         session = session,
-                        onEdit = { editing = session }
+                        onEdit = { editingId = session.id }
                     )
                 }
             }
@@ -188,15 +191,21 @@ fun DiaryScreen(
         item { Spacer(modifier = Modifier.height(8.dp)) }
     }
 
-    editing?.let { session ->
+    val editingSession = editingId?.let { id ->
+        state.days.firstNotNullOfOrNull { day -> day.sessions.firstOrNull { it.id == id } }
+    }
+    editingSession?.let { session ->
         NoteEditorDialog(
             subject = session.tag.trim().ifBlank { modeLabel(session.mode) },
             initialNote = session.note,
+            photoName = session.photoPath,
             onSave = { note ->
                 viewModel.updateNote(session.id, note)
-                editing = null
+                editingId = null
             },
-            onDismiss = { editing = null }
+            onPickPhoto = { uri -> viewModel.attachPhoto(session.id, uri) },
+            onRemovePhoto = { viewModel.removePhoto(session.id) },
+            onDismiss = { editingId = null }
         )
     }
 }
@@ -290,6 +299,8 @@ private fun DayHeader(day: DiaryDay) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DiaryEntryCard(session: SessionEntity, onEdit: () -> Unit) {
+    var viewingPhoto by remember { mutableStateOf(false) }
+
     AppCard(modifier = Modifier.clickable(onClick = onEdit)) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -335,6 +346,17 @@ private fun DiaryEntryCard(session: SessionEntity, onEdit: () -> Unit) {
                         color = if (session.completed) SuccessGreen else TextSecondary
                     )
                 }
+            }
+
+            if (session.photoPath.isNotBlank()) {
+                SessionPhotoThumbnail(
+                    name = session.photoPath,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp),
+                    corner = 14.dp,
+                    onClick = { viewingPhoto = true }
+                )
             }
 
             val stamps = stampsFor(session)
@@ -393,6 +415,13 @@ private fun DiaryEntryCard(session: SessionEntity, onEdit: () -> Unit) {
                 }
             }
         }
+    }
+
+    if (viewingPhoto) {
+        SessionPhotoViewer(
+            name = session.photoPath,
+            onDismiss = { viewingPhoto = false }
+        )
     }
 }
 
@@ -458,7 +487,10 @@ private fun EmptyDiary(
 private fun NoteEditorDialog(
     subject: String,
     initialNote: String,
+    photoName: String,
     onSave: (String) -> Unit,
+    onPickPhoto: (android.net.Uri) -> Unit,
+    onRemovePhoto: () -> Unit,
     onDismiss: () -> Unit
 ) {
     var note by remember { mutableStateOf(initialNote) }
@@ -483,6 +515,11 @@ private fun NoteEditorDialog(
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SessionPhotoEditor(
+                    name = photoName,
+                    onPick = onPickPhoto,
+                    onRemove = onRemovePhoto
+                )
                 OutlinedTextField(
                     value = note,
                     onValueChange = {

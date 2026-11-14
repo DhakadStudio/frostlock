@@ -32,6 +32,12 @@ interface SessionDao {
     @Query("UPDATE focus_sessions SET note = :note WHERE id = :id")
     fun updateNote(id: Long, note: String)
 
+    @Query("UPDATE focus_sessions SET photoPath = :photoPath WHERE id = :id")
+    fun updatePhoto(id: Long, photoPath: String)
+
+    @Query("SELECT * FROM focus_sessions WHERE id = :id LIMIT 1")
+    fun byId(id: Long): SessionEntity?
+
     @Query("DELETE FROM focus_sessions WHERE id = :id")
     fun deleteById(id: Long)
 }

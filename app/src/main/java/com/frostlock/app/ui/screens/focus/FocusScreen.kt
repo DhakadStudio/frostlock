@@ -137,6 +137,8 @@ fun FocusScreen(
             session = session,
             streakDays = state.lastSessionStreak,
             onSave = viewModel::updateLastSessionNote,
+            onPickPhoto = viewModel::attachLastSessionPhoto,
+            onRemovePhoto = viewModel::removeLastSessionPhoto,
             onDelete = viewModel::deleteLastSession,
             onDismiss = viewModel::dismissReflection
         )
