@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.NotificationsActive
@@ -59,6 +60,10 @@ import com.frostlock.app.ui.theme.SuccessGreen
 import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
+import com.frostlock.app.ui.util.deadlineCountdown
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 private val GOAL_OPTIONS = listOf(30, 60, 90, 120, 180, 240)
 
@@ -67,6 +72,7 @@ fun ProfileScreen(
     onNavigateToDesignPreview: () -> Unit = {},
     onOpenDiary: () -> Unit = {},
     onOpenWeeklyReport: () -> Unit = {},
+    onOpenDeadline: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -317,6 +323,51 @@ fun ProfileScreen(
             }
         }
 
+        SectionHeader(title = "Focus deadline")
+        AppCard(modifier = Modifier.clickable(onClick = onOpenDeadline)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(SurfaceHigh),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Flag,
+                        contentDescription = null,
+                        tint = AccentFrost,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = state.deadline?.title ?: "Set a target date",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = state.deadline?.let { deadline ->
+                            "${formatDeadlineDate(deadline.date)} · " +
+                                deadlineCountdown(deadline).orEmpty()
+                        } ?: "Count down to an exam, launch or personal deadline.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                }
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = TextSecondary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+
         SectionHeader(title = "Reflect & review")
         AppCard {
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -501,3 +552,7 @@ private fun formatGoal(minutes: Int): String {
         else -> "${hours}h ${rest}m"
     }
 }
+
+private fun formatDeadlineDate(iso: String): String = runCatching {
+    LocalDate.parse(iso).format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.US))
+}.getOrDefault(iso)

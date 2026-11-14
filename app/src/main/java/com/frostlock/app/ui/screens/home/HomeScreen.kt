@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
@@ -51,6 +52,10 @@ import com.frostlock.app.ui.theme.StrokeSoft
 import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
+import com.frostlock.app.ui.theme.WarnAmber
+import com.frostlock.app.ui.util.deadlineCountdown
+import com.frostlock.app.ui.util.deadlineIsUpcoming
+import com.frostlock.app.ui.util.deadlineIsUrgent
 import com.frostlock.app.ui.util.formatDuration
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -61,6 +66,7 @@ fun HomeScreen(
     onStartFocus: () -> Unit,
     onOpenBlock: () -> Unit = {},
     onOpenSchedules: () -> Unit = {},
+    onOpenDeadline: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -175,6 +181,12 @@ fun HomeScreen(
             )
         }
 
+        // Focus deadline countdown
+        val deadline = state.deadline
+        if (deadline != null && deadlineIsUpcoming(deadline)) {
+            DeadlineCard(deadline = deadline, onClick = onOpenDeadline)
+        }
+
         SectionHeader(title = "Recent sessions")
 
         if (state.recent.isEmpty()) {
@@ -194,6 +206,57 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(8.dp))
     }
 }
+
+@Composable
+private fun DeadlineCard(
+    deadline: com.frostlock.app.data.local.prefs.FocusDeadline,
+    onClick: () -> Unit
+) {
+    val urgent = deadlineIsUrgent(deadline)
+    val accent = if (urgent) WarnAmber else AccentFrost
+    AppCard(modifier = Modifier.clickable(onClick = onClick)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(SurfaceHigh),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Flag,
+                    contentDescription = null,
+                    tint = accent,
+                    modifier = Modifier.size(19.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = deadline.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextPrimary,
+                    maxLines = 1
+                )
+                Text(
+                    text = formatDeadlineDate(deadline.date),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = deadlineCountdown(deadline).orEmpty(),
+                style = MaterialTheme.typography.labelLarge,
+                color = accent
+            )
+        }
+    }
+}
+
+private fun formatDeadlineDate(iso: String): String = runCatching {
+    LocalDate.parse(iso).format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.US))
+}.getOrDefault(iso)
 
 @Composable
 private fun QuickAction(

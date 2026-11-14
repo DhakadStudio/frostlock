@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.frostlock.app.ui.components.AppBottomBar
 import com.frostlock.app.ui.screens.block.BlockScreen
 import com.frostlock.app.ui.screens.calendar.CalendarScreen
+import com.frostlock.app.ui.screens.deadline.DeadlineScreen
 import com.frostlock.app.ui.screens.diary.DiaryScreen
 import com.frostlock.app.ui.screens.focus.FocusScreen
 import com.frostlock.app.ui.screens.home.HomeScreen
@@ -44,6 +45,7 @@ fun AppNavGraph(
         currentRoute != Screen.Achievements.route &&
         currentRoute != Screen.Diary.route &&
         currentRoute != Screen.Calendar.route &&
+        currentRoute != Screen.Deadline.route &&
         currentRoute != Screen.WeeklyReport.route &&
         currentRoute != Screen.Notifications.route
 
@@ -108,6 +110,11 @@ fun AppNavGraph(
                             navController.navigate(Screen.Schedules.route) {
                                 launchSingleTop = true
                             }
+                        },
+                        onOpenDeadline = {
+                            navController.navigate(Screen.Deadline.route) {
+                                launchSingleTop = true
+                            }
                         }
                     )
                 }
@@ -148,6 +155,9 @@ fun AppNavGraph(
                 }
                 composable(Screen.Calendar.route) {
                     CalendarScreen(onBack = { navController.popBackStack() })
+                }
+                composable(Screen.Deadline.route) {
+                    DeadlineScreen(onBack = { navController.popBackStack() })
                 }
                 composable(Screen.Achievements.route) {
                     AchievementsScreen(onBack = { navController.popBackStack() })
@@ -198,6 +208,16 @@ fun AppNavGraph(
                         },
                         onOpenDiary = {
                             navController.navigate(Screen.Diary.route) {
+                                launchSingleTop = true
+                            }
+                        },
+                        onOpenWeeklyReport = {
+                            navController.navigate(Screen.WeeklyReport.route) {
+                                launchSingleTop = true
+                            }
+                        },
+                        onOpenDeadline = {
+                            navController.navigate(Screen.Deadline.route) {
                                 launchSingleTop = true
                             }
                         }

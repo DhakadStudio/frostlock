@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.frostlock.app.data.local.db.SessionDao
 import com.frostlock.app.data.local.db.SessionEntity
+import com.frostlock.app.data.local.prefs.DeadlineStore
+import com.frostlock.app.data.local.prefs.FocusDeadline
 import com.frostlock.app.data.local.prefs.FocusSettings
 import com.frostlock.app.ui.util.computeStreak
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +25,8 @@ data class HomeUiState(
     val totalSeconds: Long = 0L,
     val totalSessions: Int = 0,
     val recent: List<SessionEntity> = emptyList(),
-    val dailyGoalSeconds: Long = FocusSettings.DEFAULT_GOAL_MINUTES * 60L
+    val dailyGoalSeconds: Long = FocusSettings.DEFAULT_GOAL_MINUTES * 60L,
+    val deadline: FocusDeadline? = null
 ) {
     val goalProgress: Float
         get() = if (dailyGoalSeconds <= 0L) 0f
@@ -36,7 +39,8 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     sessionDao: SessionDao,
-    focusSettings: FocusSettings
+    focusSettings: FocusSettings,
+    deadlineStore: DeadlineStore
 ) : ViewModel() {
 
     private val todayStart = startOfTodayMillis()
@@ -61,9 +65,13 @@ class HomeViewModel @Inject constructor(
 
     val uiState: StateFlow<HomeUiState> = combine(
         statsFlow,
-        focusSettings.dailyGoalMinutes
-    ) { state, goalMinutes ->
-        state.copy(dailyGoalSeconds = goalMinutes * 60L)
+        focusSettings.dailyGoalMinutes,
+        deadlineStore.deadline
+    ) { state, goalMinutes, deadline ->
+        state.copy(
+            dailyGoalSeconds = goalMinutes * 60L,
+            deadline = deadline
+        )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),

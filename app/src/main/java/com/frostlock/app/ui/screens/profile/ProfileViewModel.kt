@@ -3,6 +3,8 @@ package com.frostlock.app.ui.screens.profile
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.frostlock.app.data.local.prefs.DeadlineStore
+import com.frostlock.app.data.local.prefs.FocusDeadline
 import com.frostlock.app.data.local.prefs.FocusSettings
 import com.frostlock.app.widget.WidgetUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,13 +20,15 @@ data class ProfileUiState(
     val dailyGoalMinutes: Int = FocusSettings.DEFAULT_GOAL_MINUTES,
     val breaksEnabled: Boolean = true,
     val breakMinutes: Int = FocusSettings.DEFAULT_BREAK_MINUTES,
-    val focusGuardEnabled: Boolean = false
+    val focusGuardEnabled: Boolean = false,
+    val deadline: FocusDeadline? = null
 )
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
-    private val focusSettings: FocusSettings
+    private val focusSettings: FocusSettings,
+    deadlineStore: DeadlineStore
 ) : ViewModel() {
 
     val uiState: StateFlow<ProfileUiState> = combine(
@@ -41,6 +45,8 @@ class ProfileViewModel @Inject constructor(
             breakMinutes = breakMinutes,
             focusGuardEnabled = guard
         )
+    }.combine(deadlineStore.deadline) { state, deadline ->
+        state.copy(deadline = deadline)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
