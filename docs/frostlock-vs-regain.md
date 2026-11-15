@@ -373,7 +373,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 ### A. Blocking coverage
 
 - [x] Website blocking (domains, social sites, adult content) — opt-in local list, detected through the browser address bar; only active during focus or a schedule.
-- [ ] Study-website allowlist
+- [x] Study-website allowlist — local allowed domains override the block list while focus is active.
 - [x] Adult-content blocking — curated adult domains in the local list, individually toggleable.
 - [x] YouTube Shorts blocking — accessibility scan for the Shorts surface while focus/schedule is active.
 - [x] Instagram/Facebook Reels + Snapchat Spotlight blocking — accessibility scan for Reels/Spotlight surfaces while focus/schedule is active.
