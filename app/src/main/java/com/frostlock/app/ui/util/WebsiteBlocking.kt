@@ -96,6 +96,10 @@ fun blockedDomainFor(text: String, blockedDomains: Set<String>): String? {
     return blockedDomains.firstOrNull { domainMatches(host, it) }
 }
 
+/** True when [host] matches any domain on the local allowlist. */
+fun isDomainAllowed(host: String, allowedDomains: Set<String>): Boolean =
+    allowedDomains.any { domainMatches(host, it) }
+
 /** Which curated category a domain belongs to, or null for a custom site. */
 fun websiteCategoryLabel(domain: String): String? =
     WebsiteCategories.firstOrNull { category ->

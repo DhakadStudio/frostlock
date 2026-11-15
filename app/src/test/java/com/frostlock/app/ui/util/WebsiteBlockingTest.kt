@@ -55,6 +55,17 @@ class WebsiteBlockingTest {
     }
 
     @Test
+    fun `allowed domains cover subdomains but not lookalikes`() {
+        val allowed = setOf("wikipedia.org", "docs.google.com")
+
+        assertTrue(isDomainAllowed("wikipedia.org", allowed))
+        assertTrue(isDomainAllowed("en.wikipedia.org", allowed))
+        assertTrue(isDomainAllowed("docs.google.com", allowed))
+        assertFalse(isDomainAllowed("notwikipedia.org", allowed))
+        assertFalse(isDomainAllowed("drive.google.com", allowed))
+    }
+
+    @Test
     fun `categories and defaults stay in sync`() {
         assertTrue(DefaultBlockedDomains.contains("youtube.com"))
         assertTrue(DefaultBlockedDomains.contains("pornhub.com"))

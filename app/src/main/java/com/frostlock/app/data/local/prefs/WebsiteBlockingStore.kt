@@ -28,6 +28,9 @@ class WebsiteBlockingStore @Inject constructor(@ApplicationContext context: Cont
     private val _domains = MutableStateFlow(readDomains())
     val domains: StateFlow<Set<String>> = _domains.asStateFlow()
 
+    private val _allowedDomains = MutableStateFlow(readAllowedDomains())
+    val allowedDomains: StateFlow<Set<String>> = _allowedDomains.asStateFlow()
+
     fun setEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_ENABLED, enabled).apply()
         _enabled.value = enabled
@@ -60,9 +63,28 @@ class WebsiteBlockingStore @Inject constructor(@ApplicationContext context: Cont
         write(_domains.value - normalized)
     }
 
+    /** Adds a typed domain to the allowlist. Returns the normalized host or null. */
+    fun addAllowedDomain(raw: String): String? {
+        val normalized = normalizeDomain(raw) ?: return null
+        if (normalized !in _allowedDomains.value) {
+            writeAllowed(_allowedDomains.value + normalized)
+        }
+        return normalized
+    }
+
+    fun removeAllowedDomain(domain: String) {
+        val normalized = normalizeDomain(domain) ?: return
+        writeAllowed(_allowedDomains.value - normalized)
+    }
+
     private fun write(domains: Set<String>) {
         prefs.edit().putStringSet(KEY_DOMAINS, domains).apply()
         _domains.value = domains
+    }
+
+    private fun writeAllowed(domains: Set<String>) {
+        prefs.edit().putStringSet(KEY_ALLOWED_DOMAINS, domains).apply()
+        _allowedDomains.value = domains
     }
 
     private fun readDomains(): Set<String> {
@@ -70,9 +92,15 @@ class WebsiteBlockingStore @Inject constructor(@ApplicationContext context: Cont
         return stored?.mapNotNull(::normalizeDomain)?.toSet() ?: DefaultBlockedDomains
     }
 
+    private fun readAllowedDomains(): Set<String> {
+        val stored = prefs.getStringSet(KEY_ALLOWED_DOMAINS, null)
+        return stored?.mapNotNull(::normalizeDomain)?.toSet() ?: emptySet()
+    }
+
     companion object {
         const val PREFS_NAME = "frostlock_website_blocking"
         private const val KEY_ENABLED = "enabled"
         private const val KEY_DOMAINS = "domains"
+        private const val KEY_ALLOWED_DOMAINS = "allowed_domains"
     }
 }

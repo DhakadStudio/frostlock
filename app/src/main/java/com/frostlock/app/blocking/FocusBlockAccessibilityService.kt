@@ -24,7 +24,9 @@ import com.frostlock.app.data.local.prefs.ScheduleStore
 import com.frostlock.app.data.local.prefs.UnlockStore
 import com.frostlock.app.data.local.prefs.WebsiteBlockingStore
 import com.frostlock.app.data.local.prefs.blocks
-import com.frostlock.app.ui.util.blockedDomainFor
+import com.frostlock.app.ui.util.domainMatches
+import com.frostlock.app.ui.util.hostFromUrlText
+import com.frostlock.app.ui.util.isDomainAllowed
 import com.frostlock.app.ui.util.ShortFormDetector
 
 /**
@@ -208,8 +210,11 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         lastUrlScanAt = elapsed
 
         val root = rootInActiveWindow ?: return
-        val domain = collectAddressBarText(root)
-            .firstNotNullOfOrNull { text -> blockedDomainFor(text, blocked) }
+        val host = collectAddressBarText(root)
+            .firstNotNullOfOrNull { text -> hostFromUrlText(text) }
+            ?: return
+        if (isDomainAllowed(host, store.allowedDomains.value)) return
+        val domain = blocked.firstOrNull { blockedDomain -> domainMatches(host, blockedDomain) }
             ?: return
 
         val now = System.currentTimeMillis()

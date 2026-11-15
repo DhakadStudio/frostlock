@@ -22,6 +22,7 @@ import javax.inject.Inject
 data class WebsitesUiState(
     val enabled: Boolean = false,
     val domains: Set<String> = emptySet(),
+    val allowedDomains: Set<String> = emptySet(),
     val accessibilityEnabled: Boolean = false,
     val categories: List<WebsiteCategory> = WebsiteCategories,
     val customDomains: List<String> = emptyList()
@@ -38,11 +39,13 @@ class WebsitesViewModel @Inject constructor(
     val uiState: StateFlow<WebsitesUiState> = combine(
         store.enabled,
         store.domains,
+        store.allowedDomains,
         _accessibilityEnabled
-    ) { enabled, domains, accessibility ->
+    ) { enabled, domains, allowed, accessibility ->
         WebsitesUiState(
             enabled = enabled,
             domains = domains,
+            allowedDomains = allowed,
             accessibilityEnabled = accessibility,
             categories = WebsiteCategories,
             customDomains = domains
@@ -72,6 +75,11 @@ class WebsitesViewModel @Inject constructor(
     fun addDomain(raw: String): Boolean = store.addDomain(raw) != null
 
     fun removeDomain(domain: String) = store.removeDomain(domain)
+
+    /** Returns false when the typed text is not a valid domain. */
+    fun addAllowedDomain(raw: String): Boolean = store.addAllowedDomain(raw) != null
+
+    fun removeAllowedDomain(domain: String) = store.removeAllowedDomain(domain)
 
     fun openAccessibilitySettings() {
         val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)

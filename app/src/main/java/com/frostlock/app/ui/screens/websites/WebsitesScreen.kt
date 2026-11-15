@@ -82,6 +82,8 @@ fun WebsitesScreen(
     val state by viewModel.uiState.collectAsState()
     var newDomain by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
+    var newAllowedDomain by remember { mutableStateOf("") }
+    var allowedError by remember { mutableStateOf<String?>(null) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -279,6 +281,92 @@ fun WebsitesScreen(
             }
         }
 
+        SectionHeader(title = "Allowed sites")
+        AppCard {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "Sites here are never blocked, even when they match the " +
+                        "block list. Useful for study resources and reference pages.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = newAllowedDomain,
+                        onValueChange = {
+                            newAllowedDomain = it
+                            allowedError = null
+                        },
+                        modifier = Modifier.weight(1f),
+                        placeholder = {
+                            Text(text = "wikipedia.org", color = TextSecondary)
+                        },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                        textStyle = MaterialTheme.typography.bodyLarge,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = PrimaryIce,
+                            unfocusedBorderColor = StrokeSoft,
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary,
+                            cursorColor = AccentFrost
+                        ),
+                        shape = MaterialTheme.shapes.medium
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(Brush.linearGradient(GradientFrost))
+                            .clickable {
+                                val added = newAllowedDomain.isNotBlank() &&
+                                    viewModel.addAllowedDomain(newAllowedDomain)
+                                if (added) {
+                                    newAllowedDomain = ""
+                                    allowedError = null
+                                } else {
+                                    allowedError = "Enter a domain like wikipedia.org"
+                                }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Allow site",
+                            tint = InkOnIce
+                        )
+                    }
+                }
+
+                allowedError?.let { message ->
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = DangerRed
+                    )
+                }
+
+                if (state.allowedDomains.isEmpty()) {
+                    Text(
+                        text = "No allowed sites yet.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                } else {
+                    state.allowedDomains.sorted().forEach { domain ->
+                        AllowedDomainRow(
+                            domain = domain,
+                            onRemove = { viewModel.removeAllowedDomain(domain) }
+                        )
+                    }
+                }
+            }
+        }
+
         Spacer(modifier = Modifier.height(8.dp))
     }
 }
@@ -417,6 +505,41 @@ private fun CustomDomainRow(domain: String, onRemove: () -> Unit) {
             imageVector = Icons.Default.Language,
             contentDescription = null,
             tint = AccentFrost,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+            text = domain,
+            style = MaterialTheme.typography.bodyLarge,
+            color = TextPrimary,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        IconButton(onClick = onRemove) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Remove $domain",
+                tint = TextSecondary
+            )
+        }
+    }
+}
+
+@Composable
+private fun AllowedDomainRow(domain: String, onRemove: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(SurfaceHigh)
+            .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Default.Shield,
+            contentDescription = null,
+            tint = SuccessGreen,
             modifier = Modifier.size(18.dp)
         )
         Spacer(modifier = Modifier.width(10.dp))
