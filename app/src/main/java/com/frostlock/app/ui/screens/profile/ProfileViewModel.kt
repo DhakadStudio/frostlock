@@ -31,7 +31,8 @@ data class ProfileUiState(
     val ambienceKey: String = AmbienceSound.Off.key,
     val themeKey: String = IcePalettes.Frost.key,
     val deadline: FocusDeadline? = null,
-    val goalCount: Int = 0
+    val goalCount: Int = 0,
+    val homeBlockingEnabled: Boolean = false
 )
 
 @HiltViewModel
@@ -39,9 +40,12 @@ class ProfileViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val focusSettings: FocusSettings,
     private val themeStore: ThemeStore,
+    private val blockingPrefs: com.frostlock.app.data.local.prefs.BlockingPreferences,
     deadlineStore: DeadlineStore,
     goalStore: FocusGoalStore
 ) : ViewModel() {
+
+    private val homeBlockingFlow = kotlinx.coroutines.flow.MutableStateFlow(blockingPrefs.isHomeBlockingEnabled())
 
     val uiState: StateFlow<ProfileUiState> = combine(
         focusSettings.strictMode,
@@ -69,6 +73,8 @@ class ProfileViewModel @Inject constructor(
         state.copy(maxPauses = pauses)
     }.combine(themeStore.paletteKey) { state, themeKey ->
         state.copy(themeKey = themeKey)
+    }.combine(homeBlockingFlow) { state, homeBlocking ->
+        state.copy(homeBlockingEnabled = homeBlocking)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -90,6 +96,11 @@ class ProfileViewModel @Inject constructor(
     fun setFocusGuardEnabled(enabled: Boolean) = focusSettings.setFocusGuardEnabled(enabled)
 
     fun setBubbleEnabled(enabled: Boolean) = focusSettings.setBubbleEnabled(enabled)
+
+    fun setHomeBlockingEnabled(enabled: Boolean) {
+        blockingPrefs.setHomeBlockingEnabled(enabled)
+        homeBlockingFlow.value = enabled
+    }
 
     fun setDailyGoalMinutes(minutes: Int) {
         focusSettings.setDailyGoalMinutes(minutes)

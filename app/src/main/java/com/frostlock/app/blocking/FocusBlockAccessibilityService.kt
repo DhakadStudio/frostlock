@@ -37,6 +37,7 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     private var limitStore: AppLimitStore? = null
     private var scheduleStore: ScheduleStore? = null
     private var websiteStore: WebsiteBlockingStore? = null
+    private var homePackages: Set<String> = emptySet()
     private var lastBlockAt = 0L
     private var foregroundPackage: String? = null
     private var lastUrlScanAt = 0L
@@ -58,6 +59,7 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         limitStore = AppLimitStore(this)
         scheduleStore = ScheduleStore(this)
         websiteStore = WebsiteBlockingStore(this)
+        homePackages = findHomePackages()
         createLimitChannel()
         handler.postDelayed(usageTicker, USAGE_TICK_MS)
     }
@@ -115,6 +117,21 @@ class FocusBlockAccessibilityService : AccessibilityService() {
                 now,
                 rule.endsAtMillis,
                 rule.schedule.label
+            )
+            return
+        }
+
+        // Home screen blocking during an active focus session or schedule
+        val homeBlockingEnabled = prefs.getBoolean(BlockingPreferences.KEY_HOME_BLOCKING_ENABLED, false)
+        val focusActive = prefs.getBoolean(BlockingPreferences.KEY_ENABLED, false) &&
+            prefs.getLong(BlockingPreferences.KEY_FOCUS_UNTIL, 0L) > now
+        val scheduleActive = scheduleStore?.activeSchedules()?.isNotEmpty() == true
+        if (homeBlockingEnabled && (focusActive || scheduleActive) && openedPackage in homePackages) {
+            showWall(
+                openedPackage,
+                BlockActivity.REASON_FOCUS,
+                now,
+                ruleLabel = "Home screen blocked"
             )
             return
         }
@@ -352,6 +369,18 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() = Unit
+
+    private fun findHomePackages(): Set<String> {
+        return try {
+            val intent = android.content.Intent(android.content.Intent.ACTION_MAIN)
+            intent.addCategory(android.content.Intent.CATEGORY_HOME)
+            packageManager.queryIntentActivities(intent, 0)
+                .map { it.activityInfo.packageName }
+                .toSet()
+        } catch (_: Exception) {
+            emptySet()
+        }
+    }
 
     override fun onDestroy() {
         handler.removeCallbacks(usageTicker)
