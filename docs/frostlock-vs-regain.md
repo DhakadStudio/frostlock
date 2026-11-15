@@ -86,7 +86,8 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
   - **Focus blocking** — selected apps lock during a focus session (global list or subject's list).
   - **Daily limits** — per-app budgets enforced all day.
 - Per-app picker with search, “Selected only / Show all”, app count and icons from the device.
-- Block wall has three reasons: focus session, daily limit, schedule.
+- Block wall has four reasons: focus session, daily limit, schedule, website.
+- **Website blocking** (opt-in) uses the same accessibility service to read the browser address bar. A local list holds curated social/video and adult domains plus any custom sites; matches show a “Site held” wall only while a focus session or schedule rule is active. No VPN, no INTERNET permission, no browsing history.
 - Blocking toggle is separate from schedules (schedules keep running even if manual focus blocking is off).
 - Schedule checks run on window changes **and** on a periodic ticker, so an app already open gets blocked when its window starts.
 
@@ -155,9 +156,9 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 
 ### 2.10 Engineering
 
-- 194 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, schedule streaks, deadline countdowns, session stamps, freeze levels and the title ladder, focus-goal windows and pacing, achievement sharing, bubble labels, pause limits, session photo naming and downsampling, app-limit warnings, suggested limits, showcase logos, achievements, stats, monthly rollups, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, ambience synthesis, notification decisions, inbox grouping and ranking, and widget maths.
+- 200 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, schedule streaks, deadline countdowns, session stamps, freeze levels and the title ladder, focus-goal windows and pacing, website domain matching and address-bar parsing, achievement sharing, bubble labels, pause limits, session photo naming and downsampling, app-limit warnings, suggested limits, showcase logos, achievements, stats, monthly rollups, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, ambience synthesis, notification decisions, inbox grouping and ranking, and widget maths.
 - Verified on emulator `Medium_Phone_API_37.0` including blocking and full onboarding.
-- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`; freeze level `249975b`; achievement sharing `8b0d3d5`; schedule streak `95de98b`; floating focus bubble `b00e586`; session photos `8915202`; pause limits `b45488f`; ice themes `d0a5075`; monthly stats `6153caa`; focus ambience `d0c5c8c`; notification ranking `1e6ed58`; freeze ladder `2a997a7`; focus goals `8be538d`.
+- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`; freeze level `249975b`; achievement sharing `8b0d3d5`; schedule streak `95de98b`; floating focus bubble `b00e586`; session photos `8915202`; pause limits `b45488f`; ice themes `d0a5075`; monthly stats `6153caa`; focus ambience `d0c5c8c`; notification ranking `1e6ed58`; freeze ladder `2a997a7`; focus goals `8be538d`; website blocking `2b0df05`.
 
 ---
 
@@ -284,7 +285,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 8 | Overnight windows | Yes | Yes (time windows) | Similar | Tie |
 | 9 | Daily app limits | Yes, tracked locally | Yes, via UsageStats | Regain has strict/snooze/limit streaks; FrostLock simpler and no extra permission | Regain (depth) / FrostLock (privacy) |
 | 10 | Suggested limits | One-tap 20-min for 4 apps | Usage-based suggestions | Different approaches | Tie |
-| 11 | Website blocking | **No** | Yes + adult + allowlist | Big gap | Regain |
+| 11 | Website blocking | **Partial** — accessibility address-bar detection with a local list (curated social/video + adult, plus custom domains); active only during focus or a rule; no allowlist, no VPN | Yes + adult + allowlist | FrostLock covers the common cases offline without a VPN; Regain adds allowlists | Tie / FrostLock (offline) |
 | 12 | Shorts / Reels / Spotlight blocking | **No** | Yes | Big gap | Regain |
 | 13 | YouTube channel filtering | **No** | Yes + study channels | Big gap | Regain |
 | 14 | YouTube home-page blocking | **No** | Yes | Gap | Regain |
@@ -319,7 +320,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 43 | Localisation | English only | Many languages | Gap | Regain |
 | 44 | Permission footprint | A short list; overlay only if the floating bubble is enabled | 15+ incl. usage, notifications, admin | FrostLock safer | FrostLock |
 | 45 | Usage tracking method | Accessibility foreground time | UsageStats permission | Both valid; FrostLock avoids a permission | FrostLock (privacy) |
-| 46 | Adult-content blocking | **No** | Yes | Gap | Regain |
+| 46 | Adult-content blocking | **Yes** — curated adult domains sit in the same local website list and can be toggled per domain | Yes | Similar local coverage; no cloud categories | Tie / FrostLock (offline) |
 | 47 | Study websites/channels allowlist | **No** | Yes | Gap | Regain |
 | 48 | Session summary screen | **Yes** — planned vs actual, subject, note, streak impact | Full summary | Similar | Tie |
 | 49 | Pause limits | **Yes** — Off/1/2/3/no-limit per session; Strict Mode blocks pausing entirely | Max pauses per session | Similar, and FrostLock keeps it local | Tie |
@@ -349,6 +350,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | Rule overlap warnings | Amber heads-up in the editor and a badge on every colliding rule, including overnight and one-off cases | `091ba55` |
 | Focus deadline | Local name + date countdown on Home and Profile, with a dedicated editor and themed date dialog | `31e69c3` |
 | Focus goals | Named local goals with a target date and hours, plus an on-track/behind/complete progress list derived from saved sessions | `8be538d` |
+| Website blocking | Opt-in local domain list (curated social/video + adult, plus custom sites) matched against the browser address bar; the wall names the site and only runs during focus or a rule | `2b0df05` |
 | Focus stamps | Per-session badges derived from start hour, weekday and length, shown in the post-session summary and diary | `1c27ae4` |
 | Freeze level | Lifetime focus minutes become widening levels with ice titles, shown on the stats screen with progress to the next | `249975b` |
 | Freeze ladder | A dedicated page lists all seven titles and thresholds, marks reached rungs, and shares the current title as text | `2a997a7` |
@@ -370,9 +372,9 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 
 ### A. Blocking coverage
 
-- [ ] Website blocking (domains, social sites, adult content)
+- [x] Website blocking (domains, social sites, adult content) — opt-in local list, detected through the browser address bar; only active during focus or a schedule.
 - [ ] Study-website allowlist
-- [ ] Adult-content blocking
+- [x] Adult-content blocking — curated adult domains in the local list, individually toggleable.
 - [ ] YouTube Shorts blocking
 - [ ] Instagram/Facebook Reels + Snapchat Spotlight blocking
 - [ ] YouTube home-page blocking
@@ -512,7 +514,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 
 ### P1 — deeper blocking (needs design decisions)
 
-- [ ] **Website blocking.** Options: local VPN service (real blocking, extra permission) or accessibility URL reading (fragile). Decide before building; a VPN is the honest solution.
+- [x] **Website blocking** — opt-in local domain list (curated social/video + adult, plus custom sites) detected through the browser address bar by the existing accessibility service. The wall names the domain and lifts when the session or rule ends. No VPN, no INTERNET permission, no browsing history; browser-dependent by nature.
 - [ ] **Shorts/Reels detection.** Accessibility title/view-id heuristics per app; brittle, needs per-app maintenance.
 - [ ] **YouTube channel/home filtering.** Heuristics only; document limitations.
 - [ ] **Home-screen blocking** and **split-screen/floating-window blocking** on top of the existing accessibility service.
@@ -545,7 +547,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 ## 11. Verified facts & commands
 
 - Build: `JAVA_HOME=/snap/android-studio/250/jbr ANDROID_HOME=/home/vishal/Android/Sdk ./gradlew :app:assembleDebug`
-- Tests: `:app:testDebugUnitTest` → **194 tests, 0 failures**
+- Tests: `:app:testDebugUnitTest` → **200 tests, 0 failures**
 - Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - Accessibility component: `com.frostlock.app/com.frostlock.app.blocking.FocusBlockAccessibilityService`
 - Re-enable service:
@@ -556,14 +558,14 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 - Regain APK inspected at `/tmp/opencode/regain.apk` (v75.1.2113, 58 MB base); it was not retained after the analysis.
 - FrostLock permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `RECEIVE_BOOT_COMPLETED`, `USE_EXACT_ALARM`, and an optional `SYSTEM_ALERT_WINDOW` for the floating bubble. Photos go through the system picker, so no camera or storage permission is declared. Still **no INTERNET**.
 - FrostLock manifest: accessibility service, focus foreground service, schedule reminder receiver, notification listener service, four widget providers.
-- Test files: 30 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `ScheduleStreakTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `FocusLevelTest`, `FocusGoalsTest`, `FocusBubbleTest`, `FocusPausesTest`, `SessionPhotosTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`, `IcePaletteTest`, `MonthlyStatsTest`, `AmbienceTest`).
+- Test files: 31 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `ScheduleStreakTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `FocusLevelTest`, `FocusGoalsTest`, `WebsiteBlockingTest`, `FocusBubbleTest`, `FocusPausesTest`, `SessionPhotosTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`, `IcePaletteTest`, `MonthlyStatsTest`, `AmbienceTest`).
 - Current onboarding page count: 10 (`OnboardingPages.COUNT`).
 
 ---
 
 ## 12. Decision log / open questions
 
-1. **Website blocking:** is a local VPN acceptable? It is the only reliable offline way. If not, website blocking stays out.
+1. **Website blocking:** shipped as opt-in accessibility address-bar detection with a local domain list — no VPN, no INTERNET permission. It is browser-dependent and documented as such.
 2. **Notification blocking:** shipped as an opt-in, local-only shield with an inbox and a local per-app ranking; no per-app training, nothing uploaded.
 3. **Schedule alarms:** adding `AlarmManager` + boot receiver is low risk and high value.
 4. **Diary:** the note field already exists; surfacing it is a small UI task.
