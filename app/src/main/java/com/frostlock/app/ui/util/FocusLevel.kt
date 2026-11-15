@@ -42,6 +42,45 @@ internal fun minutesForLevel(level: Int): Long {
 fun focusLevelTitle(level: Int): String =
     LEVEL_TITLES.getOrNull(level - 1) ?: "Cryomaster"
 
+/** One rung of the freeze ladder, with the lifetime minutes it needs. */
+data class FocusLevelStep(
+    val level: Int,
+    val title: String,
+    val minutesRequired: Long,
+    val reached: Boolean
+)
+
+/**
+ * The full title ladder, marking every rung the user has already reached.
+ * Rungs are derived from the same lifetime total as [focusLevelFor], so the
+ * page can never disagree with the stats card.
+ */
+fun focusLevelLadder(
+    totalSeconds: Long,
+    levels: Int = LEVEL_TITLES.size
+): List<FocusLevelStep> {
+    val current = focusLevelFor(totalSeconds)
+    return (1..levels).map { level ->
+        FocusLevelStep(
+            level = level,
+            title = focusLevelTitle(level),
+            minutesRequired = minutesForLevel(level),
+            reached = current.level >= level
+        )
+    }
+}
+
+/** Plain-text copy for the system share sheet; nothing leaves the device by itself. */
+fun focusLevelShareText(level: FocusLevel): String {
+    val focused = if (level.totalMinutes >= 60) {
+        "${level.totalMinutes / 60}h ${level.totalMinutes % 60}m"
+    } else {
+        "${level.totalMinutes}m"
+    }
+    return "I'm level ${level.level} — ${level.title} — in FrostLock, with $focused of " +
+        "offline focus time.\n\nFrostLock: offline focus timer and app blocker."
+}
+
 fun focusLevelFor(totalSeconds: Long): FocusLevel {
     val totalMinutes = (totalSeconds.coerceAtLeast(0L)) / 60L
 

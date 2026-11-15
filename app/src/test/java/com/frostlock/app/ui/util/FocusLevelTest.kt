@@ -72,4 +72,36 @@ class FocusLevelTest {
         assertEquals(1, level.level)
         assertEquals(0L, level.totalMinutes)
     }
+
+    @Test
+    fun `ladder lists every title with its lifetime threshold`() {
+        val ladder = focusLevelLadder(0L)
+
+        assertEquals(7, ladder.size)
+        assertEquals(listOf(1, 2, 3, 4, 5, 6, 7), ladder.map { it.level })
+        assertEquals(
+            listOf(0L, 60L, 180L, 360L, 600L, 900L, 1260L),
+            ladder.map { it.minutesRequired }
+        )
+        assertEquals("Frostbite", ladder.first().title)
+        assertEquals("Absolute zero", ladder.last().title)
+    }
+
+    @Test
+    fun `ladder marks reached rungs from the current level`() {
+        val ladder = focusLevelLadder(270L * 60L)
+
+        assertEquals(listOf(true, true, true, false, false, false, false), ladder.map { it.reached })
+        assertTrue(focusLevelLadder(10_000L * 60L).all { it.reached })
+    }
+
+    @Test
+    fun `share text names the title and total focus time`() {
+        val text = focusLevelShareText(levelAt(90))
+
+        assertTrue(text.contains("level 2"))
+        assertTrue(text.contains("Snowflake"))
+        assertTrue(text.contains("1h 30m"))
+        assertTrue(text.contains("FrostLock"))
+    }
 }

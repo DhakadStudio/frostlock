@@ -28,6 +28,7 @@ import com.frostlock.app.ui.screens.profile.ProfileScreen
 import com.frostlock.app.ui.screens.report.WeeklyReportScreen
 import com.frostlock.app.ui.screens.schedule.ScheduleScreen
 import com.frostlock.app.ui.screens.stats.AchievementsScreen
+import com.frostlock.app.ui.screens.stats.LevelsScreen
 import com.frostlock.app.ui.screens.stats.StatsScreen
 
 @Composable
@@ -43,6 +44,7 @@ fun AppNavGraph(
         currentRoute != Screen.Onboarding.route &&
         currentRoute != Screen.Schedules.route &&
         currentRoute != Screen.Achievements.route &&
+        currentRoute != Screen.Levels.route &&
         currentRoute != Screen.Diary.route &&
         currentRoute != Screen.Calendar.route &&
         currentRoute != Screen.Deadline.route &&
@@ -150,8 +152,16 @@ fun AppNavGraph(
                             navController.navigate(Screen.Calendar.route) {
                                 launchSingleTop = true
                             }
+                        },
+                        onOpenLevels = {
+                            navController.navigate(Screen.Levels.route) {
+                                launchSingleTop = true
+                            }
                         }
                     )
+                }
+                composable(Screen.Levels.route) {
+                    LevelsScreen(onBack = { navController.popBackStack() })
                 }
                 composable(Screen.Calendar.route) {
                     CalendarScreen(onBack = { navController.popBackStack() })

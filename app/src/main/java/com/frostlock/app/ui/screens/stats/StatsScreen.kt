@@ -69,6 +69,7 @@ fun StatsScreen(
     onOpenDiary: () -> Unit,
     onOpenWeeklyReport: () -> Unit,
     onOpenCalendar: () -> Unit,
+    onOpenLevels: () -> Unit,
     viewModel: StatsViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -181,7 +182,7 @@ fun StatsScreen(
             }
         }
 
-        LevelCard(level = state.level)
+        LevelCard(level = state.level, onClick = onOpenLevels)
 
         // Grid stats
         Row(
@@ -363,8 +364,8 @@ fun StatsScreen(
 }
 
 @Composable
-private fun LevelCard(level: FocusLevel) {
-    AppCard {
+private fun LevelCard(level: FocusLevel, onClick: () -> Unit) {
+    AppCard(modifier = Modifier.clickable(onClick = onClick)) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
@@ -402,6 +403,13 @@ private fun LevelCard(level: FocusLevel) {
                     },
                     style = MaterialTheme.typography.labelLarge,
                     color = AccentFrost
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = TextSecondary,
+                    modifier = Modifier.size(18.dp)
                 )
             }
 
