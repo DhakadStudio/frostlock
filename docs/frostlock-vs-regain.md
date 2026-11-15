@@ -19,7 +19,7 @@ Legend: `[x]` shipped in FrostLock · `[ ]` missing · `[~]` partial · `[!]` de
 
 | Question | Answer |
 | --- | --- |
-| Which app blocks more surfaces? | **Regain.** It also blocks websites, YouTube Shorts/channels, the phone home screen, split screen, and floating windows. FrostLock now holds notifications from blocked apps as well. |
+| Which app blocks more surfaces? | **Regain.** It still blocks YouTube Shorts/channels, split screen, and floating windows. FrostLock now blocks websites and the phone home screen during focus/schedule and holds notifications from blocked apps. |
 | Which app is better for privacy? | **FrostLock, by a wide margin.** No internet permission, no account, no ads, no analytics, no billing. |
 | Which app is better for a free user? | **FrostLock.** Everything is free. Regain gates app-limit counts, unlimited schedules, premium stats, music and themes behind Pro. |
 | Which app models app sets better? | **FrostLock.** Subjects own app sets; rules have their own app sets; one-off dates and overnight windows exist. Regain tags sessions but keeps the blocklist per rule/schedule. |
@@ -383,7 +383,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [x] Notification blocking + blocked-notification inbox
 - [x] Per-app notification ranking — the inbox ranks the top senders with counts and share bars.
 - [~] Pause/schedule notification blocking (the shield follows focus sessions and rules automatically)
-- [ ] Phone home-screen blocking during focus
+- [x] Phone home-screen blocking during focus — opt-in toggle in Profile, blocks launchers when focus session or schedule is active.
 - [ ] Split-screen blocking
 - [ ] Floating-window blocking
 - [ ] Uninstall protection / device admin
