@@ -11,8 +11,10 @@ import com.frostlock.app.data.InstalledAppsRepository
 import com.frostlock.app.data.local.prefs.FocusSettings
 import com.frostlock.app.notifications.BlockedNotification
 import com.frostlock.app.notifications.NotificationArchiveStore
+import com.frostlock.app.ui.util.NotificationAppTotal
 import com.frostlock.app.ui.util.NotificationDay
 import com.frostlock.app.ui.util.buildNotificationDays
+import com.frostlock.app.ui.util.notificationAppTotals
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +32,7 @@ data class NotificationInboxUiState(
     val accessGranted: Boolean = false,
     val days: List<NotificationDay> = emptyList(),
     val total: Int = 0,
+    val appTotals: List<NotificationAppTotal> = emptyList(),
     val icons: Map<String, ImageBitmap?> = emptyMap()
 ) {
     val isEmpty: Boolean get() = days.isEmpty()
@@ -57,6 +60,7 @@ class NotificationsViewModel @Inject constructor(
             accessGranted = access,
             days = buildNotificationDays(items),
             total = items.size,
+            appTotals = notificationAppTotals(items),
             icons = iconMap
         )
     }.stateIn(

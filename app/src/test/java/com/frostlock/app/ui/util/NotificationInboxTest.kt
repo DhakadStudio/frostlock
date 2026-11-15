@@ -50,4 +50,50 @@ class NotificationInboxTest {
         assertEquals("Yesterday", notificationDayLabel(today.minusDays(1), today))
         assertEquals("9 Nov", notificationDayLabel(LocalDate.of(2026, 11, 9), today))
     }
+
+    private fun appItem(id: Long, packageName: String, label: String) = BlockedNotification(
+        id = id,
+        packageName = packageName,
+        appLabel = label,
+        title = "Title $id",
+        text = "Text",
+        postedAt = 0L,
+        reason = BlockReason.FOCUS
+    )
+
+    @Test
+    fun `app ranking counts held notifications per package`() {
+        val totals = notificationAppTotals(
+            listOf(
+                appItem(1, "com.chat", "Chat"),
+                appItem(2, "com.mail", "Mail"),
+                appItem(3, "com.chat", "Chat"),
+                appItem(4, "com.news", "News"),
+                appItem(5, "com.chat", "Chat"),
+                appItem(6, "com.mail", "Mail")
+            ),
+            limit = -1
+        )
+
+        assertEquals(listOf("Chat", "Mail", "News"), totals.map { it.appLabel })
+        assertEquals(listOf(3, 2, 1), totals.map { it.count })
+        assertEquals("com.chat", totals.first().packageName)
+    }
+
+    @Test
+    fun `app ranking breaks ties alphabetically and respects the limit`() {
+        val totals = notificationAppTotals(
+            listOf(
+                appItem(1, "com.zeta", "Zeta"),
+                appItem(2, "com.alpha", "Alpha"),
+                appItem(3, "com.mid", "Mid"),
+                appItem(4, "com.alpha", "Alpha")
+            ),
+            limit = 2
+        )
+
+        assertEquals(listOf("Alpha", "Mid"), totals.map { it.appLabel })
+        assertEquals(2, totals.size)
+        assertEquals(emptyList<NotificationAppTotal>(), notificationAppTotals(emptyList()))
+    }
 }

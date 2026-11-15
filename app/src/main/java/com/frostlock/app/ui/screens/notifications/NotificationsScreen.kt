@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -64,6 +65,7 @@ import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.theme.WarnAmber
+import com.frostlock.app.ui.util.NotificationAppTotal
 import com.frostlock.app.ui.util.NotificationDay
 import com.frostlock.app.ui.util.formatSessionTime
 import com.frostlock.app.ui.util.notificationDayLabel
@@ -134,6 +136,9 @@ fun NotificationsScreen(
         if (state.isEmpty) {
             item { EmptyInbox(accessGranted = state.accessGranted, enabled = state.enabled) }
         } else {
+            item {
+                AppRankingCard(totals = state.appTotals, icons = state.icons)
+            }
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -256,6 +261,72 @@ private fun ShieldCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppRankingCard(
+    totals: List<NotificationAppTotal>,
+    icons: Map<String, androidx.compose.ui.graphics.ImageBitmap?>
+) {
+    val max = totals.maxOfOrNull { it.count }?.coerceAtLeast(1) ?: 1
+
+    AppCard {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = "Most held apps",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = TextPrimary
+                )
+                Text(
+                    text = "Where the interruptions came from.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+            }
+            totals.forEach { total ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    AppIcon(label = total.appLabel, icon = icons[total.packageName])
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = total.appLabel,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = TextPrimary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = total.count.toString(),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = AccentFrost
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(5.dp)
+                                .clip(CircleShape)
+                                .background(SurfaceHigh)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(total.count.toFloat() / max.toFloat())
+                                    .fillMaxHeight()
+                                    .clip(CircleShape)
+                                    .background(Brush.horizontalGradient(GradientFrost))
+                            )
+                        }
+                    }
+                }
             }
         }
     }
