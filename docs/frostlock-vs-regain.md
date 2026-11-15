@@ -421,7 +421,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [x] Study diary (day grouping, search, editable reflections)
 - [x] Phone-unlock tracking — local daily count via ACTION_USER_PRESENT, shown on Stats; no usage-access permission.
 - [x] Focus bubble / floating timer (opt-in overlay, hidden during breaks)
-- [~] Eight widget types: **4 shipped** (focus today, daily goal, week at a glance, focus calendar); usage, unlock count and Pro pass widgets are missing
+- [~] Eight widget types: **4 shipped** (focus today, daily goal, week at a glance, focus calendar); the focus widget now shows today's unlock count. Dedicated usage, unlock-count and Pro-pass widgets are still missing.
 - [x] Achievement sharing (unlocked badges share plain text via the system sheet)
 
 ### E. Data, accounts & platform
