@@ -14,6 +14,8 @@ import com.frostlock.app.ui.util.computeStreak
 import com.frostlock.app.ui.util.localDateOf
 import com.frostlock.app.ui.util.tagBreakdown
 import com.frostlock.app.ui.util.TagTotal
+import com.frostlock.app.ui.util.buildMonthlySummary
+import com.frostlock.app.ui.util.MonthlySummary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -43,6 +45,7 @@ data class StatsUiState(
     val tags: List<TagTotal> = emptyList(),
     val achievements: List<Achievement> = emptyList(),
     val level: FocusLevel = focusLevelFor(0L),
+    val monthly: MonthlySummary = buildMonthlySummary(emptyList()),
     val recent: List<SessionEntity> = emptyList()
 ) {
     val averageSeconds: Long
@@ -97,6 +100,7 @@ class StatsViewModel @Inject constructor(
                 startTimes = partial.recent.map { it.startedAt }
             ),
             level = focusLevelFor(partial.totalSeconds),
+            monthly = buildMonthlySummary(partial.recent),
             recent = partial.recent.take(10)
         )
     }.stateIn(

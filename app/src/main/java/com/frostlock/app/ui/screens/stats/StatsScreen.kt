@@ -57,8 +57,11 @@ import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.util.AchievementCategory
 import com.frostlock.app.ui.util.FocusLevel
+import com.frostlock.app.ui.util.MonthlySummary
 import com.frostlock.app.ui.util.TagTotal
 import com.frostlock.app.ui.util.formatDuration
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun StatsScreen(
@@ -198,6 +201,8 @@ fun StatsScreen(
                 modifier = Modifier.weight(1f)
             )
         }
+
+        MonthlyCard(summary = state.monthly)
 
         AppCard(modifier = Modifier.clickable(onClick = onOpenCalendar)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -489,6 +494,125 @@ private fun SubjectBreakdown(tags: List<TagTotal>) {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MonthlyCard(summary: MonthlySummary) {
+    val current = summary.current
+    val max = (summary.months.maxOfOrNull { it.seconds } ?: 0L).coerceAtLeast(1L)
+    val monthName = current.month.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.US))
+    val sessionLabel = if (current.sessions == 1) "1 session" else "${current.sessions} sessions"
+
+    AppCard {
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Monthly rhythm",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = "$monthName · $sessionLabel",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                }
+                Text(
+                    text = formatDuration(current.seconds),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = AccentFrost
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(110.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                summary.months.forEach { month ->
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Bottom
+                    ) {
+                        val fraction = month.seconds.toFloat() / max.toFloat()
+                        val isCurrent = month.month == current.month
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(0.78f * fraction + 0.03f)
+                                .clip(RoundedCornerShape(topStart = 7.dp, topEnd = 7.dp))
+                                .background(
+                                    Brush.verticalGradient(
+                                        if (isCurrent) {
+                                            listOf(PrimaryIce, GlacierBlue)
+                                        } else {
+                                            listOf(
+                                                PrimaryIce.copy(alpha = 0.48f),
+                                                GlacierBlue.copy(alpha = 0.28f)
+                                            )
+                                        }
+                                    )
+                                )
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = month.label,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isCurrent) AccentFrost else TextSecondary
+                        )
+                    }
+                }
+            }
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                MonthMetric(
+                    value = current.activeDays.toString(),
+                    label = "Active days",
+                    modifier = Modifier.weight(1f)
+                )
+                MonthMetric(
+                    value = if (current.bestDaySeconds > 0L) {
+                        formatDuration(current.bestDaySeconds)
+                    } else {
+                        "—"
+                    },
+                    label = "Best day",
+                    modifier = Modifier.weight(1f)
+                )
+                MonthMetric(
+                    value = if (current.activeDays > 0) {
+                        formatDuration(summary.averagePerActiveDay)
+                    } else {
+                        "—"
+                    },
+                    label = "Avg / active day",
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MonthMetric(value: String, label: String, modifier: Modifier = Modifier) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            color = TextPrimary
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = TextSecondary,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
