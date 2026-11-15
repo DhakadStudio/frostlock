@@ -146,15 +146,16 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 | What is held | Only notifications from apps that are blocked **right now** — an active rule (reason shows the rule name), a reached daily limit, or a manual focus session |
 | Always passes | Calls, alarms, foreground-service/ongoing notifications, group summaries, non-clearable notifications and FrostLock’s own alerts |
 | Inbox | Day grouping (Today / Yesterday / date), real app icon, time, title, body, reason chip, delete one, clear all; capped at 200 entries |
+| Ranking | “Most held apps” ranks the top three senders with counts and share bars, computed locally from the archived entries |
 | Storage | Local SharedPreferences JSON only. Nothing is uploaded, and clearing the inbox deletes it permanently |
 | Scope | A single global toggle that follows focus sessions, rules and limits automatically — no separate schedule to maintain |
 | Enforcement detail | The notification is cancelled before it reaches the shade and archived in the same pass, so the shade never shows a blocked alert |
 
 ### 2.10 Engineering
 
-- 160 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, schedule streaks, deadline countdowns, session stamps, freeze levels, achievement sharing, bubble labels, session photo naming and downsampling, app-limit warnings, suggested limits, showcase logos, achievements, stats, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, notification decisions, inbox grouping and widget maths.
+- 185 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, schedule streaks, deadline countdowns, session stamps, freeze levels, achievement sharing, bubble labels, pause limits, session photo naming and downsampling, app-limit warnings, suggested limits, showcase logos, achievements, stats, monthly rollups, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, ambience synthesis, notification decisions, inbox grouping and ranking, and widget maths.
 - Verified on emulator `Medium_Phone_API_37.0` including blocking and full onboarding.
-- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`; freeze level `249975b`; achievement sharing `8b0d3d5`; schedule streak `95de98b`; floating focus bubble `b00e586`; session photos `8915202`.
+- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`; freeze level `249975b`; achievement sharing `8b0d3d5`; schedule streak `95de98b`; floating focus bubble `b00e586`; session photos `8915202`; pause limits `b45488f`; ice themes `d0a5075`; monthly stats `6153caa`; focus ambience `d0c5c8c`; notification ranking `1e6ed58`.
 
 ---
 
@@ -214,7 +215,7 @@ Sources: installed APK v75.1.2113 (manifest activities/services, 96k resource li
 
 - Notification access + NotificationListener.
 - Block distracting notifications during focus and view them later in a Regain inbox. **FrostLock has this** (local-only shield + inbox, enabled per blocked app).
-- Per-app notification ranking (“apps that send me most notifications”).
+- Per-app notification ranking (“apps that send me most notifications”). **FrostLock has this** as a local “Most held apps” card.
 - Pause notification blocking; schedule it; allowed-notification examples.
 - “Block notification & view later”, “block notifications from blocked apps”.
 - Wake-up notifications from group members; “Focus Guilt Trip” and usage-standing notifications.
@@ -285,7 +286,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 12 | Shorts / Reels / Spotlight blocking | **No** | Yes | Big gap | Regain |
 | 13 | YouTube channel filtering | **No** | Yes + study channels | Big gap | Regain |
 | 14 | YouTube home-page blocking | **No** | Yes | Gap | Regain |
-| 15 | Notification blocking + inbox | **Yes** — holds alerts from blocked apps, local inbox with reasons | Yes | Similar; FrostLock is free and fully local | Tie / FrostLock |
+| 15 | Notification blocking + inbox | **Yes** — holds alerts from blocked apps, local inbox with reasons and a per-app ranking | Yes | Similar; FrostLock is free and fully local | Tie / FrostLock |
 | 16 | Home-screen blocking | **No** | Yes (login required) | Gap | Regain |
 | 17 | Split-screen / floating-window blocking | **No** | Yes | Gap | Regain |
 | 18 | Uninstall protection | **No** | Yes (device admin) | Gap; also anti-user | Regain (effectiveness) |
@@ -338,6 +339,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | Real app icons in the flow | App Control slide reads launcher icons from the device | `2e2c92e` |
 | Session intention | “One thing for this session”, shown while focusing | `3753155` |
 | Notification shield | Local listener + held-notification inbox | `1279084` |
+| Notification ranking | A “Most held apps” card ranks the top three senders with counts and share bars, computed from the local inbox | `1e6ed58` |
 | Multiple widgets | Focus, daily goal and week-at-a-glance widgets, pinnable from Profile; focus/goal cards fill their full height so text never floats in empty bands | `18ef9fc`, `7baee2b` |
 | Focus calendar + upcoming sessions | Month heat-map with day drill-down, plus a next-7-days “Coming up” panel on the rules screen | `5b33fbc` |
 | Calendar home-screen widget | A locally drawn month heat-map widget with today ring and totals | `81d330d` |
@@ -373,7 +375,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [ ] YouTube channel blocking
 - [ ] Study-channel allowlist
 - [x] Notification blocking + blocked-notification inbox
-- [ ] Per-app notification ranking
+- [x] Per-app notification ranking — the inbox ranks the top senders with counts and share bars.
 - [~] Pause/schedule notification blocking (the shield follows focus sessions and rules automatically)
 - [ ] Phone home-screen blocking during focus
 - [ ] Split-screen blocking
@@ -525,6 +527,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 - [x] Schedule streak.
 - [x] **Session skip/discard + max pauses** — stop asks save or discard, breaks can be skipped, and Profile caps normal-session pauses.
 - [x] Monthly stats — six-month bar chart with active days, best day and average per active day, all computed from local sessions.
+- [x] Per-app notification ranking — the inbox ranks the top held apps with counts and share bars.
 - [ ] Multi-language resources.
 
 ### Never
@@ -555,7 +558,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 ## 12. Decision log / open questions
 
 1. **Website blocking:** is a local VPN acceptable? It is the only reliable offline way. If not, website blocking stays out.
-2. **Notification blocking:** shipped as an opt-in, local-only shield with a plain inbox; no ranking, no per-app training, nothing uploaded.
+2. **Notification blocking:** shipped as an opt-in, local-only shield with an inbox and a local per-app ranking; no per-app training, nothing uploaded.
 3. **Schedule alarms:** adding `AlarmManager` + boot receiver is low risk and high value.
 4. **Diary:** the note field already exists; surfacing it is a small UI task.
 5. **Keep the strict no-network promise** even for widgets/reports — everything must remain local.
