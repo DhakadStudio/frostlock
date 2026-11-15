@@ -21,6 +21,7 @@ import com.frostlock.app.data.local.prefs.ScheduleStore
 import com.frostlock.app.data.local.prefs.WebsiteBlockingStore
 import com.frostlock.app.data.local.prefs.blocks
 import com.frostlock.app.ui.util.blockedDomainFor
+import com.frostlock.app.ui.util.ShortFormDetector
 
 /**
  * Watches foreground app changes and sends the user to [BlockActivity] when they
@@ -43,6 +44,9 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     private var lastUrlScanAt = 0L
     private var lastWebsiteDomain: String? = null
     private var lastWebsiteBlockAt = 0L
+    private var lastShortsScanAt = 0L
+    private var lastShortsBlockAt = 0L
+    private var lastShortsPackage: String? = null
 
     private val handler = Handler(Looper.getMainLooper())
     private val usageTicker = object : Runnable {
@@ -74,6 +78,12 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             event.eventType in WEBSITE_EVENT_TYPES
         ) {
             maybeBlockWebsite(eventPackage)
+        }
+
+        if (eventPackage in SHORTS_PACKAGES &&
+            event.eventType in WEBSITE_EVENT_TYPES
+        ) {
+            maybeBlockShorts(eventPackage)
         }
 
         if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
@@ -207,6 +217,45 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         return focusActive || scheduleActive
     }
 
+    /** Shorts/Reels blocking only runs during a focus session or a scheduled window. */
+    private fun maybeBlockShorts(packageName: String) {
+        if (!websiteBlockingActive()) return
+
+        val elapsed = SystemClock.elapsedRealtime()
+        if (elapsed - lastShortsScanAt < SHORTS_SCAN_THROTTLE_MS) return
+        lastShortsScanAt = elapsed
+
+        val keywords = ShortFormDetector.keywordsFor(packageName)
+        if (keywords.isEmpty()) return
+        val root = rootInActiveWindow ?: return
+
+        val found = collectTextFromRoot(root) { text ->
+            ShortFormDetector.matches(packageName, text)
+        }
+
+        if (!found) return
+
+        val now = System.currentTimeMillis()
+        if (packageName == lastShortsPackage && now - lastShortsBlockAt < SHORTS_REPEAT_MS) return
+        lastShortsPackage = packageName
+        lastShortsBlockAt = now
+
+        val label = when (packageName) {
+            "com.google.android.youtube" -> "Shorts"
+            "com.instagram.android" -> "Reels"
+            "com.facebook.katana" -> "Reels"
+            "com.snapchat.android" -> "Spotlight"
+            else -> "Short-form"
+        }
+
+        showWall(
+            packageName = packageName,
+            reason = BlockActivity.REASON_FOCUS,
+            now = now,
+            ruleLabel = "$label blocked"
+        )
+    }
+
     private fun activeRuleEnd(): Long =
         scheduleStore?.activeSchedules()?.maxOfOrNull { it.endsAtMillis } ?: 0L
 
@@ -239,6 +288,25 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             }
         }
         return urlTexts + editableTexts
+    }
+
+    private fun collectTextFromRoot(root: AccessibilityNodeInfo, predicate: (String) -> Boolean): Boolean {
+        val queue = ArrayDeque<AccessibilityNodeInfo>()
+        queue.add(root)
+        var visited = 0
+        while (queue.isNotEmpty() && visited < MAX_SCAN_NODES) {
+            val node = queue.removeFirst()
+            visited++
+            val text = node.text?.toString()?.trim()
+                ?: node.contentDescription?.toString()?.trim()
+            if (!text.isNullOrEmpty() && predicate(text)) {
+                return true
+            }
+            for (index in 0 until node.childCount) {
+                node.getChild(index)?.let { queue.add(it) }
+            }
+        }
+        return false
     }
 
     /**
@@ -420,6 +488,16 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
             AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
         )
+
+        private val SHORTS_PACKAGES = setOf(
+            "com.google.android.youtube",
+            "com.instagram.android",
+            "com.facebook.katana",
+            "com.snapchat.android"
+        )
+
+        private const val SHORTS_SCAN_THROTTLE_MS = 800L
+        private const val SHORTS_REPEAT_MS = 7_000L
 
         /** True when the user has enabled this service in system accessibility settings. */
         fun isEnabled(context: Context): Boolean {
