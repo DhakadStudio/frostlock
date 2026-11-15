@@ -11,6 +11,10 @@ sealed class Screen(val route: String, val title: String) {
     object Diary : Screen("diary", "Diary")
     object Calendar : Screen("calendar", "Focus calendar")
     object Deadline : Screen("deadline", "Focus deadline")
+    object Goals : Screen("goals", "Focus goals")
+    object GoalEditor : Screen("goal_editor/{goalId}", "Focus goal") {
+        fun route(goalId: Long = -1L) = "goal_editor/$goalId"
+    }
     object WeeklyReport : Screen("weekly_report", "Weekly report")
     object Notifications : Screen("notifications", "Notifications")
     object Profile : Screen("profile", "Profile")

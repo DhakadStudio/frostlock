@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.frostlock.app.data.local.prefs.DeadlineStore
 import com.frostlock.app.data.local.prefs.FocusDeadline
+import com.frostlock.app.data.local.prefs.FocusGoalStore
 import com.frostlock.app.data.local.prefs.FocusSettings
 import com.frostlock.app.data.local.prefs.ThemeStore
 import com.frostlock.app.ui.theme.IcePalettes
@@ -29,7 +30,8 @@ data class ProfileUiState(
     val bubbleEnabled: Boolean = false,
     val ambienceKey: String = AmbienceSound.Off.key,
     val themeKey: String = IcePalettes.Frost.key,
-    val deadline: FocusDeadline? = null
+    val deadline: FocusDeadline? = null,
+    val goalCount: Int = 0
 )
 
 @HiltViewModel
@@ -37,7 +39,8 @@ class ProfileViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val focusSettings: FocusSettings,
     private val themeStore: ThemeStore,
-    deadlineStore: DeadlineStore
+    deadlineStore: DeadlineStore,
+    goalStore: FocusGoalStore
 ) : ViewModel() {
 
     val uiState: StateFlow<ProfileUiState> = combine(
@@ -56,6 +59,8 @@ class ProfileViewModel @Inject constructor(
         )
     }.combine(deadlineStore.deadline) { state, deadline ->
         state.copy(deadline = deadline)
+    }.combine(goalStore.goals) { state, goals ->
+        state.copy(goalCount = goals.size)
     }.combine(focusSettings.bubbleEnabled) { state, bubble ->
         state.copy(bubbleEnabled = bubble)
     }.combine(focusSettings.ambienceKey) { state, ambience ->

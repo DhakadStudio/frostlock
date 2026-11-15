@@ -83,6 +83,7 @@ fun ProfileScreen(
     onOpenDiary: () -> Unit = {},
     onOpenWeeklyReport: () -> Unit = {},
     onOpenDeadline: () -> Unit = {},
+    onOpenGoals: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -609,6 +610,52 @@ fun ProfileScreen(
                             "${formatDeadlineDate(deadline.date)} · " +
                                 deadlineCountdown(deadline).orEmpty()
                         } ?: "Count down to an exam, launch or personal deadline.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                }
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = TextSecondary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+
+        SectionHeader(title = "Focus goals")
+        AppCard(modifier = Modifier.clickable(onClick = onOpenGoals)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(SurfaceHigh),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Flag,
+                        contentDescription = null,
+                        tint = AccentFrost,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = when (state.goalCount) {
+                            0 -> "Set a focus goal"
+                            1 -> "1 local goal"
+                            else -> "${state.goalCount} local goals"
+                        },
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = "Track exam and project targets against your saved sessions.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextSecondary
                     )

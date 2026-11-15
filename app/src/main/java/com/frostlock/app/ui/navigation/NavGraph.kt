@@ -9,16 +9,21 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.frostlock.app.ui.components.AppBottomBar
 import com.frostlock.app.ui.screens.block.BlockScreen
 import com.frostlock.app.ui.screens.calendar.CalendarScreen
 import com.frostlock.app.ui.screens.deadline.DeadlineScreen
 import com.frostlock.app.ui.screens.diary.DiaryScreen
 import com.frostlock.app.ui.screens.focus.FocusScreen
+import com.frostlock.app.ui.screens.goals.GoalEditorScreen
+import com.frostlock.app.ui.screens.goals.GoalEditorViewModel
+import com.frostlock.app.ui.screens.goals.GoalsScreen
 import com.frostlock.app.ui.screens.home.HomeScreen
 import com.frostlock.app.ui.screens.notifications.NotificationsScreen
 import com.frostlock.app.ui.screens.onboarding.OnboardingScreen
@@ -48,6 +53,8 @@ fun AppNavGraph(
         currentRoute != Screen.Diary.route &&
         currentRoute != Screen.Calendar.route &&
         currentRoute != Screen.Deadline.route &&
+        currentRoute != Screen.Goals.route &&
+        currentRoute != Screen.GoalEditor.route &&
         currentRoute != Screen.WeeklyReport.route &&
         currentRoute != Screen.Notifications.route
 
@@ -230,8 +237,39 @@ fun AppNavGraph(
                             navController.navigate(Screen.Deadline.route) {
                                 launchSingleTop = true
                             }
+                        },
+                        onOpenGoals = {
+                            navController.navigate(Screen.Goals.route) {
+                                launchSingleTop = true
+                            }
                         }
                     )
+                }
+                composable(Screen.Goals.route) {
+                    GoalsScreen(
+                        onBack = { navController.popBackStack() },
+                        onAddGoal = {
+                            navController.navigate(Screen.GoalEditor.route()) {
+                                launchSingleTop = true
+                            }
+                        },
+                        onEditGoal = { goalId ->
+                            navController.navigate(Screen.GoalEditor.route(goalId)) {
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
+                composable(
+                    route = Screen.GoalEditor.route,
+                    arguments = listOf(
+                        navArgument(GoalEditorViewModel.GOAL_ID_ARG) {
+                            type = NavType.LongType
+                            defaultValue = GoalEditorViewModel.NEW_GOAL_ID
+                        }
+                    )
+                ) {
+                    GoalEditorScreen(onBack = { navController.popBackStack() })
                 }
                 composable(Screen.DesignPreview.route) {
                     DesignPreviewScreen(

@@ -26,9 +26,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Flag
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -36,7 +33,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -50,11 +46,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.frostlock.app.data.local.prefs.FocusDeadline
 import com.frostlock.app.ui.components.AppCard
+import com.frostlock.app.ui.components.FrostDatePickerDialog
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SectionHeader
 import com.frostlock.app.ui.theme.AccentFrost
@@ -72,9 +67,7 @@ import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.theme.WarnAmber
 import com.frostlock.app.ui.util.deadlineCountdown
 import com.frostlock.app.ui.util.deadlineIsUrgent
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -82,7 +75,6 @@ import java.util.Locale
  * A full page for the local deadline countdown. One name, one date, and a
  * preview of what the home card will say.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeadlineScreen(
     onBack: () -> Unit,
@@ -290,119 +282,6 @@ fun DeadlineScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun FrostDatePickerDialog(
-    initialDate: String,
-    onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
-) {
-    val state = rememberDatePickerState(
-        initialSelectedDateMillis = toUtcMillis(initialDate)
-    )
-
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .clip(RoundedCornerShape(28.dp))
-                .background(SurfaceCard)
-                .border(1.dp, StrokeSoft, RoundedCornerShape(28.dp))
-                .padding(16.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(38.dp)
-                        .clip(CircleShape)
-                        .background(SurfaceHigh),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarMonth,
-                        contentDescription = null,
-                        tint = AccentFrost,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Column {
-                    Text(
-                        text = "Target date",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary
-                    )
-                    Text(
-                        text = "The countdown updates instantly",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            DatePicker(
-                state = state,
-                showModeToggle = false,
-                colors = DatePickerDefaults.colors(
-                    containerColor = Color.Transparent,
-                    titleContentColor = TextPrimary,
-                    headlineContentColor = TextPrimary,
-                    weekdayContentColor = TextSecondary,
-                    subheadContentColor = TextSecondary,
-                    navigationContentColor = TextSecondary,
-                    yearContentColor = TextPrimary,
-                    currentYearContentColor = AccentFrost,
-                    selectedYearContentColor = InkOnIce,
-                    selectedYearContainerColor = PrimaryIce,
-                    dayContentColor = TextPrimary,
-                    selectedDayContentColor = InkOnIce,
-                    selectedDayContainerColor = PrimaryIce,
-                    todayContentColor = AccentFrost,
-                    todayDateBorderColor = AccentFrost,
-                    dividerColor = StrokeSoft
-                )
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                TextButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(text = "Cancel", color = TextSecondary)
-                }
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .heightIn(min = 48.dp)
-                        .clip(CircleShape)
-                        .background(Brush.horizontalGradient(GradientFrost))
-                        .clickable {
-                            state.selectedDateMillis?.let { millis ->
-                                onConfirm(fromUtcMillis(millis).toString())
-                            } ?: onDismiss()
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Set date",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = InkOnIce
-                    )
-                }
-            }
-        }
-    }
-}
-
 @Composable
 private fun PreviewCard(title: String, date: String, today: LocalDate) {
     val preview = FocusDeadline(
@@ -470,13 +349,3 @@ private fun PreviewCard(title: String, date: String, today: LocalDate) {
 private fun formatDeadlineDate(iso: String): String = runCatching {
     LocalDate.parse(iso).format(DateTimeFormatter.ofPattern("EEE, d MMMM yyyy", Locale.US))
 }.getOrDefault(iso)
-
-private fun toUtcMillis(iso: String): Long = runCatching {
-    LocalDate.parse(iso)
-        .atStartOfDay(ZoneOffset.UTC)
-        .toInstant()
-        .toEpochMilli()
-}.getOrDefault(System.currentTimeMillis())
-
-private fun fromUtcMillis(millis: Long): LocalDate =
-    Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
