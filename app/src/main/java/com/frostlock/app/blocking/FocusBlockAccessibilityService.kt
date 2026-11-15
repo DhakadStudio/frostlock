@@ -15,6 +15,7 @@ import android.os.SystemClock
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import android.view.accessibility.AccessibilityWindowInfo
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.frostlock.app.R
@@ -27,7 +28,9 @@ import com.frostlock.app.data.local.prefs.blocks
 import com.frostlock.app.ui.util.domainMatches
 import com.frostlock.app.ui.util.hostFromUrlText
 import com.frostlock.app.ui.util.isDomainAllowed
+import com.frostlock.app.ui.util.MultiWindowDetector
 import com.frostlock.app.ui.util.ShortFormDetector
+import com.frostlock.app.ui.util.VisibleWindow
 
 /**
  * Watches foreground app changes and sends the user to [BlockActivity] when they
@@ -54,6 +57,9 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     private var lastShortsScanAt = 0L
     private var lastShortsBlockAt = 0L
     private var lastShortsPackage: String? = null
+    private var lastSideScanAt = 0L
+    private var lastSideBlockAt = 0L
+    private var lastSidePackage: String? = null
 
     private val unlockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -68,6 +74,7 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         override fun run() {
             tickUsage()
             tickSchedule()
+            maybeBlockSideWindow()
             handler.postDelayed(this, USAGE_TICK_MS)
         }
     }
@@ -108,6 +115,12 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             event.eventType in WEBSITE_EVENT_TYPES
         ) {
             maybeBlockShorts(eventPackage)
+        }
+
+        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
+            maybeBlockSideWindow()
+        ) {
+            return
         }
 
         if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
@@ -281,6 +294,85 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             now = now,
             ruleLabel = "$label blocked"
         )
+    }
+
+    /**
+     * Blocks a blocked app that stays visible in split screen, a freeform window,
+     * or picture-in-picture while another app is active.
+     *
+     * Returns true when a wall was shown so the caller can skip the normal
+     * foreground handling for the same event.
+     */
+    private fun maybeBlockSideWindow(): Boolean {
+        val now = System.currentTimeMillis()
+        val blocked = activeBlockedPackages(now)
+        if (blocked.isEmpty()) return false
+
+        val elapsed = SystemClock.elapsedRealtime()
+        if (elapsed - lastSideScanAt < SIDE_SCAN_THROTTLE_MS) return false
+        lastSideScanAt = elapsed
+
+        val visible = runCatching { windows }.getOrNull().orEmpty().map { window ->
+            VisibleWindow(
+                packageName = window.root?.packageName?.toString().orEmpty(),
+                isActive = window.isActive,
+                isApplication = window.type == AccessibilityWindowInfo.TYPE_APPLICATION
+            )
+        }
+
+        val blockedPackage = MultiWindowDetector.blockedSideWindow(
+            windows = visible,
+            blockedPackages = blocked,
+            ownPackage = packageName
+        ) ?: return false
+
+        if (blockedPackage == lastSidePackage && now - lastSideBlockAt < SIDE_REPEAT_MS) {
+            return false
+        }
+        lastSidePackage = blockedPackage
+        lastSideBlockAt = now
+
+        showWall(
+            packageName = blockedPackage,
+            reason = BlockActivity.REASON_FOCUS,
+            now = now,
+            untilMillis = activeRuleEnd(),
+            ruleLabel = "Split screen blocked"
+        )
+        return true
+    }
+
+    /**
+     * Every package that should be hidden while a focus session or schedule is
+     * active. Home launchers join the set only when home-screen blocking is on.
+     */
+    private fun activeBlockedPackages(now: Long): Set<String> {
+        val prefs = prefs ?: return emptySet()
+        val globalBlocked =
+            prefs.getStringSet(BlockingPreferences.KEY_PACKAGES, emptySet()).orEmpty()
+        val result = mutableSetOf<String>()
+
+        val activeSchedules = scheduleStore?.activeSchedules().orEmpty()
+        activeSchedules.forEach { active ->
+            result += active.schedule.packages.ifEmpty { globalBlocked }
+        }
+
+        val focusActive =
+            prefs.getBoolean(BlockingPreferences.KEY_ENABLED, false) &&
+                prefs.getLong(BlockingPreferences.KEY_FOCUS_UNTIL, 0L) > now
+        if (focusActive) {
+            val sessionPackages =
+                prefs.getStringSet(BlockingPreferences.KEY_SESSION_PACKAGES, emptySet())
+                    .orEmpty()
+            result += sessionPackages.ifEmpty { globalBlocked }
+        }
+
+        val homeBlocking =
+            prefs.getBoolean(BlockingPreferences.KEY_HOME_BLOCKING_ENABLED, false)
+        if (homeBlocking && (focusActive || activeSchedules.isNotEmpty())) {
+            result += homePackages
+        }
+        return result
     }
 
     private fun activeRuleEnd(): Long =
@@ -526,6 +618,8 @@ class FocusBlockAccessibilityService : AccessibilityService() {
 
         private const val SHORTS_SCAN_THROTTLE_MS = 800L
         private const val SHORTS_REPEAT_MS = 7_000L
+        private const val SIDE_SCAN_THROTTLE_MS = 900L
+        private const val SIDE_REPEAT_MS = 8_000L
 
         /** True when the user has enabled this service in system accessibility settings. */
         fun isEnabled(context: Context): Boolean {
