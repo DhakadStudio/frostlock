@@ -1,6 +1,6 @@
 # FrostLock vs Regain — complete feature inventory & gap analysis
 
-Last updated: **2026-11-14**
+Last updated: **2026-11-15**
 FrostLock `com.frostlock.app` v1.0 · Regain `ai.regainapp` v75.1.2113
 
 This file is the single source of truth for:
@@ -121,7 +121,7 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 | Feature | Detail |
 | --- | --- |
 | Home stats | Today’s focus, this week, session count, current streak, recent sessions |
-| Stats screen | Today / last 7 days chart, total sessions, streak, **breakdown by subject**, **focus calendar** (month heat-map + per-day drill-down), recent sessions |
+| Stats screen | Today / last 7 days chart, total sessions, streak, **monthly rhythm** (six-month bars, active days, best day, average per active day), **breakdown by subject**, **focus calendar** (month heat-map + per-day drill-down), recent sessions |
 | Achievements | 16 offline badges: focus hours (1, 3, 5, 10, 25, 50, 100h), streaks (3, 7, 14, 30, 100 days), sessions (1, 10, 50, 100) |
 | Badge UI | Milestone cabinet, hexagon badges, progress labels, unlocked/locked states |
 | Notes | Post-session note saved to the DB, editable later in the study diary |
@@ -321,6 +321,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 49 | Pause limits | **Yes** — Off/1/2/3/no-limit per session; Strict Mode blocks pausing entirely | Max pauses per session | Similar, and FrostLock keeps it local | Tie |
 | 50 | Multi-language UI | **No** | Yes | Gap | Regain |
 | 51 | Data export / backup beyond OS | **No** | Cloud backup | Different | FrostLock (privacy) |
+| 52 | Monthly stats | **Yes** — six-month rollup with active days, best day and average per active day | Yes (Pro) | Similar; FrostLock keeps it free | Tie / FrostLock |
 
 ---
 
@@ -348,6 +349,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | Floating focus bubble | Opt-in draggable timer overlay during focus, drawn by the foreground service | `b00e586` |
 | Session photos | One optional local photo per session, picked with the system picker, shown as a diary banner with a full-screen viewer | `8915202` |
 | Pause limits + discard | A per-session pause allowance on Profile, plus a save/discard choice when stopping a partial session | `b45488f` |
+| Monthly stats | Six-month rhythm bars plus active days, best day and average per active day on the stats screen | `6153caa` |
 | Ice theme variants | Four local palettes that restyle surfaces, accents and hero gradients instantly; choice persists in SharedPreferences | `d0a5075` |
 | Achievement sharing | Tap an unlocked badge for a themed detail card and share it through the system sheet | `8b0d3d5` |
 | Research discipline | Earlier Regain research notes (since removed in rename) | `ab74654`, `fb74d3e` |
@@ -417,7 +419,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [ ] Cloud backup / restore
 - [ ] Remote logout
 - [ ] Weekly email/in-app report
-- [ ] Monthly stats and past-day browsing
+- [x] Monthly stats and past-day browsing — a six-month rollup on Stats plus the Focus calendar for any past day.
 - [ ] Multi-language UI
 - [ ] UsageStats-based tracking
 - [ ] Pro subscription / free-tier caps
@@ -520,6 +522,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 - [~] Exam/goal profiles stored locally (no exam-data upload). **A local deadline countdown ships**; exam-tuned schedules are still missing.
 - [x] Schedule streak.
 - [x] **Session skip/discard + max pauses** — stop asks save or discard, breaks can be skipped, and Profile caps normal-session pauses.
+- [x] Monthly stats — six-month bar chart with active days, best day and average per active day, all computed from local sessions.
 - [ ] Multi-language resources.
 
 ### Never
@@ -531,7 +534,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 ## 11. Verified facts & commands
 
 - Build: `JAVA_HOME=/snap/android-studio/250/jbr ANDROID_HOME=/home/vishal/Android/Sdk ./gradlew :app:assembleDebug`
-- Tests: `:app:testDebugUnitTest` → **171 tests, 0 failures**
+- Tests: `:app:testDebugUnitTest` → **176 tests, 0 failures**
 - Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - Accessibility component: `com.frostlock.app/com.frostlock.app.blocking.FocusBlockAccessibilityService`
 - Re-enable service:
@@ -542,7 +545,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 - Regain APK inspected at `/tmp/opencode/regain.apk` (v75.1.2113, 58 MB base); it was not retained after the analysis.
 - FrostLock permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `RECEIVE_BOOT_COMPLETED`, `USE_EXACT_ALARM`, and an optional `SYSTEM_ALERT_WINDOW` for the floating bubble. Photos go through the system picker, so no camera or storage permission is declared. Still **no INTERNET**.
 - FrostLock manifest: accessibility service, focus foreground service, schedule reminder receiver, notification listener service, four widget providers.
-- Test files: 27 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `ScheduleStreakTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `FocusLevelTest`, `FocusBubbleTest`, `FocusPausesTest`, `SessionPhotosTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`, `IcePaletteTest`).
+- Test files: 28 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `ScheduleStreakTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `FocusLevelTest`, `FocusBubbleTest`, `FocusPausesTest`, `SessionPhotosTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`, `IcePaletteTest`, `MonthlyStatsTest`).
 - Current onboarding page count: 10 (`OnboardingPages.COUNT`).
 
 ---
