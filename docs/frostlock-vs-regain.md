@@ -19,7 +19,7 @@ Legend: `[x]` shipped in FrostLock · `[ ]` missing · `[~]` partial · `[!]` de
 
 | Question | Answer |
 | --- | --- |
-| Which app blocks more surfaces? | **Regain.** It still blocks YouTube Shorts/channels, split screen, and floating windows. FrostLock now blocks websites and the phone home screen during focus/schedule and holds notifications from blocked apps. |
+| Which app blocks more surfaces? | **Regain.** It still blocks YouTube channels, split screen, and floating windows. FrostLock now blocks websites, Shorts/Reels, and the phone home screen during focus/schedule, and holds notifications from blocked apps. |
 | Which app is better for privacy? | **FrostLock, by a wide margin.** No internet permission, no account, no ads, no analytics, no billing. |
 | Which app is better for a free user? | **FrostLock.** Everything is free. Regain gates app-limit counts, unlimited schedules, premium stats, music and themes behind Pro. |
 | Which app models app sets better? | **FrostLock.** Subjects own app sets; rules have their own app sets; one-off dates and overnight windows exist. Regain tags sessions but keeps the blocklist per rule/schedule. |
@@ -375,8 +375,8 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [x] Website blocking (domains, social sites, adult content) — opt-in local list, detected through the browser address bar; only active during focus or a schedule.
 - [ ] Study-website allowlist
 - [x] Adult-content blocking — curated adult domains in the local list, individually toggleable.
-- [ ] YouTube Shorts blocking
-- [ ] Instagram/Facebook Reels + Snapchat Spotlight blocking
+- [x] YouTube Shorts blocking — accessibility scan for the Shorts surface while focus/schedule is active.
+- [x] Instagram/Facebook Reels + Snapchat Spotlight blocking — accessibility scan for Reels/Spotlight surfaces while focus/schedule is active.
 - [ ] YouTube home-page blocking
 - [ ] YouTube channel blocking
 - [ ] Study-channel allowlist
