@@ -65,4 +65,13 @@
         android:textColor="@color/widget_text_secondary"
         android:textSize="14sp" />
 
+    <TextView
+        android:id="@+id/widget_unlocks"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="No unlocks yet today"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="12sp" />
+
 </LinearLayout>

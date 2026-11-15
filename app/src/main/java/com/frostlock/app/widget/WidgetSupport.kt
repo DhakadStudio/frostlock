@@ -11,6 +11,7 @@ import android.widget.RemoteViews
 import com.frostlock.app.R
 import com.frostlock.app.data.local.db.SessionDao
 import com.frostlock.app.data.local.prefs.FocusSettings
+import com.frostlock.app.data.local.prefs.UnlockStore
 import com.frostlock.app.ui.MainActivity
 import com.frostlock.app.ui.util.buildFocusMonth
 import com.frostlock.app.ui.util.computeStreak
@@ -90,7 +91,8 @@ object WidgetUpdater {
             monthSeconds = focusMonth.days.map { it.seconds },
             monthLabel = month.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH)),
             monthTotalSeconds = focusMonth.totalSeconds,
-            monthActiveDays = focusMonth.activeDays
+            monthActiveDays = focusMonth.activeDays,
+            unlocksToday = entryPoint.unlockStore().todayCount.value
         )
     }
 
@@ -120,6 +122,7 @@ object WidgetUpdater {
 interface WidgetEntryPoint {
     fun sessionDao(): SessionDao
     fun focusSettings(): FocusSettings
+    fun unlockStore(): UnlockStore
 }
 
 /** Last rendered numbers, so widgets have something to show before the DB read finishes. */
@@ -134,6 +137,7 @@ internal object WidgetCache {
     private const val KEY_MONTH_LABEL = "month_label"
     private const val KEY_MONTH_TOTAL = "month_total"
     private const val KEY_MONTH_ACTIVE = "month_active"
+    private const val KEY_UNLOCKS = "unlocks_today"
 
     fun read(context: Context): WidgetData {
         val prefs = prefs(context)
@@ -145,7 +149,8 @@ internal object WidgetCache {
             monthSeconds = parseMonth(prefs.getString(KEY_MONTH_SECONDS, null)),
             monthLabel = prefs.getString(KEY_MONTH_LABEL, "").orEmpty(),
             monthTotalSeconds = prefs.getLong(KEY_MONTH_TOTAL, 0L),
-            monthActiveDays = prefs.getInt(KEY_MONTH_ACTIVE, 0)
+            monthActiveDays = prefs.getInt(KEY_MONTH_ACTIVE, 0),
+            unlocksToday = prefs.getInt(KEY_UNLOCKS, 0)
         )
     }
 
@@ -159,6 +164,7 @@ internal object WidgetCache {
             .putString(KEY_MONTH_LABEL, data.monthLabel)
             .putLong(KEY_MONTH_TOTAL, data.monthTotalSeconds)
             .putInt(KEY_MONTH_ACTIVE, data.monthActiveDays)
+            .putInt(KEY_UNLOCKS, data.unlocksToday)
             .apply()
     }
 
@@ -195,6 +201,14 @@ internal fun buildFocusViews(context: Context, data: WidgetData): RemoteViews {
     views.setTextViewText(
         R.id.widget_streak,
         if (data.streak > 0) "\uD83D\uDD25 ${data.streak}-day streak" else "Start your first session"
+    )
+    views.setTextViewText(
+        R.id.widget_unlocks,
+        if (data.unlocksToday > 0) {
+            "\uD83D\uDD13 ${data.unlocksToday} unlock${if (data.unlocksToday == 1) "" else "s"} today"
+        } else {
+            "No unlocks yet today"
+        }
     )
     bindOpenApp(context, views, R.id.widget_root)
     return views

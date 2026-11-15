@@ -17,7 +17,8 @@ data class WidgetData(
     val monthSeconds: List<Long> = List(DAYS_IN_MONTH_GRID) { 0L },
     val monthLabel: String = "",
     val monthTotalSeconds: Long = 0L,
-    val monthActiveDays: Int = 0
+    val monthActiveDays: Int = 0,
+    val unlocksToday: Int = 0
 ) {
     companion object {
         const val DAYS_IN_WEEK = 7
