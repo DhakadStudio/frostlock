@@ -19,7 +19,7 @@ Legend: `[x]` shipped in FrostLock · `[ ]` missing · `[~]` partial · `[!]` de
 
 | Question | Answer |
 | --- | --- |
-| Which app blocks more surfaces? | **Regain.** It still blocks YouTube channels, split screen, and floating windows. FrostLock now blocks websites, Shorts/Reels, and the phone home screen during focus/schedule, and holds notifications from blocked apps. |
+| Which app blocks more surfaces? | **Regain.** It still blocks YouTube channels and Play Store searches. FrostLock now blocks websites, Shorts/Reels, the phone home screen, split screen, and floating windows during focus/schedule, and holds notifications from blocked apps. |
 | Which app is better for privacy? | **FrostLock, by a wide margin.** No internet permission, no account, no ads, no analytics, no billing. |
 | Which app is better for a free user? | **FrostLock.** Everything is free. Regain gates app-limit counts, unlimited schedules, premium stats, music and themes behind Pro. |
 | Which app models app sets better? | **FrostLock.** Subjects own app sets; rules have their own app sets; one-off dates and overnight windows exist. Regain tags sessions but keeps the blocklist per rule/schedule. |
@@ -285,13 +285,13 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 8 | Overnight windows | Yes | Yes (time windows) | Similar | Tie |
 | 9 | Daily app limits | Yes, tracked locally | Yes, via UsageStats | Regain has strict/snooze/limit streaks; FrostLock simpler and no extra permission | Regain (depth) / FrostLock (privacy) |
 | 10 | Suggested limits | One-tap 20-min for 4 apps | Usage-based suggestions | Different approaches | Tie |
-| 11 | Website blocking | **Partial** — accessibility address-bar detection with a local list (curated social/video + adult, plus custom domains); active only during focus or a rule; no allowlist, no VPN | Yes + adult + allowlist | FrostLock covers the common cases offline without a VPN; Regain adds allowlists | Tie / FrostLock (offline) |
-| 12 | Shorts / Reels / Spotlight blocking | **No** | Yes | Big gap | Regain |
+| 11 | Website blocking | **Partial** — accessibility address-bar detection with a local list (curated social/video + adult, plus custom domains) and a local allowlist; active only during focus or a rule; no VPN | Yes + adult + allowlist | FrostLock covers the common cases offline without a VPN | Tie / FrostLock (offline) |
+| 12 | Shorts / Reels / Spotlight blocking | **Yes** — accessibility surface-label detection for YouTube, Instagram, Facebook and Snapchat while focus/schedule is active | Yes | Similar; FrostLock is local and free | Tie |
 | 13 | YouTube channel filtering | **No** | Yes + study channels | Big gap | Regain |
 | 14 | YouTube home-page blocking | **No** | Yes | Gap | Regain |
 | 15 | Notification blocking + inbox | **Yes** — holds alerts from blocked apps, local inbox with reasons and a per-app ranking | Yes | Similar; FrostLock is free and fully local | Tie / FrostLock |
-| 16 | Home-screen blocking | **No** | Yes (login required) | Gap | Regain |
-| 17 | Split-screen / floating-window blocking | **No** | Yes | Gap | Regain |
+| 16 | Home-screen blocking | **Yes** — opt-in Profile toggle that blocks launchers while a focus session or schedule is active | Yes (login required) | Similar; FrostLock needs no account | Tie / FrostLock |
+| 17 | Split-screen / floating-window blocking | **Yes** — scans accessibility windows for a blocked app that stays visible beside an allowed app | Yes | Similar; FrostLock is local and free | Tie |
 | 18 | Uninstall protection | **No** | Yes (device admin) | Gap; also anti-user | Regain (effectiveness) |
 | 19 | Schedule start alarms / reminders | **Yes** — local notifications at start and end, with exact-alarm fallback | Yes | Similar | Tie |
 | 20 | Schedule calendar view | **Yes** — month heat-map with per-day drill-down | Yes | Similar; FrostLock keeps it free and local | Tie |
@@ -515,9 +515,9 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 ### P1 — deeper blocking (needs design decisions)
 
 - [x] **Website blocking** — opt-in local domain list (curated social/video + adult, plus custom sites) detected through the browser address bar by the existing accessibility service. The wall names the domain and lifts when the session or rule ends. No VPN, no INTERNET permission, no browsing history; browser-dependent by nature.
-- [ ] **Shorts/Reels detection.** Accessibility title/view-id heuristics per app; brittle, needs per-app maintenance.
+- [x] **Shorts/Reels detection.** Accessibility surface-label heuristics per app, active during focus/schedule; brittle by nature but unit-tested.
 - [ ] **YouTube channel/home filtering.** Heuristics only; document limitations.
-- [ ] **Home-screen blocking** and **split-screen/floating-window blocking** on top of the existing accessibility service.
+- [x] **Home-screen blocking** and **split-screen/floating-window blocking** on top of the existing accessibility service.
 - [x] **Focus ambience** — Deep focus, Rain, Wind and Snow generated on-device at 44.1 kHz, so there are no audio assets or downloads.
 - [x] **Theme variants** (more ice palettes) — Frost, Aurora, Midnight and Crystal, selectable on Profile.
 
