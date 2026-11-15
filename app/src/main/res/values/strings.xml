@@ -27,7 +27,7 @@
     <string name="onb_back">Back</string>
 
     <string name="accessibility_service_label">FrostLock App Blocker</string>
-    <string name="accessibility_description">FrostLock uses this permission to notice when you open an app you chose to block during a focus session. It does not read the content of your screen.</string>
+    <string name="accessibility_description">FrostLock uses this permission to notice when you open an app you chose to block. If you turn on website blocking, it also reads the browser address bar so blocked sites can be held during focus. It never stores pages or what you type.</string>
 
     <string name="widget_title">FROSTLOCK</string>
     <string name="widget_description">Today\'s focus time, daily goal progress and streak.</string>

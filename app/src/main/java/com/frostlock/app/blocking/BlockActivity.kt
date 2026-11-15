@@ -31,6 +31,7 @@ import kotlinx.coroutines.delay
 class BlockActivity : ComponentActivity() {
 
     private var blockedPackage by mutableStateOf<String?>(null)
+    private var blockedDomain by mutableStateOf<String?>(null)
     private var reason by mutableStateOf(REASON_FOCUS)
     private var untilMillis by mutableStateOf(0L)
     private var ruleLabel by mutableStateOf<String?>(null)
@@ -55,6 +56,7 @@ class BlockActivity : ComponentActivity() {
                 BlockedContent(
                     appLabel = blockedPackage?.let { labelFor(it) },
                     blockedPackage = blockedPackage,
+                    blockedDomain = blockedDomain,
                     reason = reason,
                     untilMillis = untilMillis,
                     ruleLabel = ruleLabel,
@@ -76,6 +78,7 @@ class BlockActivity : ComponentActivity() {
 
     private fun readIntent(intent: Intent) {
         blockedPackage = intent.getStringExtra(EXTRA_BLOCKED_PACKAGE)
+        blockedDomain = intent.getStringExtra(EXTRA_DOMAIN)
         reason = intent.getStringExtra(EXTRA_REASON) ?: REASON_FOCUS
         untilMillis = intent.getLongExtra(EXTRA_UNTIL, 0L)
         ruleLabel = intent.getStringExtra(EXTRA_RULE_LABEL)
@@ -104,12 +107,14 @@ class BlockActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_BLOCKED_PACKAGE = "extra_blocked_package"
+        const val EXTRA_DOMAIN = "extra_domain"
         const val EXTRA_REASON = "extra_reason"
         const val EXTRA_UNTIL = "extra_until"
         const val EXTRA_RULE_LABEL = "extra_rule_label"
         const val REASON_FOCUS = "focus"
         const val REASON_LIMIT = "limit"
         const val REASON_SCHEDULE = "schedule"
+        const val REASON_WEBSITE = "website"
     }
 }
 
@@ -117,6 +122,7 @@ class BlockActivity : ComponentActivity() {
 private fun BlockedContent(
     appLabel: String?,
     blockedPackage: String?,
+    blockedDomain: String?,
     reason: String,
     untilMillis: Long,
     ruleLabel: String?,
@@ -128,6 +134,7 @@ private fun BlockedContent(
 ) {
     val isLimit = reason == BlockActivity.REASON_LIMIT
     val isScheduled = reason == BlockActivity.REASON_SCHEDULE
+    val isWebsite = reason == BlockActivity.REASON_WEBSITE
 
     var remainingSeconds by remember { mutableIntStateOf(-1) }
     var limitMinutes by remember(blockedPackage) {
@@ -157,6 +164,32 @@ private fun BlockedContent(
                         onFinished()
                         break
                     }
+                }
+                delay(1_000L)
+            }
+        } else if (isWebsite) {
+            // Rule-based website blocks end with the rule; focus-session blocks
+            // follow the same heartbeat as app blocking.
+            var expiredTicks = 0
+            while (true) {
+                val now = System.currentTimeMillis()
+                if (untilMillis > 0L) {
+                    remainingSeconds =
+                        ((untilMillis - now) / 1000L).coerceAtLeast(0L).toInt()
+                    expiredTicks = if (untilMillis <= now) expiredTicks + 1 else 0
+                } else {
+                    val heartbeat = prefs.getLong(BlockingPreferences.KEY_FOCUS_UNTIL, 0L)
+                    val endsAt = prefs.getLong(BlockingPreferences.KEY_SESSION_ENDS_AT, 0L)
+                    remainingSeconds = if (endsAt <= 0L) {
+                        -1
+                    } else {
+                        ((endsAt - now) / 1000L).coerceAtLeast(0L).toInt()
+                    }
+                    expiredTicks = if (heartbeat <= now) expiredTicks + 1 else 0
+                }
+                if (expiredTicks >= 3) {
+                    onGoHome()
+                    break
                 }
                 delay(1_000L)
             }
@@ -200,6 +233,8 @@ private fun BlockedContent(
         remainingSeconds = remainingSeconds,
         isLimitReached = isLimit,
         isScheduled = isScheduled,
+        isWebsite = isWebsite,
+        domain = blockedDomain,
         limitMinutes = limitMinutes,
         usedMinutes = usedMinutes,
         ruleLabel = ruleLabel,

@@ -35,6 +35,7 @@ import com.frostlock.app.ui.screens.schedule.ScheduleScreen
 import com.frostlock.app.ui.screens.stats.AchievementsScreen
 import com.frostlock.app.ui.screens.stats.LevelsScreen
 import com.frostlock.app.ui.screens.stats.StatsScreen
+import com.frostlock.app.ui.screens.websites.WebsitesScreen
 
 @Composable
 fun AppNavGraph(
@@ -56,7 +57,8 @@ fun AppNavGraph(
         currentRoute != Screen.Goals.route &&
         currentRoute != Screen.GoalEditor.route &&
         currentRoute != Screen.WeeklyReport.route &&
-        currentRoute != Screen.Notifications.route
+        currentRoute != Screen.Notifications.route &&
+        currentRoute != Screen.Websites.route
 
     Scaffold(
         bottomBar = {
@@ -134,8 +136,16 @@ fun AppNavGraph(
                             navController.navigate(Screen.Notifications.route) {
                                 launchSingleTop = true
                             }
+                        },
+                        onOpenWebsites = {
+                            navController.navigate(Screen.Websites.route) {
+                                launchSingleTop = true
+                            }
                         }
                     )
+                }
+                composable(Screen.Websites.route) {
+                    WebsitesScreen(onBack = { navController.popBackStack() })
                 }
                 composable(Screen.Focus.route) { FocusScreen() }
                 composable(Screen.Stats.route) {

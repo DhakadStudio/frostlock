@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.TimerOff
 import androidx.compose.material3.Icon
@@ -42,6 +43,8 @@ fun BlockedScreen(
     onOpenFrostLock: () -> Unit,
     isLimitReached: Boolean = false,
     isScheduled: Boolean = false,
+    isWebsite: Boolean = false,
+    domain: String? = null,
     limitMinutes: Int = 0,
     usedMinutes: Int = 0,
     ruleLabel: String? = null
@@ -69,6 +72,7 @@ fun BlockedScreen(
                 Icon(
                     imageVector = when {
                         isLimitReached -> Icons.Default.TimerOff
+                        isWebsite -> Icons.Default.Language
                         isScheduled -> Icons.Default.CalendarMonth
                         else -> Icons.Default.Lock
                     },
@@ -83,6 +87,7 @@ fun BlockedScreen(
             Text(
                 text = when {
                     isLimitReached -> "Daily limit reached"
+                    isWebsite -> "Site held"
                     isScheduled -> "Scheduled focus"
                     else -> "Stay in the zone"
                 },
@@ -98,6 +103,9 @@ fun BlockedScreen(
                     isLimitReached && appLabel != null ->
                         "You've used your $limitMinutes-minute budget for $appLabel today."
                     isLimitReached -> "You've used this app's daily budget."
+                    isWebsite && domain != null ->
+                        "$domain is on your block list while focus is active."
+                    isWebsite -> "This site is on your block list while focus is active."
                     isScheduled && ruleLabel != null && appLabel != null ->
                         "$appLabel is blocked during \u201C$ruleLabel\u201D."
                     isScheduled && ruleLabel != null ->
@@ -133,7 +141,11 @@ fun BlockedScreen(
                     color = TextPrimary
                 )
                 Text(
-                    text = if (isScheduled) "left in this schedule" else "left in this session",
+                    text = when {
+                        isWebsite -> "left in this block"
+                        isScheduled -> "left in this schedule"
+                        else -> "left in this session"
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     color = AccentFrost
                 )
@@ -144,7 +156,11 @@ fun BlockedScreen(
                     color = TextPrimary
                 )
                 Text(
-                    text = "End the session in FrostLock to unlock apps.",
+                    text = if (isWebsite) {
+                        "End the session in FrostLock to unlock sites."
+                    } else {
+                        "End the session in FrostLock to unlock apps."
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     color = AccentFrost,
                     textAlign = TextAlign.Center

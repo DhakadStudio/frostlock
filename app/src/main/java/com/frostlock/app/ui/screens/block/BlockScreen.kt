@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
@@ -93,6 +94,7 @@ private enum class BlockTab(val label: String) {
 fun BlockScreen(
     onOpenSchedules: () -> Unit = {},
     onOpenNotifications: () -> Unit = {},
+    onOpenWebsites: () -> Unit = {},
     viewModel: BlockViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -192,7 +194,7 @@ fun BlockScreen(
                                     )
                                 }
                                 Text(
-                                    text = "FrostLock needs the accessibility permission to detect when you open a blocked app. It never reads what you type or see.",
+                                    text = "FrostLock needs the accessibility permission to detect when you open a blocked app. If website blocking is on, it also reads the browser address bar; it never stores pages or typing.",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = TextSecondary
                                 )
@@ -264,6 +266,14 @@ fun BlockScreen(
                         onToggle = viewModel::setNotificationBlocking,
                         onOpenInbox = onOpenNotifications,
                         onGrantAccess = viewModel::openNotificationAccessSettings
+                    )
+                }
+
+                item {
+                    WebsiteBlockingCard(
+                        enabled = state.websitesEnabled,
+                        siteCount = state.websiteCount,
+                        onOpen = onOpenWebsites
                     )
                 }
 
@@ -636,6 +646,57 @@ private fun NotificationShieldCard(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WebsiteBlockingCard(
+    enabled: Boolean,
+    siteCount: Int,
+    onOpen: () -> Unit
+) {
+    AppCard(modifier = Modifier.clickable(onClick = onOpen)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (enabled) {
+                            Brush.linearGradient(GradientFrost)
+                        } else {
+                            androidx.compose.ui.graphics.SolidColor(SurfaceHigh)
+                        }
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Language,
+                    contentDescription = null,
+                    tint = if (enabled) InkOnIce else TextSecondary,
+                    modifier = Modifier.size(19.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Website blocking",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextPrimary
+                )
+                Text(
+                    text = when {
+                        enabled -> "On — $siteCount site(s) held during focus"
+                        else -> "Off — distracting sites stay open"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (enabled) SuccessGreen else TextSecondary
+                )
+            }
+            TextButton(onClick = onOpen) {
+                Text(text = "Manage", color = AccentFrost)
             }
         }
     }

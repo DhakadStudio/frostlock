@@ -12,12 +12,15 @@ import android.os.Looper
 import android.os.SystemClock
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
 import androidx.core.app.NotificationCompat
 import com.frostlock.app.R
 import com.frostlock.app.data.local.prefs.AppLimitStore
 import com.frostlock.app.data.local.prefs.BlockingPreferences
 import com.frostlock.app.data.local.prefs.ScheduleStore
+import com.frostlock.app.data.local.prefs.WebsiteBlockingStore
 import com.frostlock.app.data.local.prefs.blocks
+import com.frostlock.app.ui.util.blockedDomainFor
 
 /**
  * Watches foreground app changes and sends the user to [BlockActivity] when they
@@ -33,8 +36,12 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     private var prefs: SharedPreferences? = null
     private var limitStore: AppLimitStore? = null
     private var scheduleStore: ScheduleStore? = null
+    private var websiteStore: WebsiteBlockingStore? = null
     private var lastBlockAt = 0L
     private var foregroundPackage: String? = null
+    private var lastUrlScanAt = 0L
+    private var lastWebsiteDomain: String? = null
+    private var lastWebsiteBlockAt = 0L
 
     private val handler = Handler(Looper.getMainLooper())
     private val usageTicker = object : Runnable {
@@ -50,15 +57,26 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         prefs = getSharedPreferences(BlockingPreferences.PREFS_NAME, Context.MODE_PRIVATE)
         limitStore = AppLimitStore(this)
         scheduleStore = ScheduleStore(this)
+        websiteStore = WebsiteBlockingStore(this)
         createLimitChannel()
         handler.postDelayed(usageTicker, USAGE_TICK_MS)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
+        val eventPackage = event.packageName?.toString() ?: return
+
+        // Browsers announce address-bar updates as content changes rather than
+        // window changes, so check both. The scan itself is throttled.
+        if (eventPackage in BROWSER_PACKAGES &&
+            event.eventType in WEBSITE_EVENT_TYPES
+        ) {
+            maybeBlockWebsite(eventPackage)
+        }
+
         if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
 
-        val openedPackage = event.packageName?.toString() ?: return
+        val openedPackage = eventPackage
         val store = limitStore ?: return
         val now = System.currentTimeMillis()
 
@@ -119,6 +137,91 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             now,
             ruleLabel = subject?.takeIf { it.isNotBlank() }?.let { "$it session" }
         )
+    }
+
+    /**
+     * Detects a blocked domain in a browser's address bar and shows the wall.
+     *
+     * This is deliberately the same accessibility channel Regain-style blockers
+     * use: it needs no VPN or network permission, but it only sees browsers whose
+     * address bar is exposed to accessibility. The scan is throttled because
+     * content-change events fire very often while a page loads.
+     */
+    private fun maybeBlockWebsite(browserPackage: String) {
+        val store = websiteStore ?: return
+        if (!store.isEnabled()) return
+        val blocked = store.domains.value
+        if (blocked.isEmpty()) return
+        if (!websiteBlockingActive()) return
+
+        val elapsed = SystemClock.elapsedRealtime()
+        if (elapsed - lastUrlScanAt < URL_SCAN_THROTTLE_MS) return
+        lastUrlScanAt = elapsed
+
+        val root = rootInActiveWindow ?: return
+        val domain = collectAddressBarText(root)
+            .firstNotNullOfOrNull { text -> blockedDomainFor(text, blocked) }
+            ?: return
+
+        val now = System.currentTimeMillis()
+        // The address bar can re-announce the same page after the wall opens.
+        if (domain == lastWebsiteDomain && now - lastWebsiteBlockAt < WEBSITE_REPEAT_MS) return
+        lastWebsiteDomain = domain
+        lastWebsiteBlockAt = now
+
+        showWall(
+            packageName = browserPackage,
+            reason = BlockActivity.REASON_WEBSITE,
+            now = now,
+            untilMillis = activeRuleEnd(),
+            ruleLabel = domain,
+            domain = domain
+        )
+    }
+
+    /** Website blocks only run during a focus session or a scheduled window. */
+    private fun websiteBlockingActive(): Boolean {
+        val now = System.currentTimeMillis()
+        val focusPrefs = prefs ?: return false
+        val focusActive =
+            focusPrefs.getBoolean(BlockingPreferences.KEY_ENABLED, false) &&
+                focusPrefs.getLong(BlockingPreferences.KEY_FOCUS_UNTIL, 0L) > now
+        val scheduleActive = scheduleStore?.activeSchedules()?.isNotEmpty() == true
+        return focusActive || scheduleActive
+    }
+
+    private fun activeRuleEnd(): Long =
+        scheduleStore?.activeSchedules()?.maxOfOrNull { it.endsAtMillis } ?: 0L
+
+    /**
+     * Collects likely address-bar text, preferring nodes whose view id mentions a
+     * URL and then editable fields. Page titles and body text are ignored.
+     */
+    private fun collectAddressBarText(root: AccessibilityNodeInfo): List<String> {
+        val urlTexts = mutableListOf<String>()
+        val editableTexts = mutableListOf<String>()
+        val queue = ArrayDeque<AccessibilityNodeInfo>()
+        queue.add(root)
+        var visited = 0
+
+        while (queue.isNotEmpty() && visited < MAX_SCAN_NODES) {
+            val node = queue.removeFirst()
+            visited++
+            val id = node.viewIdResourceName.orEmpty()
+            val candidate = node.text?.toString()?.trim()?.takeIf { it.isNotEmpty() }
+                ?: node.contentDescription?.toString()?.trim()?.takeIf { it.isNotEmpty() }
+            if (candidate != null) {
+                if (id.contains("url", ignoreCase = true)) {
+                    urlTexts.add(candidate)
+                } else if (node.isEditable) {
+                    editableTexts.add(candidate)
+                }
+            }
+            for (index in 0 until node.childCount) {
+                node.getChild(index)?.let { queue.add(it) }
+            }
+        }
+        return urlTexts + editableTexts
     }
 
     /**
@@ -221,7 +324,8 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         reason: String,
         now: Long,
         untilMillis: Long = 0L,
-        ruleLabel: String? = null
+        ruleLabel: String? = null,
+        domain: String? = null
     ) {
         // Window events fire several times per app switch; debounce them.
         val elapsed = SystemClock.elapsedRealtime()
@@ -241,6 +345,7 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             .putExtra(BlockActivity.EXTRA_REASON, reason)
             .putExtra(BlockActivity.EXTRA_UNTIL, untilMillis)
             .putExtra(BlockActivity.EXTRA_RULE_LABEL, ruleLabel)
+        domain?.let { intent.putExtra(BlockActivity.EXTRA_DOMAIN, it) }
 
         runCatching { startActivity(intent) }
             .onFailure { performGlobalAction(GLOBAL_ACTION_HOME) }
@@ -257,8 +362,35 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     companion object {
         private const val USAGE_TICK_MS = 10_000L
         private const val BLOCK_DEBOUNCE_MS = 700L
+        private const val URL_SCAN_THROTTLE_MS = 600L
+        private const val WEBSITE_REPEAT_MS = 5_000L
+        private const val MAX_SCAN_NODES = 400
         private const val LIMIT_CHANNEL_ID = "app_limits"
         private const val LIMIT_NOTIFICATION_BASE = 2_000
+
+        /** Browsers whose address bar is exposed through accessibility. */
+        private val BROWSER_PACKAGES = setOf(
+            "com.android.chrome",
+            "com.chrome.beta",
+            "com.chrome.dev",
+            "com.brave.browser",
+            "org.mozilla.firefox",
+            "org.mozilla.firefox_beta",
+            "com.microsoft.emmx",
+            "com.sec.android.app.sbrowser",
+            "com.opera.browser",
+            "com.opera.mini.native",
+            "com.duckduckgo.mobile.android",
+            "com.android.browser",
+            "com.vivaldi.browser",
+            "com.ecosia.android",
+            "com.qwant.liberty"
+        )
+
+        private val WEBSITE_EVENT_TYPES = setOf(
+            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
+            AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
+        )
 
         /** True when the user has enabled this service in system accessibility settings. */
         fun isEnabled(context: Context): Boolean {

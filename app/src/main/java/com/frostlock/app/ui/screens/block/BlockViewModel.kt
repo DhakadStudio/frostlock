@@ -14,6 +14,7 @@ import com.frostlock.app.data.local.prefs.BlockingPreferences
 import com.frostlock.app.data.local.prefs.FocusSchedule
 import com.frostlock.app.data.local.prefs.FocusSettings
 import com.frostlock.app.data.local.prefs.ScheduleStore
+import com.frostlock.app.data.local.prefs.WebsiteBlockingStore
 import com.frostlock.app.notifications.NotificationArchiveStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -44,6 +45,8 @@ data class BlockUiState(
     val schedules: List<FocusSchedule> = emptyList(),
     val activeRuleLabels: List<String> = emptyList(),
     val notifications: NotificationUiState = NotificationUiState(),
+    val websitesEnabled: Boolean = false,
+    val websiteCount: Int = 0,
     val loading: Boolean = true
 ) {
     val blockedCount: Int get() = blockedPackages.size
@@ -60,7 +63,8 @@ class BlockViewModel @Inject constructor(
     private val scheduleStore: ScheduleStore,
     private val installedApps: InstalledAppsRepository,
     private val focusSettings: FocusSettings,
-    private val archive: NotificationArchiveStore
+    private val archive: NotificationArchiveStore,
+    private val websiteStore: WebsiteBlockingStore
 ) : ViewModel() {
 
     private val _apps = MutableStateFlow<List<InstalledApp>>(emptyList())
@@ -112,6 +116,13 @@ class BlockViewModel @Inject constructor(
         schedules to active
     }
 
+    private val websiteState = combine(
+        websiteStore.enabled,
+        websiteStore.domains
+    ) { enabled, domains ->
+        enabled to domains.size
+    }
+
     val uiState: StateFlow<BlockUiState> = combine(
         appState,
         _limits,
@@ -126,6 +137,8 @@ class BlockViewModel @Inject constructor(
             activeRuleLabels = active,
             notifications = notifications
         )
+    }.combine(websiteState) { state, (enabled, count) ->
+        state.copy(websitesEnabled = enabled, websiteCount = count)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
