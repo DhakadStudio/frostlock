@@ -419,9 +419,9 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [x] Focus stamps (time, weekend and length badges)
 - [x] Session photos (system photo picker, app-private storage, no camera or storage permission)
 - [x] Study diary (day grouping, search, editable reflections)
-- [ ] Phone-unlock tracking
+- [x] Phone-unlock tracking — local daily count via ACTION_USER_PRESENT, shown on Stats; no usage-access permission.
 - [x] Focus bubble / floating timer (opt-in overlay, hidden during breaks)
-- [~] Eight widget types: **4 shipped** (focus today, daily goal, week at a glance, focus calendar); usage, unlock count and Pro pass are missing
+- [~] Eight widget types: **4 shipped** (focus today, daily goal, week at a glance, focus calendar); usage, unlock count and Pro pass widgets are missing
 - [x] Achievement sharing (unlocked badges share plain text via the system sheet)
 
 ### E. Data, accounts & platform
