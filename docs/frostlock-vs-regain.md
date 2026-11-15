@@ -124,6 +124,7 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 | Home stats | Today’s focus, this week, session count, current streak, recent sessions |
 | Stats screen | Today / last 7 days chart, total sessions, streak, **monthly rhythm** (six-month bars, active days, best day, average per active day), **breakdown by subject**, **focus calendar** (month heat-map + per-day drill-down), recent sessions |
 | Achievements | 16 offline badges: focus hours (1, 3, 5, 10, 25, 50, 100h), streaks (3, 7, 14, 30, 100 days), sessions (1, 10, 50, 100) |
+| Freeze levels | Seven lifetime titles (Frostbite → Absolute zero) with widening thresholds, a dedicated ladder page, progress to the next rung and text sharing |
 | Badge UI | Milestone cabinet, hexagon badges, progress labels, unlocked/locked states |
 | Notes | Post-session note saved to the DB, editable later in the study diary |
 
@@ -153,9 +154,9 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 
 ### 2.10 Engineering
 
-- 185 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, schedule streaks, deadline countdowns, session stamps, freeze levels, achievement sharing, bubble labels, pause limits, session photo naming and downsampling, app-limit warnings, suggested limits, showcase logos, achievements, stats, monthly rollups, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, ambience synthesis, notification decisions, inbox grouping and ranking, and widget maths.
+- 188 unit tests across onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, schedule streaks, deadline countdowns, session stamps, freeze levels and the title ladder, achievement sharing, bubble labels, pause limits, session photo naming and downsampling, app-limit warnings, suggested limits, showcase logos, achievements, stats, monthly rollups, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, ambience synthesis, notification decisions, inbox grouping and ranking, and widget maths.
 - Verified on emulator `Medium_Phone_API_37.0` including blocking and full onboarding.
-- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`; freeze level `249975b`; achievement sharing `8b0d3d5`; schedule streak `95de98b`; floating focus bubble `b00e586`; session photos `8915202`; pause limits `b45488f`; ice themes `d0a5075`; monthly stats `6153caa`; focus ambience `d0c5c8c`; notification ranking `1e6ed58`.
+- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`; freeze level `249975b`; achievement sharing `8b0d3d5`; schedule streak `95de98b`; floating focus bubble `b00e586`; session photos `8915202`; pause limits `b45488f`; ice themes `d0a5075`; monthly stats `6153caa`; focus ambience `d0c5c8c`; notification ranking `1e6ed58`; freeze ladder `2a997a7`.
 
 ---
 
@@ -299,7 +300,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 25 | Wake-up nudges / accountability | Focus Guard only | Group nudges + guilt trips | Different | Regain (social) |
 | 26 | Streaks | Daily streak + best + schedule streak | Daily/session/schedule streak | FrostLock now has both daily and schedule streaks | Tie |
 | 27 | Achievements | 16 offline badges, tap to share unlocked ones | Badges + share + rewards | FrostLock now shares too, but keeps it text-only and offline | Tie / FrostLock (offline) |
-| 28 | Rewards / levels / stamps | **Partial** — five derived session stamps plus a freeze level; no rewards, currency, difficulty tiers or store | Yes | FrostLock covers stamps and levelling | Regain |
+| 28 | Rewards / levels / stamps | **Yes** — five derived session stamps plus a seven-title freeze ladder; no currency, difficulty tiers or store | Yes | FrostLock covers stamps and levelling offline; Regain adds currency/store | Tie / FrostLock (offline) |
 | 29 | Focus music / themes | **Yes** — four on-device ambience beds (deep drone, rain, wind, snow) plus 4 free ice palettes | Yes (premium) | FrostLock covers ambience and themes without assets, streaming or a paywall | FrostLock |
 | 30 | Widgets | **4** (focus, daily goal, week at a glance, calendar) | 8 types incl. usage, unlock count, calendar | Smaller gap; FrostLock now covers the calendar and avoids usage/unlock permissions | Regain (breadth) / FrostLock (privacy) |
 | 31 | Phone-unlock tracking | **No** | Yes (widget + stats) | Gap | Regain |
@@ -348,6 +349,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | Focus deadline | Local name + date countdown on Home and Profile, with a dedicated editor and themed date dialog | `31e69c3` |
 | Focus stamps | Per-session badges derived from start hour, weekday and length, shown in the post-session summary and diary | `1c27ae4` |
 | Freeze level | Lifetime focus minutes become widening levels with ice titles, shown on the stats screen with progress to the next | `249975b` |
+| Freeze ladder | A dedicated page lists all seven titles and thresholds, marks reached rungs, and shares the current title as text | `2a997a7` |
 | Schedule streak | Consecutive scheduled days with a session inside a rule window, shown on the rules screen | `95de98b` |
 | Floating focus bubble | Opt-in draggable timer overlay during focus, drawn by the foreground service | `b00e586` |
 | Session photos | One optional local photo per session, picked with the system picker, shown as a diary banner with a full-screen viewer | `8915202` |
@@ -521,7 +523,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 - [x] Achievement sharing — unlocked badges share plain text via the system sheet.
 - [x] Schedule streak — consecutive scheduled days with a session inside a rule window.
 - [x] Session photos — attach from the summary or diary; copied into app-private storage via the system picker.
-- [~] Reward/level layer on top of the existing badges (a freeze level ships; no currency, no store).
+- [x] Reward/level layer on top of the existing badges — a seven-title freeze ladder with a dedicated page; no currency, no store.
 - [x] Focus bubble / floating timer — opt-in draggable overlay, tap to return.
 - [~] Exam/goal profiles stored locally (no exam-data upload). **A local deadline countdown ships**; exam-tuned schedules are still missing.
 - [x] Schedule streak.
@@ -539,7 +541,7 @@ FrostLock's biggest weakness is not quality — it is **coverage**: it only bloc
 ## 11. Verified facts & commands
 
 - Build: `JAVA_HOME=/snap/android-studio/250/jbr ANDROID_HOME=/home/vishal/Android/Sdk ./gradlew :app:assembleDebug`
-- Tests: `:app:testDebugUnitTest` → **183 tests, 0 failures**
+- Tests: `:app:testDebugUnitTest` → **188 tests, 0 failures**
 - Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - Accessibility component: `com.frostlock.app/com.frostlock.app.blocking.FocusBlockAccessibilityService`
 - Re-enable service:
