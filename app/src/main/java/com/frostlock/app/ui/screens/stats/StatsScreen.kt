@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
@@ -199,6 +200,24 @@ fun StatsScreen(
                 title = "Sessions",
                 value = state.totalSessions.toString(),
                 icon = Icons.Default.PlayCircle,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            StatTile(
+                title = "Unlocks today",
+                value = state.unlocksToday.toString(),
+                icon = Icons.Default.Lock,
+                modifier = Modifier.weight(1f)
+            )
+            StatTile(
+                title = "Avg session",
+                value = formatDuration(state.averageSeconds),
+                icon = Icons.Default.Timer,
                 modifier = Modifier.weight(1f)
             )
         }

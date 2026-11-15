@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.frostlock.app.data.local.db.SessionDao
 import com.frostlock.app.data.local.db.SessionEntity
 import com.frostlock.app.data.local.prefs.SubjectStore
+import com.frostlock.app.data.local.prefs.UnlockStore
 import com.frostlock.app.data.local.prefs.subjectKey
 import com.frostlock.app.ui.util.Achievement
 import com.frostlock.app.ui.util.FocusLevel
@@ -46,7 +47,8 @@ data class StatsUiState(
     val achievements: List<Achievement> = emptyList(),
     val level: FocusLevel = focusLevelFor(0L),
     val monthly: MonthlySummary = buildMonthlySummary(emptyList()),
-    val recent: List<SessionEntity> = emptyList()
+    val recent: List<SessionEntity> = emptyList(),
+    val unlocksToday: Int = 0
 ) {
     val averageSeconds: Long
         get() = if (totalSessions == 0) 0L else totalSeconds / totalSessions
@@ -66,7 +68,8 @@ private data class PartialStats(
 @HiltViewModel
 class StatsViewModel @Inject constructor(
     sessionDao: SessionDao,
-    private val subjectStore: SubjectStore
+    private val subjectStore: SubjectStore,
+    private val unlockStore: UnlockStore
 ) : ViewModel() {
 
     private val todayStart = startOfTodayMillis()
@@ -103,6 +106,8 @@ class StatsViewModel @Inject constructor(
             monthly = buildMonthlySummary(partial.recent),
             recent = partial.recent.take(10)
         )
+    }.combine(unlockStore.todayCount) { state, unlocks ->
+        state.copy(unlocksToday = unlocks)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),

@@ -3,9 +3,11 @@ package com.frostlock.app.blocking
 import android.accessibilityservice.AccessibilityService
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.os.Handler
 import android.os.Looper
@@ -14,10 +16,12 @@ import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.frostlock.app.R
 import com.frostlock.app.data.local.prefs.AppLimitStore
 import com.frostlock.app.data.local.prefs.BlockingPreferences
 import com.frostlock.app.data.local.prefs.ScheduleStore
+import com.frostlock.app.data.local.prefs.UnlockStore
 import com.frostlock.app.data.local.prefs.WebsiteBlockingStore
 import com.frostlock.app.data.local.prefs.blocks
 import com.frostlock.app.ui.util.blockedDomainFor
@@ -38,6 +42,7 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     private var limitStore: AppLimitStore? = null
     private var scheduleStore: ScheduleStore? = null
     private var websiteStore: WebsiteBlockingStore? = null
+    private var unlockStore: UnlockStore? = null
     private var homePackages: Set<String> = emptySet()
     private var lastBlockAt = 0L
     private var foregroundPackage: String? = null
@@ -47,6 +52,14 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     private var lastShortsScanAt = 0L
     private var lastShortsBlockAt = 0L
     private var lastShortsPackage: String? = null
+
+    private val unlockReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_USER_PRESENT) {
+                unlockStore?.recordUnlock()
+            }
+        }
+    }
 
     private val handler = Handler(Looper.getMainLooper())
     private val usageTicker = object : Runnable {
@@ -63,8 +76,17 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         limitStore = AppLimitStore(this)
         scheduleStore = ScheduleStore(this)
         websiteStore = WebsiteBlockingStore(this)
+        unlockStore = UnlockStore(this)
         homePackages = findHomePackages()
         createLimitChannel()
+        runCatching {
+            ContextCompat.registerReceiver(
+                this,
+                unlockReceiver,
+                IntentFilter(Intent.ACTION_USER_PRESENT),
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
+        }
         handler.postDelayed(usageTicker, USAGE_TICK_MS)
     }
 
@@ -452,6 +474,7 @@ class FocusBlockAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         handler.removeCallbacks(usageTicker)
+        runCatching { unregisterReceiver(unlockReceiver) }
         limitStore?.commitActive()
         super.onDestroy()
     }
