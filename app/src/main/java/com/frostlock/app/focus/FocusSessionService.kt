@@ -24,6 +24,8 @@ import com.frostlock.app.R
 import com.frostlock.app.data.local.prefs.BlockingPreferences
 import com.frostlock.app.data.local.prefs.FocusSettings
 import com.frostlock.app.ui.MainActivity
+import com.frostlock.app.ui.util.AmbienceSound
+import com.frostlock.app.ui.util.ambienceFromKey
 import com.frostlock.app.ui.util.focusBubbleLabel
 import com.frostlock.app.ui.util.formatClock
 import kotlinx.coroutines.CoroutineScope
@@ -56,6 +58,7 @@ class FocusSessionService : Service() {
     private val mainHandler = Handler(Looper.getMainLooper())
     private var bubble: TextView? = null
     private var bubbleParams: WindowManager.LayoutParams? = null
+    private val ambiencePlayer = AmbiencePlayer()
 
     override fun onCreate() {
         super.onCreate()
@@ -85,6 +88,7 @@ class FocusSessionService : Service() {
         prefs.setSessionEndsAt(if (openEnded) 0L else until)
         startForeground(NOTIFICATION_ID, buildNotification(openEnded, 0L))
         showBubble()
+        startAmbience()
 
         job?.cancel()
         job = scope.launch {
@@ -115,6 +119,7 @@ class FocusSessionService : Service() {
         createChannels()
         job?.cancel()
         hideBubble()
+        stopAmbience()
         prefs.clearSession()
         startForeground(NOTIFICATION_ID, buildBreakNotification(0L))
 
@@ -137,6 +142,7 @@ class FocusSessionService : Service() {
         job?.cancel()
         job = null
         hideBubble()
+        stopAmbience()
         prefs.clearSession()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
@@ -145,6 +151,7 @@ class FocusSessionService : Service() {
     override fun onDestroy() {
         job?.cancel()
         hideBubble()
+        stopAmbience()
         prefs.clearSession()
         stopForeground(STOP_FOREGROUND_REMOVE)
         scope.cancel()
@@ -190,6 +197,20 @@ class FocusSessionService : Service() {
         getSharedPreferences(FocusSettings.PREFS_NAME, MODE_PRIVATE)
             .getBoolean(FocusSettings.KEY_FOCUS_BUBBLE, false) &&
             Settings.canDrawOverlays(this)
+
+    /**
+     * Reads the ambience choice synchronously, exactly like the bubble setting,
+     * because the service starts before any ViewModel exists.
+     */
+    private fun startAmbience() {
+        val key = getSharedPreferences(FocusSettings.PREFS_NAME, MODE_PRIVATE)
+            .getString(FocusSettings.KEY_AMBIENCE, AmbienceSound.Off.key)
+        ambiencePlayer.play(ambienceFromKey(key))
+    }
+
+    private fun stopAmbience() {
+        ambiencePlayer.stop()
+    }
 
     /**
      * A small draggable pill above other apps. It is purely informational:

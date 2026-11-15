@@ -2,7 +2,9 @@ package com.frostlock.app.data.local.prefs
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.frostlock.app.ui.util.AmbienceSound
 import com.frostlock.app.ui.util.PausePolicy
+import com.frostlock.app.ui.util.ambienceFromKey
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,6 +53,12 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
     /** A small draggable timer floating over other apps during a focus session. */
     private val _bubbleEnabled = MutableStateFlow(prefs.getBoolean(KEY_FOCUS_BUBBLE, false))
     val bubbleEnabled: StateFlow<Boolean> = _bubbleEnabled.asStateFlow()
+
+    /** Locally synthesised ambience that plays during a focus session. */
+    private val _ambienceKey = MutableStateFlow(
+        prefs.getString(KEY_AMBIENCE, AmbienceSound.Off.key) ?: AmbienceSound.Off.key
+    )
+    val ambienceKey: StateFlow<String> = _ambienceKey.asStateFlow()
 
     /** A local notification when a blocking rule starts and when it ends. */
     private val _scheduleRemindersEnabled =
@@ -109,6 +117,13 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
         _bubbleEnabled.value = enabled
     }
 
+    /** Stores the ambience choice; unknown keys fall back to silence. */
+    fun setAmbienceKey(key: String) {
+        val sound = ambienceFromKey(key)
+        prefs.edit().putString(KEY_AMBIENCE, sound.key).apply()
+        _ambienceKey.value = sound.key
+    }
+
     fun setScheduleRemindersEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_SCHEDULE_REMINDERS, enabled).apply()
         _scheduleRemindersEnabled.value = enabled
@@ -153,6 +168,7 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
         const val KEY_FOCUS_GUARD = "focus_guard_enabled"
         const val KEY_MAX_PAUSES = "max_pauses_per_session"
         const val KEY_FOCUS_BUBBLE = "focus_bubble_enabled"
+        const val KEY_AMBIENCE = "focus_ambience"
         const val KEY_SCHEDULE_REMINDERS = "schedule_reminders_enabled"
         const val KEY_NOTIFICATION_BLOCKING = "notification_blocking_enabled"
         const val KEY_SESSION_TAG = "last_session_tag"

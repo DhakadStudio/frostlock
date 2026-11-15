@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Timer
@@ -67,6 +68,7 @@ import com.frostlock.app.ui.theme.SuccessGreen
 import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
+import com.frostlock.app.ui.util.AmbienceSound
 import com.frostlock.app.ui.util.deadlineCountdown
 import com.frostlock.app.ui.util.pauseOptionLabel
 import java.time.LocalDate
@@ -193,6 +195,62 @@ fun ProfileScreen(
                                 maxLines = 1
                             )
                         }
+                    }
+                }
+            }
+        }
+
+        SectionHeader(title = "Focus ambience")
+        AppCard {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(SurfaceHigh),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MusicNote,
+                            contentDescription = null,
+                            tint = AccentFrost,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Sound while focusing",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = TextPrimary
+                        )
+                        Text(
+                            text = "Synthesised on-device, so it works offline. Media volume sets the level.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary
+                        )
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(AmbienceSound.Off, AmbienceSound.Deep, AmbienceSound.Rain).forEach { sound ->
+                        MoodChip(
+                            text = sound.label,
+                            selected = state.ambienceKey == sound.key,
+                            onClick = { viewModel.setAmbience(sound.key) }
+                        )
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(AmbienceSound.Wind, AmbienceSound.Snow).forEach { sound ->
+                        MoodChip(
+                            text = sound.label,
+                            selected = state.ambienceKey == sound.key,
+                            onClick = { viewModel.setAmbience(sound.key) }
+                        )
                     }
                 }
             }

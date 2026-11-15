@@ -8,6 +8,7 @@ import com.frostlock.app.data.local.prefs.FocusDeadline
 import com.frostlock.app.data.local.prefs.FocusSettings
 import com.frostlock.app.data.local.prefs.ThemeStore
 import com.frostlock.app.ui.theme.IcePalettes
+import com.frostlock.app.ui.util.AmbienceSound
 import com.frostlock.app.ui.util.PausePolicy
 import com.frostlock.app.widget.WidgetUpdater
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +27,7 @@ data class ProfileUiState(
     val maxPauses: Int = PausePolicy.DEFAULT,
     val focusGuardEnabled: Boolean = false,
     val bubbleEnabled: Boolean = false,
+    val ambienceKey: String = AmbienceSound.Off.key,
     val themeKey: String = IcePalettes.Frost.key,
     val deadline: FocusDeadline? = null
 )
@@ -56,6 +58,8 @@ class ProfileViewModel @Inject constructor(
         state.copy(deadline = deadline)
     }.combine(focusSettings.bubbleEnabled) { state, bubble ->
         state.copy(bubbleEnabled = bubble)
+    }.combine(focusSettings.ambienceKey) { state, ambience ->
+        state.copy(ambienceKey = ambience)
     }.combine(focusSettings.maxPauses) { state, pauses ->
         state.copy(maxPauses = pauses)
     }.combine(themeStore.paletteKey) { state, themeKey ->
@@ -75,6 +79,8 @@ class ProfileViewModel @Inject constructor(
     fun setMaxPauses(count: Int) = focusSettings.setMaxPauses(count)
 
     fun setTheme(key: String) = themeStore.setPalette(key)
+
+    fun setAmbience(key: String) = focusSettings.setAmbienceKey(key)
 
     fun setFocusGuardEnabled(enabled: Boolean) = focusSettings.setFocusGuardEnabled(enabled)
 

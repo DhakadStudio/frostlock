@@ -15,6 +15,7 @@ import com.frostlock.app.data.local.prefs.FocusSubject
 import com.frostlock.app.data.local.prefs.SubjectStore
 import com.frostlock.app.data.local.prefs.effectiveSessionPackages
 import com.frostlock.app.focus.FocusSessionService
+import com.frostlock.app.ui.util.AmbienceSound
 import com.frostlock.app.ui.util.PauseAllowance
 import com.frostlock.app.ui.util.PausePolicy
 import com.frostlock.app.ui.util.computeStreak
@@ -61,6 +62,8 @@ data class FocusUiState(
     val maxPauses: Int = PausePolicy.DEFAULT,
     /** How many pauses this session has already used. */
     val pausesUsed: Int = 0,
+    /** Locally synthesised ambience that plays while this session runs. */
+    val ambienceKey: String = AmbienceSound.Off.key,
     val tag: String = "",
     /** The one outcome this session is for, shown on the immersive timer. */
     val intent: String = "",
@@ -150,6 +153,7 @@ class FocusViewModel @Inject constructor(
                 breaksEnabled = focusSettings.breaksEnabled.value,
                 breakMinutes = focusSettings.breakMinutes.value,
                 maxPauses = focusSettings.maxPauses.value,
+                ambienceKey = focusSettings.ambienceKey.value,
                 subjects = subjectStore.subjects()
             )
         }
@@ -184,6 +188,11 @@ class FocusViewModel @Inject constructor(
                 if (!_uiState.value.hasStarted) {
                     _uiState.update { it.copy(maxPauses = count) }
                 }
+            }
+        }
+        viewModelScope.launch {
+            focusSettings.ambienceKey.collect { key ->
+                _uiState.update { it.copy(ambienceKey = key) }
             }
         }
     }

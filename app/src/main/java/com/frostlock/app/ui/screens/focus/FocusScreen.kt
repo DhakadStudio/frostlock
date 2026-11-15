@@ -83,6 +83,7 @@ import com.frostlock.app.ui.theme.SurfaceCard
 import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
+import com.frostlock.app.ui.util.ambiencePillLabel
 import com.frostlock.app.ui.util.formatClock
 import com.frostlock.app.ui.util.formatDuration
 
@@ -423,6 +424,9 @@ fun FocusScreen(
             }
             if (state.maxPauses >= 0) {
                 InfoPill(text = state.pauseAllowance.usageLabel)
+            }
+            ambiencePillLabel(state.ambienceKey)?.let { label ->
+                InfoPill(text = label)
             }
         }
 
