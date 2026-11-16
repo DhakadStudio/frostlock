@@ -113,11 +113,11 @@ fun unlockCountLabel(unlocks: Int): String = when {
     else -> "$unlocks unlocks"
 }
 
-/** Footer under the big unlock count: "Focus 1h 25m · 🔥 3-day streak". */
+/** Footer under the big unlock count: "Focus 1h 25m · 🔥 3d". */
 fun unlockFooterLabel(todaySeconds: Long, streak: Int): String = buildString {
     append("Focus ").append(formatWidgetDuration(todaySeconds))
     append(" · ")
-    append(if (streak > 0) "\uD83D\uDD25 $streak-day streak" else "no streak yet")
+    append(if (streak > 0) "\uD83D\uDD25 ${streak}d" else "no streak")
 }
 
 private fun dayName(dayOfWeek: Int, style: TextStyle): String =

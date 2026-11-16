@@ -61,5 +61,5 @@
     <string name="widget_unlock_description">How many times you picked up your phone today, with your focus time.</string>
     <string name="widget_unlock_title">PHONE UNLOCKS</string>
     <string name="widget_unlock_sub_placeholder">phone unlocks today</string>
-    <string name="widget_unlock_footer_placeholder">Focus 1h 25m · 🔥 3-day streak</string>
+    <string name="widget_unlock_footer_placeholder">Focus 1h 25m · 🔥 3d</string>
 </resources>

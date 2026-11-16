@@ -100,8 +100,8 @@ class WidgetDataTest {
 
     @Test
     fun `unlock footer combines focus time and streak`() {
-        assertEquals("Focus 1h 25m · \uD83D\uDD25 3-day streak", unlockFooterLabel(85 * minutes, 3))
-        assertEquals("Focus 0m · no streak yet", unlockFooterLabel(0, 0))
+        assertEquals("Focus 1h 25m · \uD83D\uDD25 3d", unlockFooterLabel(85 * minutes, 3))
+        assertEquals("Focus 0m · no streak", unlockFooterLabel(0, 0))
     }
 
     @Test
