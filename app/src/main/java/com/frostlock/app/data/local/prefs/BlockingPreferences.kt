@@ -53,6 +53,13 @@ class BlockingPreferences @Inject constructor(@ApplicationContext context: Conte
     fun isYouTubeHomeBlockingEnabled(): Boolean =
         prefs.getBoolean(KEY_YOUTUBE_HOME_BLOCKING, false)
 
+    fun setPlayStoreBlockingEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_PLAY_STORE_BLOCKING, enabled).apply()
+    }
+
+    fun isPlayStoreBlockingEnabled(): Boolean =
+        prefs.getBoolean(KEY_PLAY_STORE_BLOCKING, false)
+
     fun setBlockedPackages(packages: Set<String>) {
         prefs.edit().putStringSet(KEY_PACKAGES, packages).apply()
         _blockedPackages.value = packages
@@ -191,6 +198,7 @@ class BlockingPreferences @Inject constructor(@ApplicationContext context: Conte
         const val KEY_ENABLED = "blocking_enabled"
         const val KEY_HOME_BLOCKING_ENABLED = "home_blocking_enabled"
         const val KEY_YOUTUBE_HOME_BLOCKING = "youtube_home_blocking_enabled"
+        const val KEY_PLAY_STORE_BLOCKING = "play_store_blocking_enabled"
         const val KEY_PACKAGES = "blocked_packages"
         const val KEY_FOCUS_UNTIL = "focus_until"
         const val KEY_SESSION_ENDS_AT = "session_ends_at"

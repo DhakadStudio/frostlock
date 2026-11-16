@@ -30,6 +30,7 @@ import com.frostlock.app.ui.util.hostFromUrlText
 import com.frostlock.app.ui.util.isDomainAllowed
 import com.frostlock.app.ui.util.MultiWindowDetector
 import com.frostlock.app.ui.util.NavTab
+import com.frostlock.app.ui.util.PlayStoreDetector
 import com.frostlock.app.ui.util.ShortFormDetector
 import com.frostlock.app.ui.util.VisibleWindow
 import com.frostlock.app.ui.util.YouTubeSurfaceDetector
@@ -64,6 +65,9 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     private var lastSidePackage: String? = null
     private var lastYouTubeHomeScanAt = 0L
     private var lastYouTubeHomeBlockAt = 0L
+    private var lastPlayStoreScanAt = 0L
+    private var lastPlayStoreQuery: String? = null
+    private var lastPlayStoreBlockAt = 0L
 
     private val unlockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -125,6 +129,12 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             event.eventType in WEBSITE_EVENT_TYPES
         ) {
             maybeBlockYouTubeHome()
+        }
+
+        if (eventPackage == PlayStoreDetector.PACKAGE &&
+            event.eventType in WEBSITE_EVENT_TYPES
+        ) {
+            maybeBlockPlayStoreSearch()
         }
 
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
@@ -405,6 +415,74 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             untilMillis = activeRuleEnd()
         )
     }
+
+    /**
+     * Holds the wall while the Play Store's search box names a blocked app.
+     *
+     * A store result page puts the blocked app one tap away, so searching by its
+     * name must not work either. Opt-in, and only active during focus or a
+     * schedule. Ordinary store browsing is untouched: only text typed into an
+     * editable field is matched, against the blocked apps' display labels.
+     */
+    private fun maybeBlockPlayStoreSearch() {
+        val current = prefs ?: return
+        if (!current.getBoolean(BlockingPreferences.KEY_PLAY_STORE_BLOCKING, false)) return
+        if (!websiteBlockingActive()) return
+
+        val now = System.currentTimeMillis()
+        val blockedPackages = activeBlockedPackages(now)
+        if (blockedPackages.isEmpty()) return
+
+        val elapsed = SystemClock.elapsedRealtime()
+        if (elapsed - lastPlayStoreScanAt < PLAY_STORE_SCAN_THROTTLE_MS) return
+        lastPlayStoreScanAt = elapsed
+
+        val root = rootForPackage(PlayStoreDetector.PACKAGE) ?: return
+        val query = collectSearchQuery(root) ?: return
+        val label = PlayStoreDetector.matchedLabel(query, blockedAppLabels(blockedPackages))
+            ?: return
+
+        if (query == lastPlayStoreQuery && now - lastPlayStoreBlockAt < PLAY_STORE_REPEAT_MS) {
+            return
+        }
+        lastPlayStoreQuery = query
+        lastPlayStoreBlockAt = now
+
+        showWall(
+            packageName = PlayStoreDetector.PACKAGE,
+            reason = BlockActivity.REASON_PLAY_STORE,
+            now = now,
+            untilMillis = activeRuleEnd(),
+            ruleLabel = label,
+            domain = label
+        )
+    }
+
+    /** Text typed into an editable field, e.g. the store's search box. */
+    private fun collectSearchQuery(root: AccessibilityNodeInfo): String? {
+        val queue = ArrayDeque<AccessibilityNodeInfo>()
+        queue.add(root)
+        var visited = 0
+        while (queue.isNotEmpty() && visited < MAX_SCAN_NODES) {
+            val node = queue.removeFirst()
+            visited++
+            val text = node.text?.toString()?.trim()
+            if (!text.isNullOrEmpty() && node.isEditable) return text
+            for (index in 0 until node.childCount) {
+                node.getChild(index)?.let { queue.add(it) }
+            }
+        }
+        return null
+    }
+
+    /** Display labels of the blocked apps, used to match store search queries. */
+    private fun blockedAppLabels(packages: Set<String>): List<String> =
+        packages.mapNotNull { pkg ->
+            runCatching {
+                val info = packageManager.getApplicationInfo(pkg, 0)
+                packageManager.getApplicationLabel(info).toString()
+            }.getOrNull()
+        }
 
     /** Collects bottom-navigation tabs and whether each one is selected. */
     private fun collectNavTabs(root: AccessibilityNodeInfo): List<NavTab> {
@@ -756,6 +834,8 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         private const val SIDE_REPEAT_MS = 8_000L
         private const val YOUTUBE_HOME_SCAN_THROTTLE_MS = 900L
         private const val YOUTUBE_HOME_REPEAT_MS = 8_000L
+        private const val PLAY_STORE_SCAN_THROTTLE_MS = 900L
+        private const val PLAY_STORE_REPEAT_MS = 8_000L
 
         /** True when the user has enabled this service in system accessibility settings. */
         fun isEnabled(context: Context): Boolean {

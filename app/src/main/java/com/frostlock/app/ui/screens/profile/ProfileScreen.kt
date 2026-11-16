@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material3.Icon
@@ -419,6 +420,53 @@ fun ProfileScreen(
                 Switch(
                     checked = state.youtubeHomeBlockingEnabled,
                     onCheckedChange = viewModel::setYouTubeHomeBlockingEnabled,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = PrimaryIce,
+                        uncheckedThumbColor = TextSecondary,
+                        uncheckedTrackColor = SurfaceHigh
+                    )
+                )
+            }
+        }
+
+        SectionHeader(title = "Play Store search")
+        AppCard {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(SurfaceHigh),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ShoppingCart,
+                        contentDescription = null,
+                        tint = AccentFrost,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Block searching for blocked apps",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = "A store search for a blocked app opens its install page. That search is held during focus.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Switch(
+                    checked = state.playStoreBlockingEnabled,
+                    onCheckedChange = viewModel::setPlayStoreBlockingEnabled,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
                         checkedTrackColor = PrimaryIce,

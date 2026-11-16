@@ -116,6 +116,7 @@ class BlockActivity : ComponentActivity() {
         const val REASON_SCHEDULE = "schedule"
         const val REASON_WEBSITE = "website"
         const val REASON_YOUTUBE_HOME = "youtube_home"
+        const val REASON_PLAY_STORE = "play_store"
     }
 }
 
@@ -137,6 +138,7 @@ private fun BlockedContent(
     val isScheduled = reason == BlockActivity.REASON_SCHEDULE
     val isWebsite = reason == BlockActivity.REASON_WEBSITE
     val isYouTubeHome = reason == BlockActivity.REASON_YOUTUBE_HOME
+    val isPlayStore = reason == BlockActivity.REASON_PLAY_STORE
 
     var remainingSeconds by remember { mutableIntStateOf(-1) }
     var limitMinutes by remember(blockedPackage) {
@@ -169,7 +171,7 @@ private fun BlockedContent(
                 }
                 delay(1_000L)
             }
-        } else if (isWebsite) {
+        } else if (isWebsite || isPlayStore) {
             // Rule-based website blocks end with the rule; focus-session blocks
             // follow the same heartbeat as app blocking.
             var expiredTicks = 0
@@ -237,6 +239,7 @@ private fun BlockedContent(
         isScheduled = isScheduled,
         isWebsite = isWebsite,
         isYouTubeHome = isYouTubeHome,
+        isPlayStore = isPlayStore,
         domain = blockedDomain,
         limitMinutes = limitMinutes,
         usedMinutes = usedMinutes,
