@@ -3,9 +3,12 @@ package com.frostlock.app.ui.screens.report
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.frostlock.app.data.local.db.SessionDao
+import com.frostlock.app.data.local.prefs.FocusSettings
 import com.frostlock.app.data.local.prefs.SubjectStore
 import com.frostlock.app.data.local.prefs.subjectKey
+import com.frostlock.app.ui.util.ImprovementReport
 import com.frostlock.app.ui.util.WeeklyReport
+import com.frostlock.app.ui.util.buildImprovementReport
 import com.frostlock.app.ui.util.buildWeeklyReport
 import com.frostlock.app.ui.util.startOfWeek
 import com.frostlock.app.ui.util.weekLabel
@@ -21,6 +24,7 @@ import javax.inject.Inject
 
 data class WeeklyReportUiState(
     val report: WeeklyReport = buildWeeklyReport(emptyList()),
+    val improvement: ImprovementReport = ImprovementReport(),
     val label: String = "This week",
     val range: String = "",
     val canGoForward: Boolean = false,
@@ -30,7 +34,8 @@ data class WeeklyReportUiState(
 @HiltViewModel
 class WeeklyReportViewModel @Inject constructor(
     sessionDao: SessionDao,
-    private val subjectStore: SubjectStore
+    private val subjectStore: SubjectStore,
+    focusSettings: FocusSettings
 ) : ViewModel() {
 
     /** 0 = this week, 1 = last week, 2 = two weeks ago… */
@@ -38,8 +43,9 @@ class WeeklyReportViewModel @Inject constructor(
 
     val uiState: StateFlow<WeeklyReportUiState> = combine(
         sessionDao.recentSessions(2_000),
-        weeksAgo
-    ) { sessions, offset ->
+        weeksAgo,
+        focusSettings.dailyGoalMinutes
+    ) { sessions, offset, dailyGoalMinutes ->
         val today = LocalDate.now()
         val weekStart = startOfWeek(today).minusWeeks(offset.toLong())
         val colors = subjectStore.subjects().associateBy { subjectKey(it.name) }
@@ -50,6 +56,11 @@ class WeeklyReportViewModel @Inject constructor(
                 weekStart = weekStart,
                 today = today,
                 colorFor = { tag -> colors[subjectKey(tag)]?.colorArgb }
+            ),
+            improvement = buildImprovementReport(
+                sessions = sessions,
+                dailyGoalMinutes = dailyGoalMinutes,
+                today = today
             ),
             label = weekLabel(weekStart, today),
             range = weekRangeLabel(weekStart),

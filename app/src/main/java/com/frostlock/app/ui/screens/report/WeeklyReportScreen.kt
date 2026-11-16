@@ -60,6 +60,9 @@ import com.frostlock.app.ui.theme.SuccessGreen
 import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
+import com.frostlock.app.ui.util.ImprovementMetric
+import com.frostlock.app.ui.util.ImprovementReport
+import com.frostlock.app.ui.util.ImprovementTrend
 import com.frostlock.app.ui.util.WeekDay
 import com.frostlock.app.ui.util.WeekSubject
 import com.frostlock.app.ui.util.WeeklyReport
@@ -82,6 +85,8 @@ fun WeeklyReportScreen(
     val state by viewModel.uiState.collectAsState()
     val report = state.report
     val period = if (state.isCurrentWeek) "this week" else "that week"
+    // A brand-new user gets the baseline invitation instead of a wall of zeroes.
+    val isBrandNew = state.isCurrentWeek && state.improvement.isEmpty
 
     LazyColumn(
         modifier = Modifier
@@ -125,7 +130,18 @@ fun WeeklyReportScreen(
             )
         }
 
-        item { HeroCard(report = report, isCurrentWeek = state.isCurrentWeek) }
+        if (!isBrandNew) {
+            item { HeroCard(report = report, isCurrentWeek = state.isCurrentWeek) }
+        }
+
+        if (state.isCurrentWeek) {
+            item {
+                ImprovementCard(
+                    report = state.improvement,
+                    onStartFocus = onStartFocus
+                )
+            }
+        }
 
         if (report.totalSeconds > 0L) {
             item { DailyRhythm(report = report) }
@@ -234,7 +250,7 @@ fun WeeklyReportScreen(
                     }
                 }
             }
-        } else {
+        } else if (!isBrandNew) {
             item {
                 AppCard {
                     Column(
@@ -412,6 +428,159 @@ private fun ChangeChip(report: WeeklyReport) {
             text = text,
             style = MaterialTheme.typography.labelMedium,
             color = color
+        )
+    }
+}
+
+@Composable
+private fun ImprovementCard(report: ImprovementReport, onStartFocus: () -> Unit) {
+    AppCard {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            when {
+                report.isEmpty -> {
+                    ImprovementHeader("YOUR BASELINE")
+                    Text(
+                        text = "Your baseline starts today",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = "Focus for 7 days and FrostLock will show how your time, sessions and streak improve. Everything stays on this device.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                    PrimaryButton(
+                        text = "Start a focus session",
+                        onClick = onStartFocus,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+                report.baselineDaysCollected < report.baselineTargetDays -> {
+                    ImprovementHeader("YOUR BASELINE")
+                    Text(
+                        text = "Day ${report.baselineDaysCollected} of ${report.baselineTargetDays}",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = "Keep focusing. Your first week becomes the baseline for every improvement report.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                    BaselineProgress(
+                        collected = report.baselineDaysCollected,
+                        target = report.baselineTargetDays
+                    )
+                }
+                !report.hasEnoughHistory -> {
+                    ImprovementHeader("YOUR BASELINE")
+                    Text(
+                        text = "Baseline saved",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = "Your first comparison unlocks in ${report.daysUntilComparison} " +
+                            "${if (report.daysUntilComparison == 1) "day" else "days"}. Keep the rhythm going.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                    BaselineProgress(
+                        collected = report.baselineTargetDays,
+                        target = report.baselineTargetDays
+                    )
+                }
+                else -> {
+                    ImprovementHeader("YOUR IMPROVEMENT")
+                    Text(
+                        text = "Compared with your first 7 days",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = TextPrimary
+                    )
+                    report.metrics.forEach { metric ->
+                        ImprovementMetricRow(metric = metric)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ImprovementHeader(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelMedium,
+        color = AccentFrost
+    )
+}
+
+@Composable
+private fun BaselineProgress(collected: Int, target: Int) {
+    val fraction = if (target <= 0) 0f else (collected.toFloat() / target).coerceIn(0f, 1f)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(6.dp)
+            .clip(RoundedCornerShape(3.dp))
+            .background(SurfaceHigh)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(fraction)
+                .clip(RoundedCornerShape(3.dp))
+                .background(Brush.horizontalGradient(listOf(PrimaryIce, GlacierBlue)))
+        )
+    }
+}
+
+@Composable
+private fun ImprovementMetricRow(metric: ImprovementMetric) {
+    val color = when (metric.trend) {
+        ImprovementTrend.UP -> SuccessGreen
+        ImprovementTrend.DOWN -> DangerRed
+        ImprovementTrend.FLAT -> TextSecondary
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = metric.label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextPrimary,
+                modifier = Modifier.weight(1f)
+            )
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(100.dp))
+                    .background(color.copy(alpha = 0.14f))
+                    .padding(horizontal = 8.dp, vertical = 3.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                if (metric.trend != ImprovementTrend.FLAT) {
+                    Icon(
+                        imageVector = if (metric.trend == ImprovementTrend.UP) {
+                            Icons.Default.ArrowUpward
+                        } else {
+                            Icons.Default.ArrowDownward
+                        },
+                        contentDescription = null,
+                        tint = color,
+                        modifier = Modifier.size(12.dp)
+                    )
+                }
+                Text(
+                    text = metric.deltaText,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = color
+                )
+            }
+        }
+        Text(
+            text = "First week ${metric.baselineText}  →  now ${metric.currentText}",
+            style = MaterialTheme.typography.bodySmall,
+            color = TextSecondary
         )
     }
 }

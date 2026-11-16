@@ -179,6 +179,15 @@ fun AppNavGraph(
                             navController.navigate(Screen.Levels.route) {
                                 launchSingleTop = true
                             }
+                        },
+                        onStartFocus = {
+                            navController.navigate(Screen.Focus.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         }
                     )
                 }

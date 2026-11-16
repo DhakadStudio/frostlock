@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.frostlock.app.ui.components.AchievementBadge
 import com.frostlock.app.ui.components.AppCard
+import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SectionHeader
 import com.frostlock.app.ui.components.SessionRow
 import com.frostlock.app.ui.components.StatTile
@@ -71,6 +72,7 @@ fun StatsScreen(
     onOpenWeeklyReport: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenLevels: () -> Unit,
+    onStartFocus: () -> Unit,
     viewModel: StatsViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -103,126 +105,132 @@ fun StatsScreen(
             )
         }
 
-        // Hero: today + streak side by side
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(MaterialTheme.shapes.medium)
-                    .background(
-                        Brush.verticalGradient(
-                            GradientHero
-                        )
-                    )
-                    .border(1.dp, StrokeSoft, MaterialTheme.shapes.medium)
-                    .padding(16.dp)
+        // Hero: a baseline invitation for new users, today + streak afterwards.
+        if (state.totalSessions == 0) {
+            BaselineCard(onStartFocus = onStartFocus)
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Column {
-                    Text(
-                        text = "Today",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = AccentFrost
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = formatDuration(state.todaySeconds),
-                        style = MaterialTheme.typography.displayMedium,
-                        color = TextPrimary
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "focused so far",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
-                    )
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(MaterialTheme.shapes.medium)
-                    .background(
-                        Brush.verticalGradient(
-                            GradientHero
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(
+                            Brush.verticalGradient(
+                                GradientHero
+                            )
                         )
-                    )
-                    .border(1.dp, StrokeSoft, MaterialTheme.shapes.medium)
-                    .padding(16.dp)
-            ) {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.AcUnit,
-                            contentDescription = null,
-                            tint = AccentFrost,
-                            modifier = Modifier.width(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        .border(1.dp, StrokeSoft, MaterialTheme.shapes.medium)
+                        .padding(16.dp)
+                ) {
+                    Column {
                         Text(
-                            text = "Streak",
+                            text = "Today",
                             style = MaterialTheme.typography.bodyMedium,
                             color = AccentFrost
                         )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = formatDuration(state.todaySeconds),
+                            style = MaterialTheme.typography.displayMedium,
+                            color = TextPrimary
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "focused so far",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary
+                        )
                     }
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "${state.streak}d",
-                        style = MaterialTheme.typography.displayMedium,
-                        color = TextPrimary
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "keep it going",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
-                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(
+                            Brush.verticalGradient(
+                                GradientHero
+                            )
+                        )
+                        .border(1.dp, StrokeSoft, MaterialTheme.shapes.medium)
+                        .padding(16.dp)
+                ) {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.AcUnit,
+                                contentDescription = null,
+                                tint = AccentFrost,
+                                modifier = Modifier.width(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Streak",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = AccentFrost
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "${state.streak}d",
+                            style = MaterialTheme.typography.displayMedium,
+                            color = TextPrimary
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "keep it going",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary
+                        )
+                    }
                 }
             }
         }
 
         LevelCard(level = state.level, onClick = onOpenLevels)
 
-        // Grid stats
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            StatTile(
-                title = "This week",
-                value = formatDuration(state.weekSeconds),
-                icon = Icons.Default.DateRange,
-                modifier = Modifier.weight(1f)
-            )
-            StatTile(
-                title = "Sessions",
-                value = state.totalSessions.toString(),
-                icon = Icons.Default.PlayCircle,
-                modifier = Modifier.weight(1f)
-            )
-        }
+        if (state.totalSessions > 0) {
+            // Grid stats
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                StatTile(
+                    title = "This week",
+                    value = formatDuration(state.weekSeconds),
+                    icon = Icons.Default.DateRange,
+                    modifier = Modifier.weight(1f)
+                )
+                StatTile(
+                    title = "Sessions",
+                    value = state.totalSessions.toString(),
+                    icon = Icons.Default.PlayCircle,
+                    modifier = Modifier.weight(1f)
+                )
+            }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            StatTile(
-                title = "Unlocks today",
-                value = state.unlocksToday.toString(),
-                icon = Icons.Default.Lock,
-                modifier = Modifier.weight(1f)
-            )
-            StatTile(
-                title = "Avg session",
-                value = formatDuration(state.averageSeconds),
-                icon = Icons.Default.Timer,
-                modifier = Modifier.weight(1f)
-            )
-        }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                StatTile(
+                    title = "Unlocks today",
+                    value = state.unlocksToday.toString(),
+                    icon = Icons.Default.Lock,
+                    modifier = Modifier.weight(1f)
+                )
+                StatTile(
+                    title = "Avg session",
+                    value = formatDuration(state.averageSeconds),
+                    icon = Icons.Default.Timer,
+                    modifier = Modifier.weight(1f)
+                )
+            }
 
-        MonthlyCard(summary = state.monthly)
+            MonthlyCard(summary = state.monthly)
+        }
 
         AppCard(modifier = Modifier.clickable(onClick = onOpenCalendar)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -308,35 +316,37 @@ fun StatsScreen(
         }
 
         // Weekly chart
-        AppCard {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                SectionHeader(title = "Last 7 days") {
-                    androidx.compose.material3.TextButton(onClick = onOpenWeeklyReport) {
+        if (state.totalSessions > 0) {
+            AppCard {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    SectionHeader(title = "Last 7 days") {
+                        androidx.compose.material3.TextButton(onClick = onOpenWeeklyReport) {
+                            Text(
+                                text = "Report",
+                                color = AccentFrost,
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        }
+                    }
+                    WeeklyChart(days = state.days)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Timer,
+                            contentDescription = null,
+                            tint = TextSecondary,
+                            modifier = Modifier.width(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "Report",
-                            color = AccentFrost,
-                            style = MaterialTheme.typography.labelLarge
+                            text = "Total ${formatDuration(state.totalSeconds)} across ${state.totalSessions} sessions",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary,
+                            textAlign = TextAlign.Center
                         )
                     }
-                }
-                WeeklyChart(days = state.days)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Timer,
-                        contentDescription = null,
-                        tint = TextSecondary,
-                        modifier = Modifier.width(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Total ${formatDuration(state.totalSeconds)} across ${state.totalSessions} sessions",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary,
-                        textAlign = TextAlign.Center
-                    )
                 }
             }
         }
@@ -379,6 +389,50 @@ fun StatsScreen(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun BaselineCard(onStartFocus: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.large)
+            .background(Brush.verticalGradient(GradientHero))
+            .border(1.dp, StrokeSoft, MaterialTheme.shapes.large)
+            .padding(18.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.AcUnit,
+                    contentDescription = null,
+                    tint = AccentFrost,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "YOUR BASELINE",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = AccentFrost
+                )
+            }
+            Text(
+                text = "Your baseline starts today",
+                style = MaterialTheme.typography.headlineSmall,
+                color = TextPrimary
+            )
+            Text(
+                text = "Focus for 7 days and FrostLock will show how your focus time, sessions and streak improve. Everything stays on this device.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecondary
+            )
+            PrimaryButton(
+                text = "Start your first session",
+                onClick = onStartFocus,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
     }
 }
 
