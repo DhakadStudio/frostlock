@@ -31,9 +31,22 @@ class WebsiteBlockingStore @Inject constructor(@ApplicationContext context: Cont
     private val _allowedDomains = MutableStateFlow(readAllowedDomains())
     val allowedDomains: StateFlow<Set<String>> = _allowedDomains.asStateFlow()
 
+    private val _allowOnly = MutableStateFlow(prefs.getBoolean(KEY_ALLOW_ONLY, false))
+    val allowOnly: StateFlow<Boolean> = _allowOnly.asStateFlow()
+
     fun setEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_ENABLED, enabled).apply()
         _enabled.value = enabled
+    }
+
+    /**
+     * Study mode: when true, only domains on the allowed list may open during
+     * focus and the block list is ignored. False is the classic block-list
+     * behaviour, where the allowed list only pokes holes in the block list.
+     */
+    fun setAllowOnly(allowOnly: Boolean) {
+        prefs.edit().putBoolean(KEY_ALLOW_ONLY, allowOnly).apply()
+        _allowOnly.value = allowOnly
     }
 
     /**
@@ -48,6 +61,9 @@ class WebsiteBlockingStore @Inject constructor(@ApplicationContext context: Cont
 
     /** Live read for the accessibility service. */
     fun allowedDomainList(): Set<String> = readAllowedDomains()
+
+    /** Live study-mode read for the accessibility service. */
+    fun isAllowOnly(): Boolean = prefs.getBoolean(KEY_ALLOW_ONLY, false)
 
     /** Adds or removes one domain from the local list. */
     fun setDomainBlocked(domain: String, blocked: Boolean) {
@@ -113,5 +129,6 @@ class WebsiteBlockingStore @Inject constructor(@ApplicationContext context: Cont
         private const val KEY_ENABLED = "enabled"
         private const val KEY_DOMAINS = "domains"
         private const val KEY_ALLOWED_DOMAINS = "allowed_domains"
+        private const val KEY_ALLOW_ONLY = "allow_only_listed"
     }
 }

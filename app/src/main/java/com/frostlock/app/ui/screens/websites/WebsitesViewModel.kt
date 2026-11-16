@@ -23,6 +23,7 @@ data class WebsitesUiState(
     val enabled: Boolean = false,
     val domains: Set<String> = emptySet(),
     val allowedDomains: Set<String> = emptySet(),
+    val allowOnly: Boolean = false,
     val accessibilityEnabled: Boolean = false,
     val categories: List<WebsiteCategory> = WebsiteCategories,
     val customDomains: List<String> = emptyList()
@@ -40,12 +41,14 @@ class WebsitesViewModel @Inject constructor(
         store.enabled,
         store.domains,
         store.allowedDomains,
+        store.allowOnly,
         _accessibilityEnabled
-    ) { enabled, domains, allowed, accessibility ->
+    ) { enabled, domains, allowed, allowOnly, accessibility ->
         WebsitesUiState(
             enabled = enabled,
             domains = domains,
             allowedDomains = allowed,
+            allowOnly = allowOnly,
             accessibilityEnabled = accessibility,
             categories = WebsiteCategories,
             customDomains = domains
@@ -67,6 +70,9 @@ class WebsitesViewModel @Inject constructor(
     }
 
     fun setEnabled(enabled: Boolean) = store.setEnabled(enabled)
+
+    /** Switches between the block list and the study (allowlist-only) mode. */
+    fun setAllowOnly(allowOnly: Boolean) = store.setAllowOnly(allowOnly)
 
     fun setDomainBlocked(domain: String, blocked: Boolean) =
         store.setDomainBlocked(domain, blocked)

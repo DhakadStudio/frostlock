@@ -100,6 +100,31 @@ fun blockedDomainFor(text: String, blockedDomains: Set<String>): String? {
 fun isDomainAllowed(host: String, allowedDomains: Set<String>): Boolean =
     allowedDomains.any { domainMatches(host, it) }
 
+/**
+ * The domain the wall should name for [host], or null when the host may open.
+ *
+ * Two modes:
+ * - Block list ([allowOnly] false): allowed domains poke holes in the block
+ *   list, and the first matching blocked domain is returned.
+ * - Study list ([allowOnly] true): only hosts on [allowedDomains] may open;
+ *   any other host is held and the host itself is named. An empty study list
+ *   deliberately holds nothing, so switching modes can never wall the whole
+ *   internet by accident.
+ */
+fun violatingHost(
+    allowOnly: Boolean,
+    host: String,
+    blockedDomains: Set<String>,
+    allowedDomains: Set<String>
+): String? {
+    if (allowOnly) {
+        if (allowedDomains.isEmpty()) return null
+        return if (isDomainAllowed(host, allowedDomains)) null else host
+    }
+    if (isDomainAllowed(host, allowedDomains)) return null
+    return blockedDomains.firstOrNull { domainMatches(host, it) }
+}
+
 /** Which curated category a domain belongs to, or null for a custom site. */
 fun websiteCategoryLabel(domain: String): String? =
     WebsiteCategories.firstOrNull { category ->

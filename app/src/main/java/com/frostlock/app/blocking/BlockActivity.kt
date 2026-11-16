@@ -115,6 +115,7 @@ class BlockActivity : ComponentActivity() {
         const val REASON_LIMIT = "limit"
         const val REASON_SCHEDULE = "schedule"
         const val REASON_WEBSITE = "website"
+        const val REASON_WEBSITE_STUDY = "website_study"
         const val REASON_YOUTUBE_HOME = "youtube_home"
         const val REASON_PLAY_STORE = "play_store"
         const val REASON_YOUTUBE_CHANNEL = "youtube_channel"
@@ -137,7 +138,9 @@ private fun BlockedContent(
 ) {
     val isLimit = reason == BlockActivity.REASON_LIMIT
     val isScheduled = reason == BlockActivity.REASON_SCHEDULE
-    val isWebsite = reason == BlockActivity.REASON_WEBSITE
+    val isWebsite = reason == BlockActivity.REASON_WEBSITE ||
+        reason == BlockActivity.REASON_WEBSITE_STUDY
+    val isWebsiteStudy = reason == BlockActivity.REASON_WEBSITE_STUDY
     val isYouTubeHome = reason == BlockActivity.REASON_YOUTUBE_HOME
     val isPlayStore = reason == BlockActivity.REASON_PLAY_STORE
     val isYouTubeChannel = reason == BlockActivity.REASON_YOUTUBE_CHANNEL
@@ -240,6 +243,7 @@ private fun BlockedContent(
         isLimitReached = isLimit,
         isScheduled = isScheduled,
         isWebsite = isWebsite,
+        isWebsiteStudy = isWebsiteStudy,
         isYouTubeHome = isYouTubeHome,
         isPlayStore = isPlayStore,
         isYouTubeChannel = isYouTubeChannel,

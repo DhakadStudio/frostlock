@@ -53,6 +53,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.frostlock.app.ui.components.AppCard
+import com.frostlock.app.ui.components.MoodChip
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SectionHeader
 import com.frostlock.app.ui.theme.AccentFrost
@@ -129,7 +130,9 @@ fun WebsitesScreen(
 
         WebsiteToggleCard(
             enabled = state.enabled,
+            allowOnly = state.allowOnly,
             siteCount = state.domains.size,
+            studyCount = state.allowedDomains.size,
             onToggle = viewModel::setEnabled
         )
 
@@ -191,91 +194,123 @@ fun WebsitesScreen(
             }
         }
 
-        state.categories.forEach { category ->
-            SectionHeader(title = category.label)
-            CategoryCard(
-                category = category,
-                domains = state.domains,
-                onToggle = viewModel::setDomainBlocked
-            )
-        }
-
-        SectionHeader(title = "Your sites")
+        SectionHeader(title = "Mode")
         AppCard {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = newDomain,
-                        onValueChange = {
-                            newDomain = it
-                            error = null
-                        },
-                        modifier = Modifier.weight(1f),
-                        placeholder = {
-                            Text(text = "example.com", color = TextSecondary)
-                        },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                        textStyle = MaterialTheme.typography.bodyLarge,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryIce,
-                            unfocusedBorderColor = StrokeSoft,
-                            focusedTextColor = TextPrimary,
-                            unfocusedTextColor = TextPrimary,
-                            cursorColor = AccentFrost
-                        ),
-                        shape = MaterialTheme.shapes.medium
+                Text(
+                    text = when {
+                        state.allowOnly ->
+                            "Study mode: only the sites on the allowed list can " +
+                                "open during focus. Everyone else is held."
+                        else ->
+                            "Block list: the sites below are held during focus; " +
+                                "everything else opens."
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    MoodChip(
+                        text = "Block list",
+                        selected = !state.allowOnly,
+                        onClick = { viewModel.setAllowOnly(false) }
                     )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(Brush.linearGradient(GradientFrost))
-                            .clickable {
-                                val added = newDomain.isNotBlank() &&
-                                    viewModel.addDomain(newDomain)
-                                if (added) {
-                                    newDomain = ""
-                                    error = null
-                                } else {
-                                    error = "Enter a domain like example.com"
-                                }
-                            },
-                        contentAlignment = Alignment.Center
+                    MoodChip(
+                        text = "Study list",
+                        selected = state.allowOnly,
+                        onClick = { viewModel.setAllowOnly(true) }
+                    )
+                }
+            }
+        }
+
+        if (!state.allowOnly) {
+            state.categories.forEach { category ->
+                SectionHeader(title = category.label)
+                CategoryCard(
+                    category = category,
+                    domains = state.domains,
+                    onToggle = viewModel::setDomainBlocked
+                )
+            }
+
+            SectionHeader(title = "Your sites")
+            AppCard {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add site",
-                            tint = InkOnIce
+                        OutlinedTextField(
+                            value = newDomain,
+                            onValueChange = {
+                                newDomain = it
+                                error = null
+                            },
+                            modifier = Modifier.weight(1f),
+                            placeholder = {
+                                Text(text = "example.com", color = TextSecondary)
+                            },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                            textStyle = MaterialTheme.typography.bodyLarge,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = PrimaryIce,
+                                unfocusedBorderColor = StrokeSoft,
+                                focusedTextColor = TextPrimary,
+                                unfocusedTextColor = TextPrimary,
+                                cursorColor = AccentFrost
+                            ),
+                            shape = MaterialTheme.shapes.medium
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(Brush.linearGradient(GradientFrost))
+                                .clickable {
+                                    val added = newDomain.isNotBlank() &&
+                                        viewModel.addDomain(newDomain)
+                                    if (added) {
+                                        newDomain = ""
+                                        error = null
+                                    } else {
+                                        error = "Enter a domain like example.com"
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add site",
+                                tint = InkOnIce
+                            )
+                        }
+                    }
+
+                    error?.let { message ->
+                        Text(
+                            text = message,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = DangerRed
                         )
                     }
-                }
 
-                error?.let { message ->
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = DangerRed
-                    )
-                }
-
-                if (state.customDomains.isEmpty()) {
-                    Text(
-                        text = "No custom sites yet. Curated lists above are always " +
-                            "editable, and any domain you add stays on this device.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
-                    )
-                } else {
-                    state.customDomains.forEach { domain ->
-                        CustomDomainRow(
-                            domain = domain,
-                            onRemove = { viewModel.removeDomain(domain) }
+                    if (state.customDomains.isEmpty()) {
+                        Text(
+                            text = "No custom sites yet. Curated lists above are always " +
+                                "editable, and any domain you add stays on this device.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextSecondary
                         )
+                    } else {
+                        state.customDomains.forEach { domain ->
+                            CustomDomainRow(
+                                domain = domain,
+                                onRemove = { viewModel.removeDomain(domain) }
+                            )
+                        }
                     }
                 }
             }
@@ -285,11 +320,24 @@ fun WebsitesScreen(
         AppCard {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = "Sites here are never blocked, even when they match the " +
-                        "block list. Useful for study resources and reference pages.",
+                    text = when {
+                        state.allowOnly ->
+                            "Only these sites can open during focus. Everyone else is held."
+                        else ->
+                            "Sites here are never blocked, even when they match the " +
+                                "block list. Useful for study resources and reference pages."
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary
                 )
+                if (state.allowOnly && state.allowedDomains.isEmpty()) {
+                    Text(
+                        text = "The study list is empty, so nothing is held yet. " +
+                            "Add the sites you want to keep.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = WarnAmber
+                    )
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -374,7 +422,9 @@ fun WebsitesScreen(
 @Composable
 private fun WebsiteToggleCard(
     enabled: Boolean,
+    allowOnly: Boolean,
     siteCount: Int,
+    studyCount: Int,
     onToggle: (Boolean) -> Unit
 ) {
     AppCard {
@@ -408,6 +458,7 @@ private fun WebsiteToggleCard(
                 )
                 Text(
                     text = when {
+                        enabled && allowOnly -> "On — study list of $studyCount site(s)"
                         enabled -> "On — $siteCount site(s) on the local list"
                         else -> "Off — websites are never checked"
                     },

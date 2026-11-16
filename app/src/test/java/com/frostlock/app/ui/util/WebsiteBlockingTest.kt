@@ -66,6 +66,49 @@ class WebsiteBlockingTest {
     }
 
     @Test
+    fun `study list holds hosts that are not allowed`() {
+        val allowed = setOf("wikipedia.org")
+
+        assertEquals("youtube.com", violatingHost(true, "youtube.com", setOf("youtube.com"), allowed))
+        assertEquals("m.youtube.com", violatingHost(true, "m.youtube.com", emptySet(), allowed))
+        assertEquals("example.com", violatingHost(true, "example.com", emptySet(), allowed))
+    }
+
+    @Test
+    fun `study list passes allowed hosts and their subdomains`() {
+        val allowed = setOf("wikipedia.org", "docs.google.com")
+
+        assertNull(violatingHost(true, "wikipedia.org", emptySet(), allowed))
+        val wikiHost = hostFromUrlText("https://en.wikipedia.org/wiki/Focus")!!
+        assertNull(violatingHost(true, wikiHost, emptySet(), allowed))
+        assertNull(violatingHost(true, "docs.google.com", emptySet(), allowed))
+        assertEquals(
+            "drive.google.com",
+            violatingHost(true, "drive.google.com", emptySet(), allowed)
+        )
+    }
+
+    @Test
+    fun `empty study list never walls the whole internet`() {
+        assertNull(violatingHost(true, "youtube.com", setOf("youtube.com"), emptySet()))
+        assertNull(violatingHost(true, "example.com", emptySet(), emptySet()))
+    }
+
+    @Test
+    fun `block list mode is unchanged by the study rule`() {
+        val blocked = setOf("youtube.com", "instagram.com")
+        val allowed = setOf("wikipedia.org")
+
+        assertEquals(
+            "youtube.com",
+            violatingHost(false, "m.youtube.com", blocked, emptySet())
+        )
+        assertNull(violatingHost(false, "example.com", blocked, allowed))
+        assertNull(violatingHost(false, "wikipedia.org", blocked, emptySet()))
+        assertNull(violatingHost(false, "instagram.com", emptySet(), allowed))
+    }
+
+    @Test
     fun `categories and defaults stay in sync`() {
         assertTrue(DefaultBlockedDomains.contains("youtube.com"))
         assertTrue(DefaultBlockedDomains.contains("pornhub.com"))

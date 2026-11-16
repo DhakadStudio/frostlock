@@ -47,6 +47,7 @@ fun BlockedScreen(
     isLimitReached: Boolean = false,
     isScheduled: Boolean = false,
     isWebsite: Boolean = false,
+    isWebsiteStudy: Boolean = false,
     isYouTubeHome: Boolean = false,
     isPlayStore: Boolean = false,
     isYouTubeChannel: Boolean = false,
@@ -115,6 +116,10 @@ fun BlockedScreen(
                     isLimitReached && appLabel != null ->
                         "You've used your $limitMinutes-minute budget for $appLabel today."
                     isLimitReached -> "You've used this app's daily budget."
+                    isWebsiteStudy && domain != null ->
+                        "$domain is not on your study list while focus is active."
+                    isWebsiteStudy ->
+                        "This site is not on your study list while focus is active."
                     isWebsite && domain != null ->
                         "$domain is on your block list while focus is active."
                     isWebsite -> "This site is on your block list while focus is active."

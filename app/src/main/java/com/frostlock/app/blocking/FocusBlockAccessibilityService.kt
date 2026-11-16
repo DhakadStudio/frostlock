@@ -26,14 +26,13 @@ import com.frostlock.app.data.local.prefs.UnlockStore
 import com.frostlock.app.data.local.prefs.WebsiteBlockingStore
 import com.frostlock.app.data.local.prefs.YouTubeChannelStore
 import com.frostlock.app.data.local.prefs.blocks
-import com.frostlock.app.ui.util.domainMatches
 import com.frostlock.app.ui.util.hostFromUrlText
-import com.frostlock.app.ui.util.isDomainAllowed
 import com.frostlock.app.ui.util.MultiWindowDetector
 import com.frostlock.app.ui.util.NavTab
 import com.frostlock.app.ui.util.PlayStoreDetector
 import com.frostlock.app.ui.util.ShortFormDetector
 import com.frostlock.app.ui.util.VisibleWindow
+import com.frostlock.app.ui.util.violatingHost
 import com.frostlock.app.ui.util.YouTubeChannelDetector
 import com.frostlock.app.ui.util.YouTubeSurfaceDetector
 
@@ -263,8 +262,6 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     private fun maybeBlockWebsite(browserPackage: String) {
         val store = websiteStore ?: return
         if (!store.isEnabled()) return
-        val blocked = store.blockedDomainList()
-        if (blocked.isEmpty()) return
         if (!websiteBlockingActive()) return
 
         val elapsed = SystemClock.elapsedRealtime()
@@ -275,9 +272,15 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         val host = collectAddressBarText(root)
             .firstNotNullOfOrNull { text -> hostFromUrlText(text) }
             ?: return
-        if (isDomainAllowed(host, store.allowedDomainList())) return
-        val domain = blocked.firstOrNull { blockedDomain -> domainMatches(host, blockedDomain) }
-            ?: return
+
+        // Study mode judges the host against the allowed list only; block-list
+        // mode keeps the "allowed pokes holes in blocked" behaviour. An empty
+        // study list deliberately walls nothing.
+        val allowOnly = store.isAllowOnly()
+        val blocked = store.blockedDomainList()
+        val allowed = store.allowedDomainList()
+        if (!allowOnly && blocked.isEmpty()) return
+        val domain = violatingHost(allowOnly, host, blocked, allowed) ?: return
 
         val now = System.currentTimeMillis()
         // The address bar can re-announce the same page after the wall opens.
@@ -287,7 +290,11 @@ class FocusBlockAccessibilityService : AccessibilityService() {
 
         showWall(
             packageName = browserPackage,
-            reason = BlockActivity.REASON_WEBSITE,
+            reason = if (allowOnly) {
+                BlockActivity.REASON_WEBSITE_STUDY
+            } else {
+                BlockActivity.REASON_WEBSITE
+            },
             now = now,
             untilMillis = activeRuleEnd(),
             ruleLabel = domain,
