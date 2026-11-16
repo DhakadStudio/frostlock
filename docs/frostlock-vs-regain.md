@@ -110,11 +110,11 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 
 | Feature | Detail |
 | --- | --- |
-| Rule fields | Name, start/end time, weekdays, specific one-off dates, app set, enabled flag |
+| Rule fields | Name, start/end time, weekdays, specific one-off dates, optional exam window (from/until dates), app set, enabled flag |
 | Overnight windows | Supported (e.g. 22:00–02:00) |
 | Per-rule apps | Every rule blocks its own app set; falls back to the focus-session list if empty |
 | Copy apps | “Copy apps from a subject” |
-| UI | List of rules, “Active now” badge, edit/delete, empty state; add/edit opens a dedicated full-screen editor with named cards for name, apps, repeat and time window |
+| UI | List of rules, “Active now” badge, edit/delete, empty state; add/edit opens a dedicated full-screen editor with named cards for name, apps, repeat, exam window and time window. The exam card uses the themed date picker with clear buttons, and the rules list shows the range under the repeat line |
 | Time presets | One-tap Morning (06:00–09:00), Workday (09:00–17:00), Evening (18:00–22:00) and Night (22:00–02:00) windows |
 | Upcoming | A “Coming up” card lists the next 7 days of rule starts, with live countdowns and overnight-aware ends |
 | Overlap warnings | The editor warns when a window collides with another rule (including overnight tails and one-off dates) and names the shared days/dates; the rules list badges every colliding rule. Informational only — both rules stay active |
@@ -159,9 +159,9 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 
 ### 2.10 Engineering
 
-- 254 unit tests across 38 test classes covering onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, schedule streaks, deadline countdowns, session stamps, freeze levels and the title ladder, focus-goal windows and pacing, website domain matching, address-bar parsing and the study/block judgement, achievement sharing, bubble labels, pause limits, session photo naming and downsampling, app-limit warnings, suggested limits, showcase logos, achievements, stats, monthly rollups, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, ambience synthesis, notification decisions, inbox grouping and ranking, widget maths, home-screen blocking, multi-window detection, unlock counts, the YouTube/Shorts surface detectors, Play Store search matching, and YouTube channel-owner parsing.
-- Verified on emulator `Medium_Phone_API_37.0` including blocking and full onboarding, plus a live signed-in Play Store search test on a retail device (Realme, Android 16): blocked-app search walls, non-blocked query and result-page browsing do not. Website study mode was verified on the emulator with the allowed site opening and a non-listed site walling.
-- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`; freeze level `249975b`; achievement sharing `8b0d3d5`; schedule streak `95de98b`; floating focus bubble `b00e586`; session photos `8915202`; pause limits `b45488f`; ice themes `d0a5075`; monthly stats `6153caa`; focus ambience `d0c5c8c`; notification ranking `1e6ed58`; freeze ladder `2a997a7`; focus goals `8be538d`; website blocking `2b0df05`; home-screen blocking `c260e88`; split-screen/floating-window blocking `36be05f`; YouTube home-feed blocking + Shorts hardening `d6cb3b6`; Play Store search blocking `0c20a9c`; YouTube channel filtering + study allowlist `bbf44b4`; website study mode `0504426`.
+- 261 unit tests across 38 test classes covering onboarding, schedules, exam date ranges, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, schedule streaks, deadline countdowns, session stamps, freeze levels and the title ladder, focus-goal windows and pacing, website domain matching, address-bar parsing and the study/block judgement, achievement sharing, bubble labels, pause limits, session photo naming and downsampling, app-limit warnings, suggested limits, showcase logos, achievements, stats, monthly rollups, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, ambience synthesis, notification decisions, inbox grouping and ranking, widget maths, home-screen blocking, multi-window detection, unlock counts, the YouTube/Shorts surface detectors, Play Store search matching, and YouTube channel-owner parsing.
+- Verified on emulator `Medium_Phone_API_37.0` including blocking and full onboarding, plus a live signed-in Play Store search test on a retail device (Realme, Android 16): blocked-app search walls, non-blocked query and result-page browsing do not. Website study mode was verified on the emulator with the allowed site opening and a non-listed site walling. Exam-tuned scheduling was verified on the retail device: the editor saved `from_date`/`until_date`, moving `until_date` before the range removed the rule from “Coming up”, and restoring it brought back only the in-range days.
+- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`; freeze level `249975b`; achievement sharing `8b0d3d5`; schedule streak `95de98b`; floating focus bubble `b00e586`; session photos `8915202`; pause limits `b45488f`; ice themes `d0a5075`; monthly stats `6153caa`; focus ambience `d0c5c8c`; notification ranking `1e6ed58`; freeze ladder `2a997a7`; focus goals `8be538d`; website blocking `2b0df05`; home-screen blocking `c260e88`; split-screen/floating-window blocking `36be05f`; YouTube home-feed blocking + Shorts hardening `d6cb3b6`; Play Store search blocking `0c20a9c`; YouTube channel filtering + study allowlist `bbf44b4`; website study mode `0504426`; exam-tuned scheduling `20cf319`.
 
 ---
 
@@ -232,7 +232,7 @@ Sources: installed APK v75.1.2113 (manifest activities/services, 96k resource li
 - Alarm reminders when a scheduled session starts. **FrostLock has this** (local start/end notifications, no account needed).
 - Calendar view of focus sessions and a monthly focus calendar widget. **FrostLock has the calendar screen** (month heat-map + day drill-down); the monthly widget is still missing.
 - Upcoming sessions, session-overlap detection, morning/afternoon/evening/night sessions. **FrostLock has the upcoming list, one-tap time presets and overlap warnings.**
-- Exam date aware (“Only during exam”, “Exam month”); session streak separate from daily streak. **FrostLock has a local deadline countdown**; exam-tuned scheduling is still missing.
+- Exam date aware (“Only during exam”, “Exam month”); session streak separate from daily streak. **FrostLock has a local deadline countdown and an optional from/until exam window on every rule**, so a rule can start and stop with an exam month; session streak is covered too.
 
 ### 3.8 Stats & reports
 
@@ -299,7 +299,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 19 | Schedule start alarms / reminders | **Yes** — local notifications at start and end, with exact-alarm fallback | Yes | Similar | Tie |
 | 20 | Schedule calendar view | **Yes** — month heat-map with per-day drill-down | Yes | Similar; FrostLock keeps it free and local | Tie |
 | 21 | Upcoming sessions / overlap detection | **Yes** — next 7 days of rule windows with countdowns, plus editor/list overlap warnings | Yes | Similar planning view; FrostLock keeps it local | Tie |
-| 22 | Exam-aware onboarding | **Partial** — local deadline countdown plus named focus goals with target dates/hours; no exam-tuned scheduling | Exam, date, region | FrostLock covers local planning; Regain adds exam-specific scheduling | Tie / FrostLock (offline) |
+| 22 | Exam-aware onboarding | **Yes (local)** — deadline countdown, named focus goals with target dates/hours, and a from/until exam window on any rule; no exam-type/region profile | Exam, date, region | FrostLock now covers local planning and exam-scoped scheduling without an account | Tie / FrostLock (offline) |
 | 23 | Focus groups / friends | **No** | Yes | Gap | Regain |
 | 24 | Weekly leaderboard | **No** | Yes | Gap | Regain |
 | 25 | Wake-up nudges / accountability | Focus Guard only | Group nudges + guilt trips | Different | Regain (social) |
@@ -403,7 +403,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [x] Calendar view of sessions
 - [x] Upcoming-session list
 - [x] Session-overlap detection
-- [~] Exam date/month awareness (a local deadline countdown and focus goals ship; exam-tuned scheduling is still missing)
+- [x] Exam date/month awareness (a local deadline countdown, focus goals and an optional from/until exam window on every rule)
 - [x] Morning/afternoon/evening/night session presets (one-tap windows in the rule editor)
 - [x] Schedule streak (separate from daily streak)
 - [x] Session skip/discard + max-pause rules
@@ -518,7 +518,7 @@ FrostLock's blocking coverage is now close on the common surfaces (apps, website
 - [x] **Time-window presets** — Morning, Workday, Evening and Night one-tap windows in the rule editor.
 - [x] **Rule overlap warnings** — the editor flags colliding windows and the list badges them.
 - [x] Exam/goal profiles stored locally — a dedicated goals page with target date, target hours and progress derived from saved sessions; no exam-data upload.
-- [~] Exam-tuned scheduling (e.g. “only during exam month”) is still missing.
+- [x] **Exam-tuned scheduling** — any rule can carry optional from/until ISO dates; `appliesOn` checks the range before weekdays or one-off dates, so an exam month starts and stops the rule without editing its repeat. The editor has an Exam window card with themed date pickers and clear buttons, reversed ranges are rejected, and the rules list shows the range. Verified on the retail device: `from_date`/`until_date` persisted, moving `until_date` before the range removed the rule from “Coming up”, and restoring it brought back only the in-range days.
 
 ### P1 — deeper blocking (needs design decisions)
 
@@ -542,7 +542,7 @@ FrostLock's blocking coverage is now close on the common surfaces (apps, website
 - [x] Reward/level layer on top of the existing badges — a seven-title freeze ladder with a dedicated page; no currency, no store.
 - [x] Focus bubble / floating timer — opt-in draggable overlay, tap to return.
 - [x] Exam/goal profiles stored locally (no exam-data upload) — named goals with a target date and target hours, tracked against saved sessions.
-- [~] Exam-tuned schedules are still missing.
+- [x] Exam-tuned schedules — optional from/until dates on any rule, checked before weekdays and one-off dates.
 - [x] Schedule streak.
 - [x] **Session skip/discard + max pauses** — stop asks save or discard, breaks can be skipped, and Profile caps normal-session pauses.
 - [x] Monthly stats — six-month bar chart with active days, best day and average per active day, all computed from local sessions.
@@ -558,7 +558,7 @@ FrostLock's blocking coverage is now close on the common surfaces (apps, website
 ## 11. Verified facts & commands
 
 - Build: `JAVA_HOME=/snap/android-studio/250/jbr ANDROID_HOME=/home/vishal/Android/Sdk ./gradlew :app:assembleDebug`
-- Tests: `:app:testDebugUnitTest` → **250 tests, 0 failures**
+- Tests: `:app:testDebugUnitTest` → **261 tests, 0 failures**
 - Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - Accessibility component: `com.frostlock.app/com.frostlock.app.blocking.FocusBlockAccessibilityService`
 - Re-enable service:
