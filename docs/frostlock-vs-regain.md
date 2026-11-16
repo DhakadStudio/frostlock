@@ -19,7 +19,7 @@ Legend: `[x]` shipped in FrostLock · `[ ]` missing · `[~]` partial · `[!]` de
 
 | Question | Answer |
 | --- | --- |
-| Which app blocks more surfaces? | **Regain.** It still blocks YouTube channels. FrostLock now blocks websites, Shorts/Reels, the YouTube home feed, Play Store searches for blocked apps, the phone home screen, split screen, and floating windows during focus/schedule, and holds notifications from blocked apps. |
+| Which app blocks more surfaces? | **Close to a tie.** FrostLock now also filters YouTube videos by channel (block list or study allowlist), so the remaining Regain edge is channel handling on YouTube Music + study *sites*. FrostLock blocks websites, Shorts/Reels, the YouTube home feed, Play Store searches for blocked apps, the phone home screen, split screen, and floating windows during focus/schedule, and holds notifications from blocked apps. |
 | Which app is better for privacy? | **FrostLock, by a wide margin.** No internet permission, no account, no ads, no analytics, no billing. |
 | Which app is better for a free user? | **FrostLock.** Everything is free. Regain gates app-limit counts, unlimited schedules, premium stats, music and themes behind Pro. |
 | Which app models app sets better? | **FrostLock.** Subjects own app sets; rules have their own app sets; one-off dates and overnight windows exist. Regain tags sessions but keeps the blocklist per rule/schedule. |
@@ -89,6 +89,7 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 - Block wall has four reasons: focus session, daily limit, schedule, website.
 - **Website blocking** (opt-in) uses the same accessibility service to read the browser address bar. A local list holds curated social/video and adult domains plus any custom sites; matches show a “Site held” wall only while a focus session or schedule rule is active. No VPN, no INTERNET permission, no browsing history.
 - **YouTube home-feed blocking** (opt-in, off by default) walls only YouTube's recommendation home feed while a session or rule is active. The signal is the selected bottom-navigation tab, so search, subscriptions and video playback stay usable; YouTube is skipped entirely when the whole app is blocked. The wall has its own “Home feed held” copy.
+- **YouTube channel filtering** (opt-in, off by default) judges each watch page's owner channel — a block list holds listed channels, a “Study list” mode holds everything not allowlisted — while a session or rule is active. The channel is parsed from the watch page's owner-row accessibility labels only; a Channels screen under Profile manages both lists. The wall has its own “Channel held” copy.
 - **Shorts/Reels hardening** — apps with a known nav tab (YouTube, Instagram, Facebook) are flagged only when that tab is selected or the short-form player surface (e.g. YouTube's `reel_*` view ids) is on screen. Snapchat, which exposes no nav tab, keeps the text heuristic. This stops a home feed's Shorts shelf from triggering the Shorts wall.
 - Blocking toggle is separate from schedules (schedules keep running even if manual focus blocking is off).
 - Schedule checks run on window changes **and** on a periodic ticker, so an app already open gets blocked when its window starts.
@@ -158,9 +159,9 @@ Also: animated aurora backdrop, 10-segment progress bar, “Skip intro” to per
 
 ### 2.10 Engineering
 
-- 225 unit tests across 36 test classes covering onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, schedule streaks, deadline countdowns, session stamps, freeze levels and the title ladder, focus-goal windows and pacing, website domain matching and address-bar parsing, achievement sharing, bubble labels, pause limits, session photo naming and downsampling, app-limit warnings, suggested limits, showcase logos, achievements, stats, monthly rollups, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, ambience synthesis, notification decisions, inbox grouping and ranking, widget maths, home-screen blocking, multi-window detection, unlock counts, and the YouTube/Shorts surface detectors.
+- 250 unit tests across 38 test classes covering onboarding, schedules, rule editor helpers and time presets, schedule reminder triggers, rule-overlap detection, schedule streaks, deadline countdowns, session stamps, freeze levels and the title ladder, focus-goal windows and pacing, website domain matching and address-bar parsing, achievement sharing, bubble labels, pause limits, session photo naming and downsampling, app-limit warnings, suggested limits, showcase logos, achievements, stats, monthly rollups, focus calendar, upcoming sessions, study diary, weekly reports, session summaries, ambience synthesis, notification decisions, inbox grouping and ranking, widget maths, home-screen blocking, multi-window detection, unlock counts, the YouTube/Shorts surface detectors, Play Store search matching, and YouTube channel-owner parsing.
 - Verified on emulator `Medium_Phone_API_37.0` including blocking and full onboarding.
-- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`; freeze level `249975b`; achievement sharing `8b0d3d5`; schedule streak `95de98b`; floating focus bubble `b00e586`; session photos `8915202`; pause limits `b45488f`; ice themes `d0a5075`; monthly stats `6153caa`; focus ambience `d0c5c8c`; notification ranking `1e6ed58`; freeze ladder `2a997a7`; focus goals `8be538d`; website blocking `2b0df05`; home-screen blocking `c260e88`; split-screen/floating-window blocking `36be05f`; YouTube home-feed blocking + Shorts hardening `d6cb3b6`.
+- Key commits: rename/ice theme `c5920b2`, `7a690d7`, `a0dc222`; achievements `faf4fd9`; suggested limits `899f6ef`; immersive timer `a9af201`; onboarding redesign `fdc4ba5`; real installed icons `2e2c92e`; radar + real brand logos `45a6bb2`; study diary `24c8b39`; weekly report `1755d97`; session summary `cda5f82`; notification shield `1279084`; extra widgets `18ef9fc`; widget full-height layout `7baee2b`; dedicated rule editor `67865e1`; focus calendar, upcoming sessions and rule presets `5b33fbc`; calendar widget `81d330d`; overlap warnings `091ba55`; focus deadline `31e69c3`; focus stamps `1c27ae4`; freeze level `249975b`; achievement sharing `8b0d3d5`; schedule streak `95de98b`; floating focus bubble `b00e586`; session photos `8915202`; pause limits `b45488f`; ice themes `d0a5075`; monthly stats `6153caa`; focus ambience `d0c5c8c`; notification ranking `1e6ed58`; freeze ladder `2a997a7`; focus goals `8be538d`; website blocking `2b0df05`; home-screen blocking `c260e88`; split-screen/floating-window blocking `36be05f`; YouTube home-feed blocking + Shorts hardening `d6cb3b6`; Play Store search blocking `0c20a9c`; YouTube channel filtering + study allowlist `bbf44b4`.
 
 ---
 
@@ -213,7 +214,7 @@ Sources: installed APK v75.1.2113 (manifest activities/services, 96k resource li
 - Allow only “study websites” (allowlist) while blocking everything else.
 - Block YouTube Shorts, Instagram/Facebook Reels, Snapchat Spotlight.
 - Block the YouTube home page.
-- Block distracting YouTube channels; allow only “study channels”.
+- Block distracting YouTube channels; allow only “study channels”. FrostLock now does this offline via the watch page's owner row.
 - Per-site confirmation phrases, reset flows, “report as study site/channel”.
 
 ### 3.6 Notification blocking
@@ -289,7 +290,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 10 | Suggested limits | One-tap 20-min for 4 apps | Usage-based suggestions | Different approaches | Tie |
 | 11 | Website blocking | **Partial** — accessibility address-bar detection with a local list (curated social/video + adult, plus custom domains) and a local allowlist; active only during focus or a rule; no VPN | Yes + adult + allowlist | FrostLock covers the common cases offline without a VPN | Tie / FrostLock (offline) |
 | 12 | Shorts / Reels / Spotlight blocking | **Yes** — accessibility detection for YouTube, Instagram, Facebook and Snapchat while focus/schedule is active; apps with a known nav tab are flagged only when that tab is selected or the player surface is on screen | Yes | Similar; FrostLock is local and free | Tie |
-| 13 | YouTube channel filtering | **No** | Yes + study channels | Big gap | Regain |
+| 13 | YouTube channel filtering | **Yes** — opt-in toggle; the watch page's owner row (Subscribe button, channel avatar) is parsed from accessibility descriptions; block list or study allowlist; only during focus/schedule; skipped when the whole app is blocked | Yes + study channels | Similar; FrostLock works offline with no account | Tie |
 | 14 | YouTube home-feed blocking | **Yes** — opt-in toggle that walls only the home feed via the selected bottom-nav tab; search, subscriptions and playback stay usable | Yes | Similar intent; FrostLock is tab-based and local | Tie |
 | 15 | Notification blocking + inbox | **Yes** — holds alerts from blocked apps, local inbox with reasons and a per-app ranking | Yes | Similar; FrostLock is free and fully local | Tie / FrostLock |
 | 16 | Home-screen blocking | **Yes** — opt-in Profile toggle that blocks launchers while a focus session or schedule is active | Yes (login required) | Similar; FrostLock needs no account | Tie / FrostLock |
@@ -323,7 +324,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 44 | Permission footprint | A short list; overlay only if the floating bubble is enabled | 15+ incl. usage, notifications, admin | FrostLock safer | FrostLock |
 | 45 | Usage tracking method | Accessibility foreground time | UsageStats permission | Both valid; FrostLock avoids a permission | FrostLock (privacy) |
 | 46 | Adult-content blocking | **Yes** — curated adult domains sit in the same local website list and can be toggled per domain | Yes | Similar local coverage; no cloud categories | Tie / FrostLock (offline) |
-| 47 | Study websites/channels allowlist | **No** | Yes | Gap | Regain |
+| 47 | Study websites/channels allowlist | **Partial — channels only** — study-channel allowlist shipped with channel filtering; study *sites* still follow the block/allow domain model (an allowlist mode for websites is not built) | Yes | Similar for channels; Regain also flips websites to allowlist | Regain |
 | 48 | Session summary screen | **Yes** — planned vs actual, subject, note, streak impact | Full summary | Similar | Tie |
 | 49 | Pause limits | **Yes** — Off/1/2/3/no-limit per session; Strict Mode blocks pausing entirely | Max pauses per session | Similar, and FrostLock keeps it local | Tie |
 | 50 | Multi-language UI | **No** | Yes | Gap | Regain |
@@ -356,6 +357,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | Website blocking | Opt-in local domain list (curated social/video + adult, plus custom sites) matched against the browser address bar; the wall names the site and only runs during focus or a rule | `2b0df05` |
 | YouTube home-page blocking | Opt-in toggle that walls only the home feed via the selected bottom-nav tab; search and subscriptions stay usable | `d6cb3b6` |
 | Play Store search blocking | Opt-in toggle that matches the store's editable search box against the blocked apps' display names and holds the matching search during focus or a rule | `0c20a9c` |
+| YouTube channel filtering + study allowlist | Opt-in Channels screen with block-list and study-list modes; the video's owner channel is read from the watch page's Subscribe/avatar accessibility labels | `bbf44b4` |
 | Focus stamps | Per-session badges derived from start hour, weekday and length, shown in the post-session summary and diary | `1c27ae4` |
 | Freeze level | Lifetime focus minutes become widening levels with ice titles, shown on the stats screen with progress to the next | `249975b` |
 | Freeze ladder | A dedicated page lists all seven titles and thresholds, marks reached rungs, and shares the current title as text | `2a997a7` |
@@ -383,8 +385,8 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [x] YouTube Shorts blocking — accessibility scan for the Shorts surface while focus/schedule is active; apps with a known nav tab are flagged only when that tab is selected or the player surface is on screen.
 - [x] Instagram/Facebook Reels + Snapchat Spotlight blocking — accessibility scan for Reels/Spotlight surfaces while focus/schedule is active.
 - [x] YouTube home-feed blocking — opt-in toggle; the selected bottom-nav tab is the signal, so search and subscriptions stay usable.
-- [ ] YouTube channel blocking
-- [ ] Study-channel allowlist
+- [x] YouTube channel blocking — opt-in toggle; the watch page's owner row (Subscribe button + channel avatar content-descs) is parsed while focus/schedule is active; recommendation chips are deliberately not parsed. Skipped when the whole YouTube app is blocked.
+- [x] Study-channel allowlist — "Study list" mode on the Channels screen; only listed channels play during focus, and an empty study list never walls every channel.
 - [x] Notification blocking + blocked-notification inbox
 - [x] Per-app notification ranking — the inbox ranks the top senders with counts and share bars.
 - [~] Pause/schedule notification blocking (the shield follows focus sessions and rules automatically)
@@ -497,7 +499,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 
 Regain is the stronger **blocker** and the stronger **habit/social product**.
 FrostLock is the stronger **privacy product** and the cleaner **core tool**.
-FrostLock's blocking coverage is now close on the common surfaces (apps, websites, Shorts/Reels, the YouTube home feed, Play Store searches for blocked apps, home screen, split screen, notifications); the remaining depth gaps are **YouTube channel filtering, uninstall protection and social/accountability**.
+FrostLock's blocking coverage is now close on the common surfaces (apps, websites, Shorts/Reels, the YouTube home feed, YouTube channel filtering, Play Store searches for blocked apps, home screen, split screen, notifications); the remaining depth gaps are **study-site allowlist, uninstall protection and social/accountability**.
 
 ---
 
@@ -521,7 +523,8 @@ FrostLock's blocking coverage is now close on the common surfaces (apps, website
 
 - [x] **Website blocking** — opt-in local domain list (curated social/video + adult, plus custom sites) detected through the browser address bar by the existing accessibility service. The wall names the domain and lifts when the session or rule ends. No VPN, no INTERNET permission, no browsing history; browser-dependent by nature.
 - [x] **Shorts/Reels detection.** Accessibility heuristics per app — nav-tab selection and player view ids where the app has a known tab, text otherwise — active during focus/schedule; brittle by nature but unit-tested.
-- [x] **YouTube home-feed blocking** — opt-in toggle; the selected bottom-nav tab decides, so search and subscriptions stay usable. Channel filtering is still missing: heuristics only; document limitations.
+- [x] **YouTube home-feed blocking** — opt-in toggle; the selected bottom-nav tab decides, so search and subscriptions stay usable.
+- [x] **YouTube channel filtering + study allowlist** — opt-in toggle with two modes; the channel is read from the watch page's owner row only (Subscribe button and channel-avatar content-descs). Handles are normalized away, an empty study list never walls everything, and the scan is skipped when the whole app is blocked.
 - [x] **Play Store search blocking** — opt-in toggle; the store's editable search box is matched against the blocked apps' PackageManager display labels with whole-word tokens, so "xbox" never lights up a short label like "X". The search must spell the app's visible name (e.g. "youtube music"); the wall follows website-wall lift semantics.
 - [x] **Home-screen blocking** and **split-screen/floating-window blocking** on top of the existing accessibility service.
 - [x] **Focus ambience** — Deep focus, Rain, Wind and Snow generated on-device at 44.1 kHz, so there are no audio assets or downloads.
@@ -553,7 +556,7 @@ FrostLock's blocking coverage is now close on the common surfaces (apps, website
 ## 11. Verified facts & commands
 
 - Build: `JAVA_HOME=/snap/android-studio/250/jbr ANDROID_HOME=/home/vishal/Android/Sdk ./gradlew :app:assembleDebug`
-- Tests: `:app:testDebugUnitTest` → **237 tests, 0 failures**
+- Tests: `:app:testDebugUnitTest` → **250 tests, 0 failures**
 - Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - Accessibility component: `com.frostlock.app/com.frostlock.app.blocking.FocusBlockAccessibilityService`
 - Re-enable service:
@@ -564,7 +567,7 @@ FrostLock's blocking coverage is now close on the common surfaces (apps, website
 - Regain APK inspected at `/tmp/opencode/regain.apk` (v75.1.2113, 58 MB base); it was not retained after the analysis.
 - FrostLock permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `RECEIVE_BOOT_COMPLETED`, `USE_EXACT_ALARM`, and an optional `SYSTEM_ALERT_WINDOW` for the floating bubble. Photos go through the system picker, so no camera or storage permission is declared. Still **no INTERNET**.
 - FrostLock manifest: accessibility service, focus foreground service, schedule reminder receiver, notification listener service, four widget providers.
-- Test files: 37 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `ScheduleStreakTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `FocusLevelTest`, `FocusGoalsTest`, `WebsiteBlockingTest`, `FocusBubbleTest`, `FocusPausesTest`, `SessionPhotosTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`, `IcePaletteTest`, `MonthlyStatsTest`, `AmbienceTest`, `HomeBlockingTest`, `UnlockStoreTest`, `MultiWindowDetectorTest`, `ShortFormDetectorTest`, `YouTubeSurfaceDetectorTest`, `PlayStoreDetectorTest`).
+- Test files: 38 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `ScheduleStreakTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `FocusLevelTest`, `FocusGoalsTest`, `WebsiteBlockingTest`, `FocusBubbleTest`, `FocusPausesTest`, `SessionPhotosTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`, `IcePaletteTest`, `MonthlyStatsTest`, `AmbienceTest`, `HomeBlockingTest`, `UnlockStoreTest`, `MultiWindowDetectorTest`, `ShortFormDetectorTest`, `YouTubeSurfaceDetectorTest`, `PlayStoreDetectorTest`, `YouTubeChannelDetectorTest`).
 - Current onboarding page count: 10 (`OnboardingPages.COUNT`).
 
 ---
@@ -580,6 +583,7 @@ FrostLock's blocking coverage is now close on the common surfaces (apps, website
 7. **Do not drift into Regain's scope**: social, accounts, paywalls and ads stay out by design.
 8. **Play Store search blocking:** the store exposes the typed query through its editable search box; the match runs against the blocked apps' display labels with whole-word tokens, so short labels cannot false-positive inside other words. Ordinary store browsing is untouched, and the wall lifts like a website wall (rule end or session heartbeat).
 9. **Scheduled launcher walls:** with only a schedule active the home-screen wall uses `REASON_SCHEDULE` with the rule window and label instead of the heartbeat-based focus wall, which would dismiss itself and re-fire in a loop.
+10. **YouTube channel signal:** this YouTube build exposes the video's owner channel only through accessibility descriptions of the owner row — the Subscribe button ("Subscribe to X.") and the channel avatar ("X, Official Artist Channel 4.56M subscribers"). Recommendation chips ("Go to channel X") describe other channels and are deliberately not parsed, so an unrelated recommendation can never wall an allowed video; the "@handle" visible on screen is not in the a11y tree, so matching relies on the display names. A second fix: the service constructs its own store instances whose StateFlows snapshot prefs at construction, and SharedPreferences does not notify other instances in-process — store configuration is therefore read live (`WebsiteBlockingStore.isEnabled()/blockedDomainList()/allowedDomainList()`, `YouTubeChannelStore.isEnabled()/allowOnlyMode()/blockedChannels()/allowedChannels()`) instead of through the flows.
 
 ---
 
