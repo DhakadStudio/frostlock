@@ -32,7 +32,8 @@ data class ProfileUiState(
     val themeKey: String = IcePalettes.Frost.key,
     val deadline: FocusDeadline? = null,
     val goalCount: Int = 0,
-    val homeBlockingEnabled: Boolean = false
+    val homeBlockingEnabled: Boolean = false,
+    val youtubeHomeBlockingEnabled: Boolean = false
 )
 
 @HiltViewModel
@@ -46,6 +47,8 @@ class ProfileViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val homeBlockingFlow = kotlinx.coroutines.flow.MutableStateFlow(blockingPrefs.isHomeBlockingEnabled())
+    private val youtubeHomeBlockingFlow =
+        kotlinx.coroutines.flow.MutableStateFlow(blockingPrefs.isYouTubeHomeBlockingEnabled())
 
     val uiState: StateFlow<ProfileUiState> = combine(
         focusSettings.strictMode,
@@ -75,6 +78,8 @@ class ProfileViewModel @Inject constructor(
         state.copy(themeKey = themeKey)
     }.combine(homeBlockingFlow) { state, homeBlocking ->
         state.copy(homeBlockingEnabled = homeBlocking)
+    }.combine(youtubeHomeBlockingFlow) { state, youtubeHome ->
+        state.copy(youtubeHomeBlockingEnabled = youtubeHome)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -100,6 +105,11 @@ class ProfileViewModel @Inject constructor(
     fun setHomeBlockingEnabled(enabled: Boolean) {
         blockingPrefs.setHomeBlockingEnabled(enabled)
         homeBlockingFlow.value = enabled
+    }
+
+    fun setYouTubeHomeBlockingEnabled(enabled: Boolean) {
+        blockingPrefs.setYouTubeHomeBlockingEnabled(enabled)
+        youtubeHomeBlockingFlow.value = enabled
     }
 
     fun setDailyGoalMinutes(minutes: Int) {

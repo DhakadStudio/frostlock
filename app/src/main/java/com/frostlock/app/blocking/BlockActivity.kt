@@ -115,6 +115,7 @@ class BlockActivity : ComponentActivity() {
         const val REASON_LIMIT = "limit"
         const val REASON_SCHEDULE = "schedule"
         const val REASON_WEBSITE = "website"
+        const val REASON_YOUTUBE_HOME = "youtube_home"
     }
 }
 
@@ -135,6 +136,7 @@ private fun BlockedContent(
     val isLimit = reason == BlockActivity.REASON_LIMIT
     val isScheduled = reason == BlockActivity.REASON_SCHEDULE
     val isWebsite = reason == BlockActivity.REASON_WEBSITE
+    val isYouTubeHome = reason == BlockActivity.REASON_YOUTUBE_HOME
 
     var remainingSeconds by remember { mutableIntStateOf(-1) }
     var limitMinutes by remember(blockedPackage) {
@@ -234,6 +236,7 @@ private fun BlockedContent(
         isLimitReached = isLimit,
         isScheduled = isScheduled,
         isWebsite = isWebsite,
+        isYouTubeHome = isYouTubeHome,
         domain = blockedDomain,
         limitMinutes = limitMinutes,
         usedMinutes = usedMinutes,

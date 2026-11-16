@@ -8,19 +8,41 @@ import org.junit.Test
 class ShortFormDetectorTest {
 
     @Test
-    fun `youtube detects shorts surface`() {
-        assertTrue(ShortFormDetector.matches("com.google.android.youtube", "Shorts"))
-        assertTrue(ShortFormDetector.matches("com.google.android.youtube", "SHORTS tab"))
+    fun `youtube detects shorts player surface`() {
+        assertTrue(
+            ShortFormDetector.matchesPlayerSurface(
+                "com.google.android.youtube",
+                "com.google.android.youtube:id/reel_watch_player"
+            )
+        )
     }
 
     @Test
-    fun `instagram and facebook detect reels`() {
-        assertTrue(ShortFormDetector.matches("com.instagram.android", "Reels"))
-        assertTrue(ShortFormDetector.matches("com.facebook.katana", "Reels"))
+    fun `regular video page ids are not a shorts player`() {
+        assertFalse(
+            ShortFormDetector.matchesPlayerSurface(
+                "com.google.android.youtube",
+                "com.google.android.youtube:id/watch_player"
+            )
+        )
+        assertFalse(ShortFormDetector.matchesPlayerSurface("com.google.android.youtube", null))
     }
 
     @Test
-    fun `snapchat detects spotlight`() {
+    fun `youtube detects selected shorts tab`() {
+        assertTrue(ShortFormDetector.matchesSelectedTab("com.google.android.youtube", "Shorts"))
+        assertTrue(ShortFormDetector.matchesSelectedTab("com.google.android.youtube", " shorts "))
+    }
+
+    @Test
+    fun `unselected or other tabs are not short form`() {
+        assertFalse(ShortFormDetector.matchesSelectedTab("com.google.android.youtube", "Home"))
+        assertFalse(ShortFormDetector.matchesSelectedTab("com.google.android.youtube", null))
+    }
+
+    @Test
+    fun `snapchat keeps the text heuristic`() {
+        assertEquals(setOf("spotlight"), ShortFormDetector.keywordsFor("com.snapchat.android"))
         assertTrue(ShortFormDetector.matches("com.snapchat.android", "Spotlight"))
     }
 

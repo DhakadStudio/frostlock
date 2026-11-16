@@ -29,8 +29,10 @@ import com.frostlock.app.ui.util.domainMatches
 import com.frostlock.app.ui.util.hostFromUrlText
 import com.frostlock.app.ui.util.isDomainAllowed
 import com.frostlock.app.ui.util.MultiWindowDetector
+import com.frostlock.app.ui.util.NavTab
 import com.frostlock.app.ui.util.ShortFormDetector
 import com.frostlock.app.ui.util.VisibleWindow
+import com.frostlock.app.ui.util.YouTubeSurfaceDetector
 
 /**
  * Watches foreground app changes and sends the user to [BlockActivity] when they
@@ -60,6 +62,8 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     private var lastSideScanAt = 0L
     private var lastSideBlockAt = 0L
     private var lastSidePackage: String? = null
+    private var lastYouTubeHomeScanAt = 0L
+    private var lastYouTubeHomeBlockAt = 0L
 
     private val unlockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -115,6 +119,12 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             event.eventType in WEBSITE_EVENT_TYPES
         ) {
             maybeBlockShorts(eventPackage)
+        }
+
+        if (eventPackage == YouTubeSurfaceDetector.PACKAGE &&
+            event.eventType in WEBSITE_EVENT_TYPES
+        ) {
+            maybeBlockYouTubeHome()
         }
 
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
@@ -222,7 +232,7 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         if (elapsed - lastUrlScanAt < URL_SCAN_THROTTLE_MS) return
         lastUrlScanAt = elapsed
 
-        val root = rootInActiveWindow ?: return
+        val root = rootForPackage(browserPackage) ?: return
         val host = collectAddressBarText(root)
             .firstNotNullOfOrNull { text -> hostFromUrlText(text) }
             ?: return
@@ -265,12 +275,15 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         if (elapsed - lastShortsScanAt < SHORTS_SCAN_THROTTLE_MS) return
         lastShortsScanAt = elapsed
 
-        val keywords = ShortFormDetector.keywordsFor(packageName)
-        if (keywords.isEmpty()) return
-        val root = rootInActiveWindow ?: return
+        if (ShortFormDetector.keywordsFor(packageName).isEmpty()) return
+        val root = rootForPackage(packageName) ?: return
 
-        val found = collectTextFromRoot(root) { text ->
-            ShortFormDetector.matches(packageName, text)
+        val found = if (ShortFormDetector.selectedTabLabel(packageName) != null) {
+            collectShortFormSurface(root, packageName)
+        } else {
+            collectTextFromRoot(root) { text ->
+                ShortFormDetector.matches(packageName, text)
+            }
         }
 
         if (!found) return
@@ -294,6 +307,111 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             now = now,
             ruleLabel = "$label blocked"
         )
+    }
+
+    /**
+     * Root of the visible window owned by [packageName], falling back to the
+     * active window only when it belongs to the same package.
+     *
+     * `rootInActiveWindow` can point at our own overlay while a focus banner is
+     * showing, so the target app's window is looked up in the window list first.
+     */
+    private fun rootForPackage(packageName: String): AccessibilityNodeInfo? {
+        val active = rootInActiveWindow
+        if (active != null && active.packageName == packageName) return active
+        return runCatching { windows }.getOrNull().orEmpty()
+            .mapNotNull { window -> runCatching { window.root }.getOrNull() }
+            .firstOrNull { it.packageName == packageName }
+    }
+
+    /**
+     * One pass over the tree that flags this app's short-form surface.
+     *
+     * The surface is present when its bottom-navigation tab is the selected one,
+     * or when a node's view id belongs to the app's short-form player.
+     */
+    private fun collectShortFormSurface(
+        root: AccessibilityNodeInfo,
+        packageName: String
+    ): Boolean {
+        val queue = ArrayDeque<AccessibilityNodeInfo>()
+        queue.add(root)
+        var visited = 0
+
+        while (queue.isNotEmpty() && visited < MAX_SCAN_NODES) {
+            val node = queue.removeFirst()
+            visited++
+            if (ShortFormDetector.matchesPlayerSurface(packageName, node.viewIdResourceName)) {
+                return true
+            }
+            val label = node.contentDescription?.toString()?.trim()
+                ?: node.text?.toString()?.trim()
+            if (label != null && node.isSelected &&
+                ShortFormDetector.matchesSelectedTab(packageName, label)
+            ) {
+                return true
+            }
+            for (index in 0 until node.childCount) {
+                node.getChild(index)?.let { queue.add(it) }
+            }
+        }
+        return false
+    }
+
+    /**
+     * Blocks only the YouTube home feed while leaving search, subscriptions and
+     * video playback usable. Opt-in, and only active during focus or a schedule.
+     *
+     * YouTube is skipped when it is fully blocked because the foreground path
+     * already covers that case.
+     */
+    private fun maybeBlockYouTubeHome() {
+        val current = prefs ?: return
+        if (!current.getBoolean(BlockingPreferences.KEY_YOUTUBE_HOME_BLOCKING, false)) return
+        if (!websiteBlockingActive()) return
+        if (YouTubeSurfaceDetector.PACKAGE in activeBlockedPackages(System.currentTimeMillis())) return
+
+        val elapsed = SystemClock.elapsedRealtime()
+        if (elapsed - lastYouTubeHomeScanAt < YOUTUBE_HOME_SCAN_THROTTLE_MS) return
+        lastYouTubeHomeScanAt = elapsed
+
+        val root = rootForPackage(YouTubeSurfaceDetector.PACKAGE) ?: return
+        if (!YouTubeSurfaceDetector.isHomeFeed(collectNavTabs(root))) return
+
+        val now = System.currentTimeMillis()
+        if (now - lastYouTubeHomeBlockAt < YOUTUBE_HOME_REPEAT_MS) return
+        lastYouTubeHomeBlockAt = now
+
+        showWall(
+            packageName = YouTubeSurfaceDetector.PACKAGE,
+            reason = BlockActivity.REASON_YOUTUBE_HOME,
+            now = now,
+            untilMillis = activeRuleEnd()
+        )
+    }
+
+    /** Collects bottom-navigation tabs and whether each one is selected. */
+    private fun collectNavTabs(root: AccessibilityNodeInfo): List<NavTab> {
+        val tabs = mutableListOf<NavTab>()
+        val queue = ArrayDeque<AccessibilityNodeInfo>()
+        queue.add(root)
+        var visited = 0
+
+        while (queue.isNotEmpty() && visited < MAX_SCAN_NODES) {
+            val node = queue.removeFirst()
+            visited++
+            val label = node.contentDescription?.toString()?.trim()
+                ?: node.text?.toString()?.trim()
+            if (!label.isNullOrEmpty() &&
+                label.lowercase() in YouTubeSurfaceDetector.tabLabels
+            ) {
+                tabs += NavTab(label = label, isSelected = node.isSelected)
+            }
+            for (index in 0 until node.childCount) {
+                node.getChild(index)?.let { queue.add(it) }
+            }
+        }
+        return tabs
     }
 
     /**
@@ -620,6 +738,8 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         private const val SHORTS_REPEAT_MS = 7_000L
         private const val SIDE_SCAN_THROTTLE_MS = 900L
         private const val SIDE_REPEAT_MS = 8_000L
+        private const val YOUTUBE_HOME_SCAN_THROTTLE_MS = 900L
+        private const val YOUTUBE_HOME_REPEAT_MS = 8_000L
 
         /** True when the user has enabled this service in system accessibility settings. */
         fun isEnabled(context: Context): Boolean {
