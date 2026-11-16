@@ -19,7 +19,7 @@ Legend: `[x]` shipped in FrostLock · `[ ]` missing · `[~]` partial · `[!]` de
 
 | Question | Answer |
 | --- | --- |
-| Which app blocks more surfaces? | **Regain.** It still blocks YouTube channels and Play Store searches. FrostLock now blocks websites, Shorts/Reels, the YouTube home feed, the phone home screen, split screen, and floating windows during focus/schedule, and holds notifications from blocked apps. |
+| Which app blocks more surfaces? | **Regain.** It still blocks YouTube channels. FrostLock now blocks websites, Shorts/Reels, the YouTube home feed, Play Store searches for blocked apps, the phone home screen, split screen, and floating windows during focus/schedule, and holds notifications from blocked apps. |
 | Which app is better for privacy? | **FrostLock, by a wide margin.** No internet permission, no account, no ads, no analytics, no billing. |
 | Which app is better for a free user? | **FrostLock.** Everything is free. Regain gates app-limit counts, unlimited schedules, premium stats, music and themes behind Pro. |
 | Which app models app sets better? | **FrostLock.** Subjects own app sets; rules have their own app sets; one-off dates and overnight windows exist. Regain tags sessions but keeps the blocklist per rule/schedule. |
@@ -195,7 +195,7 @@ Sources: installed APK v75.1.2113 (manifest activities/services, 96k resource li
 - Block floating windows and split screen for blocked apps.
 - Block the phone home screen during focus (requires login).
 - Uninstall protection via device admin (“you cannot uninstall Regain while a session is running”).
-- Blocks Play Store searches for blocked apps (“blocks you the second you search Instagram on Play Store”).
+- Blocks Play Store searches for blocked apps (“blocks you the second you search Instagram on Play Store”). FrostLock now matches the store's search box against the blocked apps' display names, offline.
 - Accessibility-based; overlay wall with “show block overlay”.
 
 ### 3.4 App limits
@@ -329,6 +329,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | 50 | Multi-language UI | **No** | Yes | Gap | Regain |
 | 51 | Data export / backup beyond OS | **No** | Cloud backup | Different | FrostLock (privacy) |
 | 52 | Monthly stats | **Yes** — six-month rollup with active days, best day and average per active day | Yes (Pro) | Similar; FrostLock keeps it free | Tie / FrostLock |
+| 53 | Play Store search blocking | **Yes** — opt-in toggle that matches the store's search box against the blocked apps' display names while focus/schedule is active | Yes | Similar; FrostLock works offline with no account | Tie |
 
 ---
 
@@ -354,6 +355,7 @@ Nine receivers / eight widget types: Focus, Usage (small + large), Phone Unlock 
 | Focus goals | Named local goals with a target date and hours, plus an on-track/behind/complete progress list derived from saved sessions | `8be538d` |
 | Website blocking | Opt-in local domain list (curated social/video + adult, plus custom sites) matched against the browser address bar; the wall names the site and only runs during focus or a rule | `2b0df05` |
 | YouTube home-page blocking | Opt-in toggle that walls only the home feed via the selected bottom-nav tab; search and subscriptions stay usable | `d6cb3b6` |
+| Play Store search blocking | Opt-in toggle that matches the store's editable search box against the blocked apps' display names and holds the matching search during focus or a rule | `0c20a9c` |
 | Focus stamps | Per-session badges derived from start hour, weekday and length, shown in the post-session summary and diary | `1c27ae4` |
 | Freeze level | Lifetime focus minutes become widening levels with ice titles, shown on the stats screen with progress to the next | `249975b` |
 | Freeze ladder | A dedicated page lists all seven titles and thresholds, marks reached rungs, and shares the current title as text | `2a997a7` |
@@ -386,11 +388,11 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 - [x] Notification blocking + blocked-notification inbox
 - [x] Per-app notification ranking — the inbox ranks the top senders with counts and share bars.
 - [~] Pause/schedule notification blocking (the shield follows focus sessions and rules automatically)
-- [x] Phone home-screen blocking during focus — opt-in toggle in Profile, blocks launchers when focus session or schedule is active.
+- [x] Phone home-screen blocking during focus — opt-in toggle in Profile, blocks launchers when focus session or schedule is active. A schedule-only wall uses the rule window and label, so it holds instead of bouncing.
 - [x] Split-screen blocking — blocked apps stay walled when pinned to half the screen.
 - [x] Floating-window blocking — freeform/popup windows are scanned like any other visible window.
 - [ ] Uninstall protection / device admin
-- [ ] Play Store search blocking for blocked apps
+- [x] Play Store search blocking — opt-in toggle; the store's editable search-box text is matched against the blocked apps' display names while focus/schedule is active. Ordinary store browsing is untouched.
 
 ### B. Routine, reminders & planning
 
@@ -495,7 +497,7 @@ Superseded: `20b18ab` added hand-drawn logo vectors; user rejected them, and `2e
 
 Regain is the stronger **blocker** and the stronger **habit/social product**.
 FrostLock is the stronger **privacy product** and the cleaner **core tool**.
-FrostLock's blocking coverage is now close on the common surfaces (apps, websites, Shorts/Reels, the YouTube home feed, home screen, split screen, notifications); the remaining depth gaps are **YouTube channel filtering, Play Store search blocking, uninstall protection and social/accountability**.
+FrostLock's blocking coverage is now close on the common surfaces (apps, websites, Shorts/Reels, the YouTube home feed, Play Store searches for blocked apps, home screen, split screen, notifications); the remaining depth gaps are **YouTube channel filtering, uninstall protection and social/accountability**.
 
 ---
 
@@ -520,6 +522,7 @@ FrostLock's blocking coverage is now close on the common surfaces (apps, website
 - [x] **Website blocking** — opt-in local domain list (curated social/video + adult, plus custom sites) detected through the browser address bar by the existing accessibility service. The wall names the domain and lifts when the session or rule ends. No VPN, no INTERNET permission, no browsing history; browser-dependent by nature.
 - [x] **Shorts/Reels detection.** Accessibility heuristics per app — nav-tab selection and player view ids where the app has a known tab, text otherwise — active during focus/schedule; brittle by nature but unit-tested.
 - [x] **YouTube home-feed blocking** — opt-in toggle; the selected bottom-nav tab decides, so search and subscriptions stay usable. Channel filtering is still missing: heuristics only; document limitations.
+- [x] **Play Store search blocking** — opt-in toggle; the store's editable search box is matched against the blocked apps' PackageManager display labels with whole-word tokens, so "xbox" never lights up a short label like "X". The search must spell the app's visible name (e.g. "youtube music"); the wall follows website-wall lift semantics.
 - [x] **Home-screen blocking** and **split-screen/floating-window blocking** on top of the existing accessibility service.
 - [x] **Focus ambience** — Deep focus, Rain, Wind and Snow generated on-device at 44.1 kHz, so there are no audio assets or downloads.
 - [x] **Theme variants** (more ice palettes) — Frost, Aurora, Midnight and Crystal, selectable on Profile.
@@ -550,7 +553,7 @@ FrostLock's blocking coverage is now close on the common surfaces (apps, website
 ## 11. Verified facts & commands
 
 - Build: `JAVA_HOME=/snap/android-studio/250/jbr ANDROID_HOME=/home/vishal/Android/Sdk ./gradlew :app:assembleDebug`
-- Tests: `:app:testDebugUnitTest` → **225 tests, 0 failures**
+- Tests: `:app:testDebugUnitTest` → **237 tests, 0 failures**
 - Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`
 - Accessibility component: `com.frostlock.app/com.frostlock.app.blocking.FocusBlockAccessibilityService`
 - Re-enable service:
@@ -561,7 +564,7 @@ FrostLock's blocking coverage is now close on the common surfaces (apps, website
 - Regain APK inspected at `/tmp/opencode/regain.apk` (v75.1.2113, 58 MB base); it was not retained after the analysis.
 - FrostLock permissions: `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `RECEIVE_BOOT_COMPLETED`, `USE_EXACT_ALARM`, and an optional `SYSTEM_ALERT_WINDOW` for the floating bubble. Photos go through the system picker, so no camera or storage permission is declared. Still **no INTERNET**.
 - FrostLock manifest: accessibility service, focus foreground service, schedule reminder receiver, notification listener service, four widget providers.
-- Test files: 36 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `ScheduleStreakTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `FocusLevelTest`, `FocusGoalsTest`, `WebsiteBlockingTest`, `FocusBubbleTest`, `FocusPausesTest`, `SessionPhotosTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`, `IcePaletteTest`, `MonthlyStatsTest`, `AmbienceTest`, `HomeBlockingTest`, `UnlockStoreTest`, `MultiWindowDetectorTest`, `ShortFormDetectorTest`, `YouTubeSurfaceDetectorTest`).
+- Test files: 37 (`OnboardingViewModelTest`, `OnboardingShowcaseTest`, `SuggestedLimitsTest`, `ScheduleRuleTest`, `ScheduleEditorTest`, `ScheduleTriggersTest`, `ScheduleOverlapTest`, `ScheduleStreakTest`, `DeadlineCountdownTest`, `SessionStampsTest`, `FocusLevelTest`, `FocusGoalsTest`, `WebsiteBlockingTest`, `FocusBubbleTest`, `FocusPausesTest`, `SessionPhotosTest`, `LimitWarningTest`, `AchievementsTest`, `FocusStatsTest`, `DiaryTest`, `WeeklyReportTest`, `SessionSummaryTest`, `SubjectAppSetTest`, `FocusCalendarTest`, `UpcomingSessionsTest`, `NotificationPolicyTest`, `NotificationInboxTest`, `WidgetDataTest`, `IcePaletteTest`, `MonthlyStatsTest`, `AmbienceTest`, `HomeBlockingTest`, `UnlockStoreTest`, `MultiWindowDetectorTest`, `ShortFormDetectorTest`, `YouTubeSurfaceDetectorTest`, `PlayStoreDetectorTest`).
 - Current onboarding page count: 10 (`OnboardingPages.COUNT`).
 
 ---
@@ -575,6 +578,8 @@ FrostLock's blocking coverage is now close on the common surfaces (apps, website
 5. **Diary:** the note field already exists; surfacing it is a small UI task.
 6. **Keep the strict no-network promise** even for widgets/reports — everything must remain local.
 7. **Do not drift into Regain's scope**: social, accounts, paywalls and ads stay out by design.
+8. **Play Store search blocking:** the store exposes the typed query through its editable search box; the match runs against the blocked apps' display labels with whole-word tokens, so short labels cannot false-positive inside other words. Ordinary store browsing is untouched, and the wall lifts like a website wall (rule end or session heartbeat).
+9. **Scheduled launcher walls:** with only a schedule active the home-screen wall uses `REASON_SCHEDULE` with the rule window and label instead of the heartbeat-based focus wall, which would dismiss itself and re-fire in a loop.
 
 ---
 
