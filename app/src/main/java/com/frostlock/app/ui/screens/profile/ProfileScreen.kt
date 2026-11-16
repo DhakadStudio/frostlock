@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -87,6 +88,7 @@ fun ProfileScreen(
     onOpenWeeklyReport: () -> Unit = {},
     onOpenDeadline: () -> Unit = {},
     onOpenGoals: () -> Unit = {},
+    onOpenChannels: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -426,6 +428,54 @@ fun ProfileScreen(
                         uncheckedThumbColor = TextSecondary,
                         uncheckedTrackColor = SurfaceHigh
                     )
+                )
+            }
+        }
+
+        SectionHeader(title = "YouTube channels")
+        AppCard(modifier = Modifier.clickable(onClick = onOpenChannels)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(SurfaceHigh),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.VideoLibrary,
+                        contentDescription = null,
+                        tint = AccentFrost,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = if (state.channelAllowOnly) "Study-mode channel filter" else "Channel blocking",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = when {
+                            state.channelFilterEnabled && state.channelAllowOnly ->
+                                "Study list — only ${state.channelFilterCount} channel(s) play during focus."
+                            state.channelFilterEnabled ->
+                                "Block list — ${state.channelFilterCount} channel(s) held during focus."
+                            else -> "Hold individual channels while focus is active."
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                }
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = TextSecondary,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }

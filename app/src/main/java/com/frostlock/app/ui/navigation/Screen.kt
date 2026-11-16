@@ -18,6 +18,7 @@ sealed class Screen(val route: String, val title: String) {
     object WeeklyReport : Screen("weekly_report", "Weekly report")
     object Notifications : Screen("notifications", "Notifications")
     object Websites : Screen("websites", "Website blocking")
+    object Channels : Screen("channels", "YouTube channels")
     object Profile : Screen("profile", "Profile")
     object Schedules : Screen("schedules", "Schedules")
     object DesignPreview : Screen("design_preview", "Design Preview")

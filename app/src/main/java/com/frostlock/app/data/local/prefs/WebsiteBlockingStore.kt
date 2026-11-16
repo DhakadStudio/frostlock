@@ -36,7 +36,18 @@ class WebsiteBlockingStore @Inject constructor(@ApplicationContext context: Cont
         _enabled.value = enabled
     }
 
-    fun isEnabled(): Boolean = _enabled.value
+    /**
+     * Live read for the accessibility service. The service constructs its own
+     * store instance, whose flows would go stale after the UI changes a value:
+     * SharedPreferences does not notify other instances in the same process.
+     */
+    fun isEnabled(): Boolean = prefs.getBoolean(KEY_ENABLED, false)
+
+    /** Live read for the accessibility service. */
+    fun blockedDomainList(): Set<String> = readDomains()
+
+    /** Live read for the accessibility service. */
+    fun allowedDomainList(): Set<String> = readAllowedDomains()
 
     /** Adds or removes one domain from the local list. */
     fun setDomainBlocked(domain: String, blocked: Boolean) {

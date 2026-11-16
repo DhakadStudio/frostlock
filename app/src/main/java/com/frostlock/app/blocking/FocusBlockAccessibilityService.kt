@@ -24,6 +24,7 @@ import com.frostlock.app.data.local.prefs.BlockingPreferences
 import com.frostlock.app.data.local.prefs.ScheduleStore
 import com.frostlock.app.data.local.prefs.UnlockStore
 import com.frostlock.app.data.local.prefs.WebsiteBlockingStore
+import com.frostlock.app.data.local.prefs.YouTubeChannelStore
 import com.frostlock.app.data.local.prefs.blocks
 import com.frostlock.app.ui.util.domainMatches
 import com.frostlock.app.ui.util.hostFromUrlText
@@ -33,6 +34,7 @@ import com.frostlock.app.ui.util.NavTab
 import com.frostlock.app.ui.util.PlayStoreDetector
 import com.frostlock.app.ui.util.ShortFormDetector
 import com.frostlock.app.ui.util.VisibleWindow
+import com.frostlock.app.ui.util.YouTubeChannelDetector
 import com.frostlock.app.ui.util.YouTubeSurfaceDetector
 
 /**
@@ -50,6 +52,7 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     private var limitStore: AppLimitStore? = null
     private var scheduleStore: ScheduleStore? = null
     private var websiteStore: WebsiteBlockingStore? = null
+    private var channelStore: YouTubeChannelStore? = null
     private var unlockStore: UnlockStore? = null
     private var homePackages: Set<String> = emptySet()
     private var lastBlockAt = 0L
@@ -68,6 +71,9 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     private var lastPlayStoreScanAt = 0L
     private var lastPlayStoreQuery: String? = null
     private var lastPlayStoreBlockAt = 0L
+    private var lastChannelScanAt = 0L
+    private var lastChannelBlocked: String? = null
+    private var lastChannelBlockAt = 0L
 
     private val unlockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -93,6 +99,7 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         limitStore = AppLimitStore(this)
         scheduleStore = ScheduleStore(this)
         websiteStore = WebsiteBlockingStore(this)
+        channelStore = YouTubeChannelStore(this)
         unlockStore = UnlockStore(this)
         homePackages = findHomePackages()
         createLimitChannel()
@@ -135,6 +142,12 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             event.eventType in WEBSITE_EVENT_TYPES
         ) {
             maybeBlockPlayStoreSearch()
+        }
+
+        if (eventPackage == YouTubeChannelDetector.PACKAGE &&
+            event.eventType in WEBSITE_EVENT_TYPES
+        ) {
+            maybeBlockYouTubeChannel()
         }
 
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
@@ -250,7 +263,7 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     private fun maybeBlockWebsite(browserPackage: String) {
         val store = websiteStore ?: return
         if (!store.isEnabled()) return
-        val blocked = store.domains.value
+        val blocked = store.blockedDomainList()
         if (blocked.isEmpty()) return
         if (!websiteBlockingActive()) return
 
@@ -262,7 +275,7 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         val host = collectAddressBarText(root)
             .firstNotNullOfOrNull { text -> hostFromUrlText(text) }
             ?: return
-        if (isDomainAllowed(host, store.allowedDomains.value)) return
+        if (isDomainAllowed(host, store.allowedDomainList())) return
         val domain = blocked.firstOrNull { blockedDomain -> domainMatches(host, blockedDomain) }
             ?: return
 
@@ -483,6 +496,72 @@ class FocusBlockAccessibilityService : AccessibilityService() {
                 packageManager.getApplicationLabel(info).toString()
             }.getOrNull()
         }
+
+    /**
+     * Walls the video when its channel is not allowed to play.
+     *
+     * Two modes: a block list ("never these channels") and a study allowlist
+     * ("only these channels"). Opt-in, and only active during focus or a
+     * schedule; YouTube is skipped when the whole app is blocked because the
+     * foreground path already covers that. The channel is read from the
+     * owner-row accessibility labels of the watch page, so recommendations,
+     * search results and the home feed are never judged by their channel.
+     */
+    private fun maybeBlockYouTubeChannel() {
+        val store = channelStore ?: return
+        if (!store.isEnabled()) return
+        if (!websiteBlockingActive()) return
+        val now = System.currentTimeMillis()
+        if (YouTubeSurfaceDetector.PACKAGE in activeBlockedPackages(now)) return
+
+        val elapsed = SystemClock.elapsedRealtime()
+        if (elapsed - lastChannelScanAt < CHANNEL_SCAN_THROTTLE_MS) return
+        lastChannelScanAt = elapsed
+
+        val root = rootForPackage(YouTubeChannelDetector.PACKAGE) ?: return
+        val owners = collectChannelOwnerNames(root)
+        val violating = YouTubeChannelDetector.violatingOwner(
+            allowOnly = store.allowOnlyMode(),
+            ownerNames = owners,
+            blocked = store.blockedChannels(),
+            allowed = store.allowedChannels()
+        ) ?: return
+
+        if (violating == lastChannelBlocked && now - lastChannelBlockAt < CHANNEL_REPEAT_MS) {
+            return
+        }
+        lastChannelBlocked = violating
+        lastChannelBlockAt = now
+
+        showWall(
+            packageName = YouTubeChannelDetector.PACKAGE,
+            reason = BlockActivity.REASON_YOUTUBE_CHANNEL,
+            now = now,
+            untilMillis = activeRuleEnd(),
+            ruleLabel = violating,
+            domain = violating
+        )
+    }
+
+    /** Names in the current video's owner row, parsed from a11y labels. */
+    private fun collectChannelOwnerNames(root: AccessibilityNodeInfo): Set<String> {
+        val owners = mutableSetOf<String>()
+        val queue = ArrayDeque<AccessibilityNodeInfo>()
+        queue.add(root)
+        var visited = 0
+        while (queue.isNotEmpty() && visited < MAX_SCAN_NODES) {
+            val node = queue.removeFirst()
+            visited++
+            val label = node.contentDescription?.toString()?.trim()
+            if (!label.isNullOrEmpty()) {
+                YouTubeChannelDetector.ownerChannelName(label)?.let { owners += it }
+            }
+            for (index in 0 until node.childCount) {
+                node.getChild(index)?.let { queue.add(it) }
+            }
+        }
+        return owners
+    }
 
     /** Collects bottom-navigation tabs and whether each one is selected. */
     private fun collectNavTabs(root: AccessibilityNodeInfo): List<NavTab> {
@@ -836,6 +915,8 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         private const val YOUTUBE_HOME_REPEAT_MS = 8_000L
         private const val PLAY_STORE_SCAN_THROTTLE_MS = 900L
         private const val PLAY_STORE_REPEAT_MS = 8_000L
+        private const val CHANNEL_SCAN_THROTTLE_MS = 900L
+        private const val CHANNEL_REPEAT_MS = 8_000L
 
         /** True when the user has enabled this service in system accessibility settings. */
         fun isEnabled(context: Context): Boolean {

@@ -8,6 +8,7 @@ import com.frostlock.app.data.local.prefs.FocusDeadline
 import com.frostlock.app.data.local.prefs.FocusGoalStore
 import com.frostlock.app.data.local.prefs.FocusSettings
 import com.frostlock.app.data.local.prefs.ThemeStore
+import com.frostlock.app.data.local.prefs.YouTubeChannelStore
 import com.frostlock.app.ui.theme.IcePalettes
 import com.frostlock.app.ui.util.AmbienceSound
 import com.frostlock.app.ui.util.PausePolicy
@@ -19,6 +20,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
+
+/** One-flow snapshot of the channel-filter configuration for the Profile card. */
+private data class ChannelFilterSummary(
+    val enabled: Boolean,
+    val allowOnly: Boolean,
+    val count: Int
+)
 
 data class ProfileUiState(
     val strictMode: Boolean = false,
@@ -34,7 +42,10 @@ data class ProfileUiState(
     val goalCount: Int = 0,
     val homeBlockingEnabled: Boolean = false,
     val youtubeHomeBlockingEnabled: Boolean = false,
-    val playStoreBlockingEnabled: Boolean = false
+    val playStoreBlockingEnabled: Boolean = false,
+    val channelFilterEnabled: Boolean = false,
+    val channelAllowOnly: Boolean = false,
+    val channelFilterCount: Int = 0
 )
 
 @HiltViewModel
@@ -43,6 +54,7 @@ class ProfileViewModel @Inject constructor(
     private val focusSettings: FocusSettings,
     private val themeStore: ThemeStore,
     private val blockingPrefs: com.frostlock.app.data.local.prefs.BlockingPreferences,
+    channelStore: YouTubeChannelStore,
     deadlineStore: DeadlineStore,
     goalStore: FocusGoalStore
 ) : ViewModel() {
@@ -52,6 +64,19 @@ class ProfileViewModel @Inject constructor(
         kotlinx.coroutines.flow.MutableStateFlow(blockingPrefs.isYouTubeHomeBlockingEnabled())
     private val playStoreBlockingFlow =
         kotlinx.coroutines.flow.MutableStateFlow(blockingPrefs.isPlayStoreBlockingEnabled())
+
+    private val channelFilterSummary = combine(
+        channelStore.enabled,
+        channelStore.allowOnly,
+        channelStore.blocked,
+        channelStore.allowed
+    ) { enabled, allowOnly, blocked, allowed ->
+        ChannelFilterSummary(
+            enabled = enabled,
+            allowOnly = allowOnly,
+            count = if (allowOnly) allowed.size else blocked.size
+        )
+    }
 
     val uiState: StateFlow<ProfileUiState> = combine(
         focusSettings.strictMode,
@@ -85,6 +110,12 @@ class ProfileViewModel @Inject constructor(
         state.copy(youtubeHomeBlockingEnabled = youtubeHome)
     }.combine(playStoreBlockingFlow) { state, playStore ->
         state.copy(playStoreBlockingEnabled = playStore)
+    }.combine(channelFilterSummary) { state, channels ->
+        state.copy(
+            channelFilterEnabled = channels.enabled,
+            channelAllowOnly = channels.allowOnly,
+            channelFilterCount = channels.count
+        )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),

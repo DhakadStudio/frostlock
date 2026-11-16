@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.TimerOff
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -48,6 +49,7 @@ fun BlockedScreen(
     isWebsite: Boolean = false,
     isYouTubeHome: Boolean = false,
     isPlayStore: Boolean = false,
+    isYouTubeChannel: Boolean = false,
     domain: String? = null,
     limitMinutes: Int = 0,
     usedMinutes: Int = 0,
@@ -79,6 +81,7 @@ fun BlockedScreen(
                         isWebsite -> Icons.Default.Language
                         isYouTubeHome -> Icons.Default.Home
                         isPlayStore -> Icons.Default.ShoppingCart
+                        isYouTubeChannel -> Icons.Default.VideoLibrary
                         isScheduled -> Icons.Default.CalendarMonth
                         else -> Icons.Default.Lock
                     },
@@ -96,6 +99,7 @@ fun BlockedScreen(
                     isWebsite -> "Site held"
                     isYouTubeHome -> "Home feed held"
                     isPlayStore -> "Search held"
+                    isYouTubeChannel -> "Channel held"
                     isScheduled -> "Scheduled focus"
                     else -> "Stay in the zone"
                 },
@@ -120,6 +124,9 @@ fun BlockedScreen(
                     isPlayStore && domain != null ->
                         "Search results for \u201C$domain\u201D are held while focus is active."
                     isPlayStore -> "This search is held while focus is active."
+                    isYouTubeChannel && domain != null ->
+                        "\u201C$domain\u201D is held while focus is active. Study channels and everything else still play."
+                    isYouTubeChannel -> "This channel is held while focus is active."
                     isScheduled && ruleLabel != null && appLabel != null ->
                         "$appLabel is blocked during \u201C$ruleLabel\u201D."
                     isScheduled && ruleLabel != null ->
@@ -158,6 +165,7 @@ fun BlockedScreen(
                     text = when {
                         isWebsite -> "left in this block"
                         isPlayStore -> "left in this block"
+                        isYouTubeChannel -> "left in this block"
                         isScheduled -> "left in this schedule"
                         else -> "left in this session"
                     },
@@ -177,6 +185,8 @@ fun BlockedScreen(
                         "End the session in FrostLock to unlock the home feed."
                     } else if (isPlayStore) {
                         "End the session in FrostLock to unlock search."
+                    } else if (isYouTubeChannel) {
+                        "End the session in FrostLock to unlock channels."
                     } else {
                         "End the session in FrostLock to unlock apps."
                     },
