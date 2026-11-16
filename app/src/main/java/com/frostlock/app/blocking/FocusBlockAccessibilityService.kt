@@ -184,12 +184,28 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             prefs.getLong(BlockingPreferences.KEY_FOCUS_UNTIL, 0L) > now
         val scheduleActive = scheduleStore?.activeSchedules()?.isNotEmpty() == true
         if (homeBlockingEnabled && (focusActive || scheduleActive) && openedPackage in homePackages) {
-            showWall(
-                openedPackage,
-                BlockActivity.REASON_FOCUS,
-                now,
-                ruleLabel = "Home screen blocked"
-            )
+            if (focusActive) {
+                // A live session heartbeats focus_until, so this wall lifts as
+                // soon as the session ends.
+                showWall(
+                    openedPackage,
+                    BlockActivity.REASON_FOCUS,
+                    now,
+                    ruleLabel = "Home screen blocked"
+                )
+            } else {
+                // Only a schedule is running: hold the wall until the window
+                // closes. A heartbeat-based wall would dismiss itself on the
+                // expired heartbeat and re-fire in a loop.
+                val active = scheduleStore?.activeSchedules().orEmpty().firstOrNull()
+                showWall(
+                    openedPackage,
+                    BlockActivity.REASON_SCHEDULE,
+                    now,
+                    activeRuleEnd(),
+                    active?.schedule?.label
+                )
+            }
             return
         }
 
