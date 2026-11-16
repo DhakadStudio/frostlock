@@ -70,9 +70,9 @@ class FocusBlockAccessibilityService : AccessibilityService() {
     private var lastPlayStoreScanAt = 0L
     private var lastPlayStoreQuery: String? = null
     private var lastPlayStoreBlockAt = 0L
-    private var lastChannelScanAt = 0L
-    private var lastChannelBlocked: String? = null
-    private var lastChannelBlockAt = 0L
+    private val lastChannelScanAt = mutableMapOf<String, Long>()
+    private val lastChannelBlocked = mutableMapOf<String, String>()
+    private val lastChannelBlockAt = mutableMapOf<String, Long>()
 
     private val unlockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -143,10 +143,10 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             maybeBlockPlayStoreSearch()
         }
 
-        if (eventPackage == YouTubeChannelDetector.PACKAGE &&
+        if (eventPackage in YouTubeChannelDetector.PACKAGES &&
             event.eventType in WEBSITE_EVENT_TYPES
         ) {
-            maybeBlockYouTubeChannel()
+            maybeBlockYouTubeChannel(eventPackage)
         }
 
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
@@ -505,27 +505,29 @@ class FocusBlockAccessibilityService : AccessibilityService() {
         }
 
     /**
-     * Walls the video when its channel is not allowed to play.
+     * Walls the video/song when its channel is not allowed to play.
      *
      * Two modes: a block list ("never these channels") and a study allowlist
      * ("only these channels"). Opt-in, and only active during focus or a
-     * schedule; YouTube is skipped when the whole app is blocked because the
-     * foreground path already covers that. The channel is read from the
-     * owner-row accessibility labels of the watch page, so recommendations,
-     * search results and the home feed are never judged by their channel.
+     * schedule; the app is skipped when the whole package is blocked because
+     * the foreground path already covers that. The channel is read from the
+     * owner-row accessibility labels of the watch page / now-playing page, so
+     * recommendations, search results and the home feed are never judged by
+     * their channel. YouTube and YouTube Music share the same lists.
      */
-    private fun maybeBlockYouTubeChannel() {
+    private fun maybeBlockYouTubeChannel(packageName: String) {
         val store = channelStore ?: return
         if (!store.isEnabled()) return
         if (!websiteBlockingActive()) return
         val now = System.currentTimeMillis()
-        if (YouTubeSurfaceDetector.PACKAGE in activeBlockedPackages(now)) return
+        if (packageName in activeBlockedPackages(now)) return
 
         val elapsed = SystemClock.elapsedRealtime()
-        if (elapsed - lastChannelScanAt < CHANNEL_SCAN_THROTTLE_MS) return
-        lastChannelScanAt = elapsed
+        val lastScan = lastChannelScanAt[packageName] ?: 0L
+        if (elapsed - lastScan < CHANNEL_SCAN_THROTTLE_MS) return
+        lastChannelScanAt[packageName] = elapsed
 
-        val root = rootForPackage(YouTubeChannelDetector.PACKAGE) ?: return
+        val root = rootForPackage(packageName) ?: return
         val owners = collectChannelOwnerNames(root)
         val violating = YouTubeChannelDetector.violatingOwner(
             allowOnly = store.allowOnlyMode(),
@@ -534,14 +536,16 @@ class FocusBlockAccessibilityService : AccessibilityService() {
             allowed = store.allowedChannels()
         ) ?: return
 
-        if (violating == lastChannelBlocked && now - lastChannelBlockAt < CHANNEL_REPEAT_MS) {
+        val lastBlocked = lastChannelBlocked[packageName]
+        val lastBlockAt = lastChannelBlockAt[packageName] ?: 0L
+        if (violating == lastBlocked && now - lastBlockAt < CHANNEL_REPEAT_MS) {
             return
         }
-        lastChannelBlocked = violating
-        lastChannelBlockAt = now
+        lastChannelBlocked[packageName] = violating
+        lastChannelBlockAt[packageName] = now
 
         showWall(
-            packageName = YouTubeChannelDetector.PACKAGE,
+            packageName = packageName,
             reason = BlockActivity.REASON_YOUTUBE_CHANNEL,
             now = now,
             untilMillis = activeRuleEnd(),

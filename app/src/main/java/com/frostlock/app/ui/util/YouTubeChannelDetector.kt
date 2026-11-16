@@ -12,7 +12,14 @@ package com.frostlock.app.ui.util
  */
 object YouTubeChannelDetector {
 
+    /** The main YouTube app. */
     const val PACKAGE = "com.google.android.youtube"
+
+    /** YouTube Music exposes the same owner-row labels on its now-playing page. */
+    const val PACKAGE_MUSIC = "com.google.android.apps.youtube.music"
+
+    /** Both apps share the channel model and the same block/study lists. */
+    val PACKAGES = setOf(PACKAGE, PACKAGE_MUSIC)
 
     private val subscribeLabel = Regex("^Subscribe to (.+?)\\.?$", RegexOption.IGNORE_CASE)
     private val subscriberLabel = Regex(

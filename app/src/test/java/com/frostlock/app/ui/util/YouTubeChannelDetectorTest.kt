@@ -7,6 +7,15 @@ import org.junit.Test
 class YouTubeChannelDetectorTest {
 
     @Test
+    fun `both youtube apps share the channel lists`() {
+        assertEquals(
+            setOf("com.google.android.youtube", "com.google.android.apps.youtube.music"),
+            YouTubeChannelDetector.PACKAGES
+        )
+        assertEquals("com.google.android.apps.youtube.music", YouTubeChannelDetector.PACKAGE_MUSIC)
+    }
+
+    @Test
     fun `subscribe label carries the channel name`() {
         assertEquals(
             "rick astley",

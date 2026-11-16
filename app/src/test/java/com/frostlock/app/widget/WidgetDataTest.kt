@@ -80,4 +80,35 @@ class WidgetDataTest {
         )
         assertEquals("45m · 1 active day", monthMetaLabel(45 * minutes, 1))
     }
+
+    @Test
+    fun `week total sums the strip and ignores negatives`() {
+        assertEquals(
+            "4h 20m",
+            weekTotalLabel(listOf(60 * minutes, 120 * minutes, 0, 80 * minutes, 0, 0, 0))
+        )
+        assertEquals("0m", weekTotalLabel(emptyList()))
+        assertEquals("10m", weekTotalLabel(listOf(10 * minutes, -30 * minutes)))
+    }
+
+    @Test
+    fun `unlock count label handles zero one and many`() {
+        assertEquals("No unlocks yet", unlockCountLabel(0))
+        assertEquals("1 unlock", unlockCountLabel(1))
+        assertEquals("12 unlocks", unlockCountLabel(12))
+    }
+
+    @Test
+    fun `unlock footer combines focus time and streak`() {
+        assertEquals("Focus 1h 25m · \uD83D\uDD25 3-day streak", unlockFooterLabel(85 * minutes, 3))
+        assertEquals("Focus 0m · no streak yet", unlockFooterLabel(0, 0))
+    }
+
+    @Test
+    fun `usage widget defaults to empty local data`() {
+        val data = WidgetData()
+        assertEquals("0m", weekTotalLabel(data.weekSeconds))
+        assertEquals(0L, data.monthTotalSeconds)
+        assertEquals("No unlocks yet", unlockCountLabel(data.unlocksToday))
+    }
 }

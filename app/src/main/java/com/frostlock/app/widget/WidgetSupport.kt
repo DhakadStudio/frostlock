@@ -101,6 +101,8 @@ object WidgetUpdater {
         render(context, DailyGoalWidgetProvider::class.java) { buildGoalViews(context, data) }
         render(context, WeeklyWidgetProvider::class.java) { buildWeekViews(context, data) }
         render(context, CalendarWidgetProvider::class.java) { buildCalendarViews(context, data) }
+        render(context, UsageWidgetProvider::class.java) { buildUsageViews(context, data) }
+        render(context, UnlockWidgetProvider::class.java) { buildUnlockViews(context, data) }
     }
 
     private fun render(
@@ -284,6 +286,46 @@ internal fun buildCalendarViews(context: Context, data: WidgetData): RemoteViews
     )
     views.setImageViewBitmap(R.id.calendar_grid, buildCalendarBitmap(data))
     bindOpenApp(context, views, R.id.calendar_root)
+    return views
+}
+
+internal fun buildUsageViews(context: Context, data: WidgetData): RemoteViews {
+    val views = RemoteViews(context.packageName, R.layout.widget_usage)
+
+    views.setTextViewText(R.id.usage_time, formatWidgetDuration(data.todaySeconds))
+    views.setTextViewText(
+        R.id.usage_sub,
+        goalRemainingLabel(data.todaySeconds, data.goalMinutes)
+    )
+    views.setProgressBar(
+        R.id.usage_progress,
+        100,
+        goalPercent(data.todaySeconds, data.goalMinutes),
+        false
+    )
+    views.setTextViewText(R.id.usage_week, weekTotalLabel(data.weekSeconds))
+    views.setTextViewText(
+        R.id.usage_month,
+        formatWidgetDuration(data.monthTotalSeconds)
+    )
+    views.setTextViewText(R.id.usage_unlocks, unlockCountLabel(data.unlocksToday))
+    bindOpenApp(context, views, R.id.usage_root)
+    return views
+}
+
+internal fun buildUnlockViews(context: Context, data: WidgetData): RemoteViews {
+    val views = RemoteViews(context.packageName, R.layout.widget_unlocks)
+
+    views.setTextViewText(R.id.unlock_count, data.unlocksToday.toString())
+    views.setTextViewText(
+        R.id.unlock_sub,
+        if (data.unlocksToday == 1) "phone unlock today" else "phone unlocks today"
+    )
+    views.setTextViewText(
+        R.id.unlock_footer,
+        unlockFooterLabel(data.todaySeconds, data.streak)
+    )
+    bindOpenApp(context, views, R.id.unlock_root)
     return views
 }
 

@@ -60,10 +60,11 @@ import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
 
 /**
- * Opt-in, fully local YouTube channel filtering. The accessibility service
- * reads the watch page's owner row (Subscribe button and channel avatar), so
- * a block list or a study allowlist can hold individual channels while focus
- * or a rule is active. Nothing leaves this device.
+ * Opt-in, fully local YouTube / YouTube Music channel filtering. The
+ * accessibility service reads the watch page's owner row (Subscribe button and
+ * channel avatar), so a block list or a study allowlist can hold individual
+ * channels while focus or a rule is active. Both apps share the same lists.
+ * Nothing leaves this device.
  */
 @Composable
 fun ChannelsScreen(
@@ -95,12 +96,12 @@ fun ChannelsScreen(
             Spacer(modifier = Modifier.width(4.dp))
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    text = "YouTube channels",
+                    text = "YouTube & Music",
                     style = MaterialTheme.typography.headlineMedium,
                     color = TextPrimary
                 )
                 Text(
-                    text = "Held only while focus is active",
+                    text = "Channel filtering, held only while focus is active",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary
                 )
@@ -180,10 +181,10 @@ fun ChannelsScreen(
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "The channel is read from the video's owner row, so " +
-                        "search results, recommendations and the home feed are " +
-                        "never judged by their channel. Only checked during a " +
-                        "focus session or an active schedule.",
+                    text = "The channel is read from the owner row on YouTube " +
+                        "and YouTube Music, so search results, recommendations " +
+                        "and the home feed are never judged by their channel. " +
+                        "Only checked during a focus session or an active schedule.",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary
                 )

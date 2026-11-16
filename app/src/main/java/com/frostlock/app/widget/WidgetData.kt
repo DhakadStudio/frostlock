@@ -102,5 +102,23 @@ fun monthMetaLabel(totalSeconds: Long, activeDays: Int): String {
     return "${formatWidgetDuration(totalSeconds)} · $activeDays $dayLabel"
 }
 
+/** Total focus time for the Monday-first week strip. */
+fun weekTotalLabel(weekSeconds: List<Long>): String =
+    formatWidgetDuration(weekSeconds.sumOf { it.coerceAtLeast(0L) })
+
+/** "No unlocks yet", "1 unlock" or "12 unlocks" for the unlock widgets. */
+fun unlockCountLabel(unlocks: Int): String = when {
+    unlocks <= 0 -> "No unlocks yet"
+    unlocks == 1 -> "1 unlock"
+    else -> "$unlocks unlocks"
+}
+
+/** Footer under the big unlock count: "Focus 1h 25m · 🔥 3-day streak". */
+fun unlockFooterLabel(todaySeconds: Long, streak: Int): String = buildString {
+    append("Focus ").append(formatWidgetDuration(todaySeconds))
+    append(" · ")
+    append(if (streak > 0) "\uD83D\uDD25 $streak-day streak" else "no streak yet")
+}
+
 private fun dayName(dayOfWeek: Int, style: TextStyle): String =
     DayOfWeek.of(dayOfWeek).getDisplayName(style, Locale.ENGLISH)

@@ -71,3 +71,35 @@ class CalendarWidgetProvider : AppWidgetProvider() {
         WidgetUpdater.refreshAsync(context)
     }
 }
+
+/** Today's focus, goal progress, week/month totals and phone unlocks. */
+class UsageWidgetProvider : AppWidgetProvider() {
+
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
+    ) {
+        val cached = WidgetCache.read(context)
+        appWidgetIds.forEach { id ->
+            appWidgetManager.updateAppWidget(id, buildUsageViews(context, cached))
+        }
+        WidgetUpdater.refreshAsync(context)
+    }
+}
+
+/** Dedicated phone-unlock count for today, with focus time and streak. */
+class UnlockWidgetProvider : AppWidgetProvider() {
+
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
+    ) {
+        val cached = WidgetCache.read(context)
+        appWidgetIds.forEach { id ->
+            appWidgetManager.updateAppWidget(id, buildUnlockViews(context, cached))
+        }
+        WidgetUpdater.refreshAsync(context)
+    }
+}

@@ -124,6 +124,30 @@
         </receiver>
 
         <receiver
+            android:name=".widget.UsageWidgetProvider"
+            android:exported="false"
+            android:label="@string/widget_usage_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/usage_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.UnlockWidgetProvider"
+            android:exported="false"
+            android:label="@string/widget_unlock_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/unlock_widget_info" />
+        </receiver>
+
+        <receiver
             android:name=".reminder.ScheduleReminderReceiver"
             android:exported="false" />
 

@@ -59,6 +59,8 @@ import com.frostlock.app.ui.components.SectionHeader
 import com.frostlock.app.widget.CalendarWidgetProvider
 import com.frostlock.app.widget.DailyGoalWidgetProvider
 import com.frostlock.app.widget.FocusWidgetProvider
+import com.frostlock.app.widget.UnlockWidgetProvider
+import com.frostlock.app.widget.UsageWidgetProvider
 import com.frostlock.app.widget.WeeklyWidgetProvider
 import com.frostlock.app.widget.WidgetPinning
 import com.frostlock.app.ui.theme.AccentFrost
@@ -432,7 +434,7 @@ fun ProfileScreen(
             }
         }
 
-        SectionHeader(title = "YouTube channels")
+        SectionHeader(title = "YouTube & Music channels")
         AppCard(modifier = Modifier.clickable(onClick = onOpenChannels)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -465,7 +467,7 @@ fun ProfileScreen(
                                 "Study list — only ${state.channelFilterCount} channel(s) play during focus."
                             state.channelFilterEnabled ->
                                 "Block list — ${state.channelFilterCount} channel(s) held during focus."
-                            else -> "Hold individual channels while focus is active."
+                            else -> "Hold channels on YouTube and YouTube Music while focus is active."
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextSecondary
@@ -978,7 +980,7 @@ fun ProfileScreen(
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Four widgets: today's focus, daily-goal progress, the week ahead, and a month heat-map. Everything stays on this device.",
+                        text = "Six widgets: today's focus, daily-goal progress, the week ahead, a month heat-map, daily usage, and phone unlocks. Everything stays on this device.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextSecondary
                     )
@@ -1006,6 +1008,14 @@ fun ProfileScreen(
                         text = "Focus calendar",
                         onClick = { WidgetPinning.request(context, CalendarWidgetProvider::class.java) }
                     )
+                    SecondaryButton(
+                        text = "Daily usage",
+                        onClick = { WidgetPinning.request(context, UsageWidgetProvider::class.java) }
+                    )
+                    SecondaryButton(
+                        text = "Phone unlocks",
+                        onClick = { WidgetPinning.request(context, UnlockWidgetProvider::class.java) }
+                    )
                 } else {
                     Text(
                         text = "Long-press your home screen → Widgets → FrostLock to add one.",
@@ -1019,8 +1029,8 @@ fun ProfileScreen(
         SectionHeader(title = "Coming soon")
         AppCard {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("•  Website & Shorts blocker", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
-                Text("•  Focus groups & leaderboards", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+                Text("•  Difficulty tiers (Gentle → Locked in)", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+                Text("•  Pause or schedule notification blocking", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
             }
         }
 

@@ -50,4 +50,16 @@
     <string name="widget_calendar_title">FOCUS CALENDAR</string>
     <string name="widget_calendar_month_placeholder">November 2026</string>
     <string name="widget_calendar_meta_placeholder">10h 31m · 12 active days</string>
+    <string name="widget_usage_name">Daily usage</string>
+    <string name="widget_usage_description">Today\'s focus time with your week, month and unlock totals.</string>
+    <string name="widget_usage_title">DAILY USAGE</string>
+    <string name="widget_usage_week_label">THIS WEEK</string>
+    <string name="widget_usage_month_label">THIS MONTH</string>
+    <string name="widget_usage_month_placeholder">10h 31m</string>
+    <string name="widget_usage_unlocks_label">UNLOCKS</string>
+    <string name="widget_unlock_name">Phone unlocks</string>
+    <string name="widget_unlock_description">How many times you picked up your phone today, with your focus time.</string>
+    <string name="widget_unlock_title">PHONE UNLOCKS</string>
+    <string name="widget_unlock_sub_placeholder">phone unlocks today</string>
+    <string name="widget_unlock_footer_placeholder">Focus 1h 25m · 🔥 3-day streak</string>
 </resources>
