@@ -22,6 +22,8 @@ class ScheduleRuleTest {
     private fun rule(
         days: Set<Int> = setOf(3),
         dates: Set<String> = emptySet(),
+        fromDate: String? = null,
+        untilDate: String? = null,
         start: Int = 9 * 60,
         end: Int = 17 * 60,
         packages: Set<String> = setOf("a"),
@@ -31,6 +33,8 @@ class ScheduleRuleTest {
         label = "Test",
         days = days,
         dates = dates,
+        fromDate = fromDate,
+        untilDate = untilDate,
         startMinutes = start,
         endMinutes = end,
         packages = packages,
@@ -83,6 +87,73 @@ class ScheduleRuleTest {
         assertTrue(oneOff.isActiveAt(at(20, 23)))
         assertTrue(oneOff.isActiveAt(at(21, 1)))
         assertFalse(oneOff.isActiveAt(at(21, 3)))
+    }
+
+    @Test
+    fun weeklyRuleStopsOutsideItsDateRange() {
+        val exam = rule(
+            days = setOf(3),
+            fromDate = "2026-11-05",
+            untilDate = "2026-11-19"
+        )
+
+        assertFalse(exam.isActiveAt(at(4, 10))) // Wednesday before the exam window
+        assertTrue(exam.isActiveAt(at(11, 10))) // Wednesday inside it
+        assertFalse(exam.isActiveAt(at(25, 10))) // Wednesday after it
+    }
+
+    @Test
+    fun oneOffDateMustAlsoFallInsideTheRange() {
+        val before = rule(
+            days = emptySet(),
+            dates = setOf("2026-11-10"),
+            fromDate = "2026-11-15",
+            untilDate = "2026-11-25"
+        )
+        val inside = rule(
+            days = emptySet(),
+            dates = setOf("2026-11-20"),
+            fromDate = "2026-11-15",
+            untilDate = "2026-11-25"
+        )
+        val after = rule(
+            days = emptySet(),
+            dates = setOf("2026-11-30"),
+            fromDate = "2026-11-15",
+            untilDate = "2026-11-25"
+        )
+
+        assertFalse(before.isActiveAt(at(10, 10)))
+        assertTrue(inside.isActiveAt(at(20, 10)))
+        assertFalse(after.isActiveAt(at(30, 10)))
+    }
+
+    @Test
+    fun openEndedRangeBoundsOnlyOneSide() {
+        val startsSoon = rule(days = setOf(3), fromDate = "2026-11-05")
+        val endsSoon = rule(days = setOf(3), untilDate = "2026-11-19")
+
+        assertFalse(startsSoon.isActiveAt(at(4, 10)))
+        assertTrue(startsSoon.isActiveAt(at(25, 10)))
+
+        assertTrue(endsSoon.isActiveAt(at(4, 10)))
+        assertFalse(endsSoon.isActiveAt(at(25, 10)))
+    }
+
+    @Test
+    fun overnightRuleRespectsTheDateRangeOnBothSides() {
+        val exam = rule(
+            days = setOf(3),
+            fromDate = "2026-11-05",
+            untilDate = "2026-11-19",
+            start = 22 * 60,
+            end = 2 * 60
+        )
+
+        assertTrue(exam.isActiveAt(at(11, 23))) // Wednesday night inside the window
+        assertTrue(exam.isActiveAt(at(12, 1))) // spill from that Wednesday
+        assertFalse(exam.isActiveAt(at(5, 1))) // spill from the Wednesday before the range
+        assertFalse(exam.isActiveAt(at(25, 23))) // Wednesday after the range
     }
 
     @Test

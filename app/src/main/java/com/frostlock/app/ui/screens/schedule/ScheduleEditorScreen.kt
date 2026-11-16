@@ -79,6 +79,7 @@ import com.frostlock.app.data.local.prefs.FocusSchedule
 import com.frostlock.app.data.local.prefs.FocusSubject
 import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.AppPickerDialog
+import com.frostlock.app.ui.components.FrostDatePickerDialog
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.BackgroundDark
@@ -95,6 +96,7 @@ import com.frostlock.app.ui.theme.WarnAmber
 import com.frostlock.app.ui.util.RuleOverlap
 import com.frostlock.app.ui.util.ruleOverlaps
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 
 private enum class TimeField { START, END }
@@ -138,22 +140,28 @@ fun ScheduleEditorScreen(
     var label by remember { mutableStateOf(initial?.label ?: "Focus") }
     var days by remember { mutableStateOf(initial?.days ?: WEEKDAYS) }
     var dates by remember { mutableStateOf(initial?.dates ?: emptySet()) }
+    var fromDate by remember { mutableStateOf(initial?.fromDate) }
+    var untilDate by remember { mutableStateOf(initial?.untilDate) }
     var packages by remember { mutableStateOf(initial?.packages ?: emptySet()) }
     var startMinutes by remember { mutableIntStateOf(initial?.startMinutes ?: 9 * 60) }
     var endMinutes by remember { mutableIntStateOf(initial?.endMinutes ?: 17 * 60) }
     var error by remember { mutableStateOf<String?>(null) }
     var appPickerOpen by remember { mutableStateOf(false) }
     var datePickerOpen by remember { mutableStateOf(false) }
+    var fromPickerOpen by remember { mutableStateOf(false) }
+    var untilPickerOpen by remember { mutableStateOf(false) }
     var timeField by remember { mutableStateOf<TimeField?>(null) }
 
     val appByPackage = remember(apps) { apps.associateBy { it.packageName } }
     val reusableSubjects = remember(subjects) { subjects.filter { it.hasApps } }
-    val draft = remember(initial?.id, label, days, dates, startMinutes, endMinutes) {
+    val draft = remember(initial?.id, label, days, dates, fromDate, untilDate, startMinutes, endMinutes) {
         FocusSchedule(
             id = initial?.id ?: 0L,
             label = label,
             days = if (dates.isEmpty()) days else emptySet(),
             dates = dates,
+            fromDate = fromDate,
+            untilDate = untilDate,
             startMinutes = startMinutes,
             endMinutes = endMinutes,
             enabled = true
@@ -161,7 +169,7 @@ fun ScheduleEditorScreen(
     }
     val overlaps = remember(draft, existing) { ruleOverlaps(draft, existing) }
     val save = {
-        val problem = validateRule(label, days, dates, startMinutes, endMinutes)
+        val problem = validateRule(label, days, dates, startMinutes, endMinutes, fromDate, untilDate)
         error = problem
         if (problem == null) {
             onSave(
@@ -170,6 +178,8 @@ fun ScheduleEditorScreen(
                     label = label.trim(),
                     days = if (dates.isEmpty()) days else emptySet(),
                     dates = dates,
+                    fromDate = fromDate,
+                    untilDate = untilDate,
                     startMinutes = startMinutes,
                     endMinutes = endMinutes,
                     packages = packages,
@@ -225,6 +235,21 @@ fun ScheduleEditorScreen(
                 },
                 onAddDate = { datePickerOpen = true },
                 onRemoveDate = { dates = dates - it }
+            )
+
+            DateRangeCard(
+                fromDate = fromDate,
+                untilDate = untilDate,
+                onPickFrom = { fromPickerOpen = true },
+                onPickUntil = { untilPickerOpen = true },
+                onClearFrom = {
+                    fromDate = null
+                    error = null
+                },
+                onClearUntil = {
+                    untilDate = null
+                    error = null
+                }
             )
 
             TimeCard(
@@ -310,6 +335,36 @@ fun ScheduleEditorScreen(
         ) {
             DatePicker(state = datePickerState)
         }
+    }
+
+    if (fromPickerOpen) {
+        FrostDatePickerDialog(
+            initialDate = fromDate ?: LocalDate.now().toString(),
+            title = "From date",
+            subtitle = "The rule starts on this date",
+            confirmLabel = "Set start",
+            onDismiss = { fromPickerOpen = false },
+            onConfirm = {
+                fromDate = it
+                fromPickerOpen = false
+                error = null
+            }
+        )
+    }
+
+    if (untilPickerOpen) {
+        FrostDatePickerDialog(
+            initialDate = untilDate ?: fromDate ?: LocalDate.now().toString(),
+            title = "Until date",
+            subtitle = "The rule stops after this date",
+            confirmLabel = "Set end",
+            onDismiss = { untilPickerOpen = false },
+            onConfirm = {
+                untilDate = it
+                untilPickerOpen = false
+                error = null
+            }
+        )
     }
 
     timeField?.let { field ->
@@ -683,6 +738,109 @@ private fun RepeatCard(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun DateRangeCard(
+    fromDate: String?,
+    untilDate: String?,
+    onPickFrom: () -> Unit,
+    onPickUntil: () -> Unit,
+    onClearFrom: () -> Unit,
+    onClearUntil: () -> Unit
+) {
+    AppCard {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            SectionTitle(
+                icon = Icons.Default.CalendarMonth,
+                title = "Exam window",
+                subtitle = when {
+                    fromDate == null && untilDate == null -> "Optional: leave open for a permanent rule"
+                    else -> "Only runs between these dates"
+                }
+            )
+
+            RangeDateRow(
+                label = "FROM",
+                date = fromDate,
+                emptyText = "Any start",
+                onPick = onPickFrom,
+                onClear = onClearFrom
+            )
+
+            RangeDateRow(
+                label = "UNTIL",
+                date = untilDate,
+                emptyText = "No end",
+                onPick = onPickUntil,
+                onClear = onClearUntil
+            )
+
+            if (fromDate != null && untilDate != null) {
+                Text(
+                    text = "Runs ${formatDate(fromDate)} – ${formatDate(untilDate)}, then stops.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RangeDateRow(
+    label: String,
+    date: String?,
+    emptyText: String,
+    onPick: () -> Unit,
+    onClear: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(SurfaceHigh)
+            .border(1.dp, StrokeSoft, RoundedCornerShape(14.dp))
+            .clickable(onClick = onPick)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = TextSecondary
+            )
+            Text(
+                text = date?.let { formatDate(it) } ?: emptyText,
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (date == null) TextSecondary else TextPrimary
+            )
+        }
+        if (date != null) {
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .clickable(onClick = onClear),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Clear $label date",
+                    tint = TextSecondary,
+                    modifier = Modifier.size(15.dp)
+                )
+            }
+        } else {
+            Icon(
+                imageVector = Icons.Default.CalendarMonth,
+                contentDescription = null,
+                tint = AccentFrost,
+                modifier = Modifier.size(18.dp)
+            )
         }
     }
 }
@@ -1157,11 +1315,15 @@ internal fun validateRule(
     days: Set<Int>,
     dates: Set<String>,
     startMinutes: Int,
-    endMinutes: Int
+    endMinutes: Int,
+    fromDate: String? = null,
+    untilDate: String? = null
 ): String? = when {
     label.isBlank() -> "Give this rule a name."
     days.isEmpty() && dates.isEmpty() -> "Pick at least one day or date."
     startMinutes == endMinutes -> "Start and end can't be the same."
+    fromDate != null && untilDate != null && untilDate < fromDate ->
+        "The end date can't be before the start date."
     else -> null
 }
 

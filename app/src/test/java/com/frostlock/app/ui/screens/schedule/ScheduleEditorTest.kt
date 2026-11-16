@@ -84,8 +84,47 @@ class ScheduleEditorTest {
     }
 
     @Test
+    fun dateRangeIsValidWhenOrdered() {
+        assertNull(
+            validateRule(
+                "Exam",
+                setOf(1, 2, 3, 4, 5),
+                emptySet(),
+                9 * 60,
+                17 * 60,
+                fromDate = "2026-11-01",
+                untilDate = "2026-11-30"
+            )
+        )
+    }
+
+    @Test
+    fun reversedDateRangeIsRejected() {
+        assertEquals(
+            "The end date can't be before the start date.",
+            validateRule(
+                "Exam",
+                setOf(1, 2, 3, 4, 5),
+                emptySet(),
+                9 * 60,
+                17 * 60,
+                fromDate = "2026-11-30",
+                untilDate = "2026-11-01"
+            )
+        )
+    }
+
+    @Test
     fun completeRuleIsValid() {
         assertNull(validateRule("Focus", setOf(1, 2, 3, 4, 5), emptySet(), 9 * 60, 17 * 60))
+    }
+
+    @Test
+    fun dateRangeSummaryNamesBothEnds() {
+        assertEquals("18 Nov – 20 Nov", dateRangeSummary("2026-11-18", "2026-11-20"))
+        assertEquals("From 18 Nov", dateRangeSummary("2026-11-18", null))
+        assertEquals("Until 20 Nov", dateRangeSummary(null, "2026-11-20"))
+        assertNull(dateRangeSummary(null, null))
     }
 
     @Test

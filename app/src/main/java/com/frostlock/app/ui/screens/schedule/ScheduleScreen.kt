@@ -336,6 +336,13 @@ private fun ScheduleRow(
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextSecondary
                     )
+                    dateRangeSummary(schedule.fromDate, schedule.untilDate)?.let { range ->
+                        Text(
+                            text = range,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary
+                        )
+                    }
                     Text(
                         text = "${formatTime(schedule.startMinutes)} – ${formatTime(schedule.endMinutes)}",
                         style = MaterialTheme.typography.bodyMedium,
@@ -506,6 +513,14 @@ internal fun formatTime(minutes: Int): String =
 internal fun formatDate(iso: String): String = runCatching {
     LocalDate.parse(iso).format(DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH))
 }.getOrDefault(iso)
+
+/** Optional exam-month fence shown under the repeat line on a rule card. */
+internal fun dateRangeSummary(fromDate: String?, untilDate: String?): String? = when {
+    fromDate != null && untilDate != null -> "${formatDate(fromDate)} – ${formatDate(untilDate)}"
+    fromDate != null -> "From ${formatDate(fromDate)}"
+    untilDate != null -> "Until ${formatDate(untilDate)}"
+    else -> null
+}
 
 internal fun daysSummary(days: Set<Int>): String {
     if (days.isEmpty()) return "No days selected"

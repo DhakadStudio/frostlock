@@ -13,10 +13,13 @@ import javax.inject.Singleton
 /**
  * A blocking rule during which its own set of apps stays locked.
  *
- * Two ways to scope a rule:
+ * Three ways to scope a rule:
  * - [days] repeats weekly (uses [java.time.DayOfWeek] values, 1 = Monday … 7 = Sunday).
  * - [dates] runs once on each specific calendar date (ISO-8601, e.g. `2026-11-20`).
  *   When [dates] is non-empty it wins over [days], which is what "one-off" means.
+ * - [fromDate] / [untilDate] (optional ISO-8601 dates) fence the whole rule —
+ *   weekly days and one-off dates alike — to a calendar range, e.g. one exam
+ *   month. Null means unbounded on that side.
  *
  * [startMinutes] / [endMinutes] are minutes from midnight. When start > end the
  * window runs overnight into the next day.
@@ -30,6 +33,8 @@ data class FocusSchedule(
     val label: String,
     val days: Set<Int> = emptySet(),
     val dates: Set<String> = emptySet(),
+    val fromDate: String? = null,
+    val untilDate: String? = null,
     val startMinutes: Int,
     val endMinutes: Int,
     val packages: Set<String> = emptySet(),
@@ -42,9 +47,21 @@ data class ActiveSchedule(
     val endsAtMillis: Long
 )
 
-/** True when this rule is scoped to [date], by explicit date or by weekday. */
-fun FocusSchedule.appliesOn(date: LocalDate): Boolean =
-    if (dates.isNotEmpty()) date.toString() in dates else date.dayOfWeek.value in days
+/**
+ * True when this rule is scoped to [date]: the optional from/until range must
+ * contain it, and the weekday (or one-off date) must match. The range check
+ * lives here so both the normal and the overnight path of [isActiveAt] respect
+ * it — an exam-month fence stops a rule even when its weekday repeats on.
+ */
+fun FocusSchedule.appliesOn(date: LocalDate): Boolean {
+    val from = fromDate?.let { parsedDate(it) }
+    val until = untilDate?.let { parsedDate(it) }
+    if (from != null && date < from) return false
+    if (until != null && date > until) return false
+    return if (dates.isNotEmpty()) date.toString() in dates else date.dayOfWeek.value in days
+}
+
+private fun parsedDate(raw: String): LocalDate? = runCatching { LocalDate.parse(raw) }.getOrNull()
 
 /**
  * True when this rule locks [packageName]. An empty app set falls back to
@@ -154,6 +171,8 @@ class ScheduleStore @Inject constructor(@ApplicationContext context: Context) {
             label = optString(KEY_LABEL, "Focus"),
             days = days,
             dates = dates,
+            fromDate = optString(KEY_FROM_DATE).takeIf { it.isNotBlank() },
+            untilDate = optString(KEY_UNTIL_DATE).takeIf { it.isNotBlank() },
             startMinutes = optInt(KEY_START),
             endMinutes = optInt(KEY_END),
             packages = packages,
@@ -166,6 +185,8 @@ class ScheduleStore @Inject constructor(@ApplicationContext context: Context) {
         put(KEY_LABEL, label)
         put(KEY_DAYS, JSONArray(days.sorted()))
         put(KEY_DATES, JSONArray(dates.sorted()))
+        fromDate?.let { put(KEY_FROM_DATE, it) }
+        untilDate?.let { put(KEY_UNTIL_DATE, it) }
         put(KEY_START, startMinutes)
         put(KEY_END, endMinutes)
         put(KEY_PACKAGES, JSONArray(packages.sorted()))
@@ -179,6 +200,8 @@ class ScheduleStore @Inject constructor(@ApplicationContext context: Context) {
         private const val KEY_LABEL = "label"
         private const val KEY_DAYS = "days"
         private const val KEY_DATES = "dates"
+        private const val KEY_FROM_DATE = "from_date"
+        private const val KEY_UNTIL_DATE = "until_date"
         private const val KEY_PACKAGES = "packages"
         private const val KEY_START = "start"
         private const val KEY_END = "end"
