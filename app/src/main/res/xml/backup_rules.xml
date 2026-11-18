@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample backup rules file; uncomment and customize as necessary.
-   See https://developer.android.com/guide/topics/data/autobackup
-   for details.
-   Note: This file is ignored for devices older than API 31
-   See https://developer.android.com/about/versions/12/backup-restore
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   FrostLock stores everything locally: focus history (Room), preferences
+   (DataStore / SharedPreferences) and nothing else. No credentials, no
+   tokens. Back all of it up so a device wipe, broken screen or accidental
+   uninstall (see docs/frostlock-redesign-qa-audit.md §9 incident note)
+   does not silently destroy the user's streaks and history.
+   Used on devices before Android 12 (fullBackupContent).
 -->
 <full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
+    <include domain="database" path="."/>
+    <include domain="sharedpref" path="."/>
 </full-backup-content>
