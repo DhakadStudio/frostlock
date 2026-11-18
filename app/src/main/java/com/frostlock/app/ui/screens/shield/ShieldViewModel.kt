@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 
-/** What Shield shows at a glance before Phase 3 replaces the old detail screens. */
+/** What Shield shows at a glance. */
 data class ShieldState(
     val appsEnabled: Boolean = false,
     val appsCount: Int = 0,

@@ -147,7 +147,7 @@ fun ScheduleScreen(
         item {
             AppCard {
                 Text(
-                    text = "Each rule blocks its own set of apps, so “Study” and “Work” can lock different apps at different times. Rules run independently of the focus-blocking switch.",
+                    text = "Each rule blocks its own set of apps, so “Study” and “Work” can lock different apps at different times. Rules run independently of the focus-blocking switch. When rules overlap, every matching rule applies.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = AccentFrost
                 )

@@ -4,18 +4,21 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.frostlock.app.ui.screens.block.BlockScreen
 import com.frostlock.app.ui.screens.channels.ChannelsScreen
 import com.frostlock.app.ui.screens.notifications.NotificationsScreen
 import com.frostlock.app.ui.screens.schedule.ScheduleScreen
+import com.frostlock.app.ui.screens.shield.AdvancedScreen
+import com.frostlock.app.ui.screens.shield.AppsScreen
+import com.frostlock.app.ui.screens.shield.LimitsScreen
 import com.frostlock.app.ui.screens.shield.ShieldScreen
 import com.frostlock.app.ui.screens.websites.WebsitesScreen
 
 /**
  * Shield tab: everything that blocks, limits or holds.
  *
- * Phase 2 keeps the old detail screens behind the new hub. Apps and Limits both
- * open the existing Block screen until Phase 3 splits it in two.
+ * The hub shows live status and opens one screen per protection feature. Each
+ * screen owns one job, so apps, limits, schedules, websites, channels and
+ * notifications never share a page.
  */
 fun NavGraphBuilder.shieldNavGraph(navController: NavHostController) {
     navigation(
@@ -34,23 +37,17 @@ fun NavGraphBuilder.shieldNavGraph(navController: NavHostController) {
         }
 
         composable(Destinations.Shield.APPS) {
-            BlockScreen(
-                onOpenSchedules = { navController.navigateOnce(Destinations.Shield.SCHEDULES) },
-                onOpenNotifications = { navController.navigateOnce(Destinations.Shield.NOTIFICATIONS) },
-                onOpenWebsites = { navController.navigateOnce(Destinations.Shield.WEBSITES) }
+            AppsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenAdvanced = { navController.navigateOnce(Destinations.Shield.ADVANCED) }
             )
         }
-
+        composable(Destinations.Shield.ADVANCED) {
+            AdvancedScreen(onBack = { navController.popBackStack() })
+        }
         composable(Destinations.Shield.LIMITS) {
-            // Phase 3 splits limits out of BlockScreen; until then both routes
-            // share the same screen so no control disappears during migration.
-            BlockScreen(
-                onOpenSchedules = { navController.navigateOnce(Destinations.Shield.SCHEDULES) },
-                onOpenNotifications = { navController.navigateOnce(Destinations.Shield.NOTIFICATIONS) },
-                onOpenWebsites = { navController.navigateOnce(Destinations.Shield.WEBSITES) }
-            )
+            LimitsScreen(onBack = { navController.popBackStack() })
         }
-
         composable(Destinations.Shield.SCHEDULES) {
             ScheduleScreen(onBack = { navController.popBackStack() })
         }

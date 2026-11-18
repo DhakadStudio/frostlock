@@ -17,6 +17,7 @@ class DestinationsTest {
         Destinations.Shield.GRAPH,
         Destinations.Shield.HOME,
         Destinations.Shield.APPS,
+        Destinations.Shield.ADVANCED,
         Destinations.Shield.LIMITS,
         Destinations.Shield.SCHEDULES,
         Destinations.Shield.WEBSITES,
@@ -72,6 +73,7 @@ class DestinationsTest {
     fun `standard detail screens keep the navigation bar`() {
         val details = listOf(
             Destinations.Shield.APPS,
+            Destinations.Shield.ADVANCED,
             Destinations.Shield.LIMITS,
             Destinations.Shield.SCHEDULES,
             Destinations.Shield.WEBSITES,

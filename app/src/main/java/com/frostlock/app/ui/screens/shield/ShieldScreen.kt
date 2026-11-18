@@ -84,7 +84,7 @@ fun ShieldScreen(
             )
             Spacer(modifier = Modifier.height(FrostTheme.spacing.sm))
             Text(
-                text = shieldHeadline(state),
+                text = ShieldStatus.headline(state),
                 style = FrostTheme.typography.headlineMedium,
                 color = FrostTheme.colors.textPrimary
             )
@@ -143,7 +143,7 @@ fun ShieldScreen(
         )) {
             StatusRow(
                 title = "Apps",
-                status = appsStatus(state),
+                status = ShieldStatus.apps(state),
                 icon = Icons.Filled.Apps,
                 statusColor = statusColor(state.blockingReady),
                 onClick = onOpenApps
@@ -156,25 +156,25 @@ fun ShieldScreen(
             )
             StatusRow(
                 title = "Schedules",
-                status = schedulesStatus(state),
+                status = ShieldStatus.schedules(state),
                 icon = Icons.Filled.CalendarMonth,
                 onClick = onOpenSchedules
             )
             StatusRow(
                 title = "Websites",
-                status = websitesStatus(state),
+                status = ShieldStatus.websites(state),
                 icon = Icons.Filled.Language,
                 onClick = onOpenWebsites
             )
             StatusRow(
                 title = "Channels",
-                status = channelsStatus(state),
+                status = ShieldStatus.channels(state),
                 icon = Icons.Filled.VideoLibrary,
                 onClick = onOpenChannels
             )
             StatusRow(
                 title = "Notifications",
-                status = notificationsStatus(state),
+                status = ShieldStatus.notifications(state),
                 icon = Icons.Filled.Notifications,
                 statusColor = statusColor(!state.notificationsEnabled || state.notificationsReady),
                 onClick = onOpenNotifications
@@ -183,47 +183,6 @@ fun ShieldScreen(
 
         Spacer(modifier = Modifier.height(FrostTheme.spacing.huge))
     }
-}
-
-private fun shieldHeadline(state: ShieldState): String = when {
-    !state.blockingReady -> "Access is off"
-    state.activeSchedules > 0 -> {
-        val count = state.activeSchedules
-        "$count ${if (count == 1) "schedule" else "schedules"} active"
-    }
-    else -> "Ready"
-}
-
-private fun appsStatus(state: ShieldState): String = when {
-    !state.blockingReady -> "Off — access needed"
-    !state.appsEnabled -> "Off"
-    state.appsCount == 0 -> "On · no apps selected"
-    else -> "On · ${state.appsCount} apps selected"
-}
-
-private fun schedulesStatus(state: ShieldState): String = when {
-    state.activeSchedules > 0 -> "${state.activeSchedules} active"
-    state.schedulesCount == 0 -> "No schedules"
-    else -> "${state.schedulesCount} schedules"
-}
-
-private fun websitesStatus(state: ShieldState): String = when {
-    !state.websitesEnabled -> "Off"
-    state.websitesCount == 0 -> "On · empty list"
-    else -> "${state.websitesCount} sites"
-}
-
-private fun channelsStatus(state: ShieldState): String = when {
-    !state.channelsEnabled -> "Off"
-    state.channelsCount == 0 -> "On · empty list"
-    else -> "${state.channelsCount} channels"
-}
-
-private fun notificationsStatus(state: ShieldState): String = when {
-    !state.notificationsEnabled -> "Off"
-    !state.notificationsReady -> "On · access needed"
-    state.notificationsHeld == 0 -> "On · nothing held yet"
-    else -> "On · ${state.notificationsHeld} held"
 }
 
 @Composable

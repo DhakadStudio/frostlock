@@ -40,9 +40,6 @@ data class ProfileUiState(
     val themeKey: String = IcePalettes.Frost.key,
     val deadline: FocusDeadline? = null,
     val goalCount: Int = 0,
-    val homeBlockingEnabled: Boolean = false,
-    val youtubeHomeBlockingEnabled: Boolean = false,
-    val playStoreBlockingEnabled: Boolean = false,
     val channelFilterEnabled: Boolean = false,
     val channelAllowOnly: Boolean = false,
     val channelFilterCount: Int = 0
@@ -53,17 +50,10 @@ class ProfileViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val focusSettings: FocusSettings,
     private val themeStore: ThemeStore,
-    private val blockingPrefs: com.frostlock.app.data.local.prefs.BlockingPreferences,
     channelStore: YouTubeChannelStore,
     deadlineStore: DeadlineStore,
     goalStore: FocusGoalStore
 ) : ViewModel() {
-
-    private val homeBlockingFlow = kotlinx.coroutines.flow.MutableStateFlow(blockingPrefs.isHomeBlockingEnabled())
-    private val youtubeHomeBlockingFlow =
-        kotlinx.coroutines.flow.MutableStateFlow(blockingPrefs.isYouTubeHomeBlockingEnabled())
-    private val playStoreBlockingFlow =
-        kotlinx.coroutines.flow.MutableStateFlow(blockingPrefs.isPlayStoreBlockingEnabled())
 
     private val channelFilterSummary = combine(
         channelStore.enabled,
@@ -104,12 +94,6 @@ class ProfileViewModel @Inject constructor(
         state.copy(maxPauses = pauses)
     }.combine(themeStore.paletteKey) { state, themeKey ->
         state.copy(themeKey = themeKey)
-    }.combine(homeBlockingFlow) { state, homeBlocking ->
-        state.copy(homeBlockingEnabled = homeBlocking)
-    }.combine(youtubeHomeBlockingFlow) { state, youtubeHome ->
-        state.copy(youtubeHomeBlockingEnabled = youtubeHome)
-    }.combine(playStoreBlockingFlow) { state, playStore ->
-        state.copy(playStoreBlockingEnabled = playStore)
     }.combine(channelFilterSummary) { state, channels ->
         state.copy(
             channelFilterEnabled = channels.enabled,
@@ -137,21 +121,6 @@ class ProfileViewModel @Inject constructor(
     fun setFocusGuardEnabled(enabled: Boolean) = focusSettings.setFocusGuardEnabled(enabled)
 
     fun setBubbleEnabled(enabled: Boolean) = focusSettings.setBubbleEnabled(enabled)
-
-    fun setHomeBlockingEnabled(enabled: Boolean) {
-        blockingPrefs.setHomeBlockingEnabled(enabled)
-        homeBlockingFlow.value = enabled
-    }
-
-    fun setYouTubeHomeBlockingEnabled(enabled: Boolean) {
-        blockingPrefs.setYouTubeHomeBlockingEnabled(enabled)
-        youtubeHomeBlockingFlow.value = enabled
-    }
-
-    fun setPlayStoreBlockingEnabled(enabled: Boolean) {
-        blockingPrefs.setPlayStoreBlockingEnabled(enabled)
-        playStoreBlockingFlow.value = enabled
-    }
 
     fun setDailyGoalMinutes(minutes: Int) {
         focusSettings.setDailyGoalMinutes(minutes)

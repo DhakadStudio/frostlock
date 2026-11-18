@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -58,6 +59,7 @@ import com.frostlock.app.ui.theme.SuccessGreen
 import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
+import com.frostlock.app.ui.theme.WarnAmber
 
 /**
  * Opt-in, fully local YouTube / YouTube Music channel filtering. The
@@ -214,6 +216,34 @@ fun ChannelsScreen(
                         text = "Study list",
                         selected = state.allowOnly,
                         onClick = { viewModel.setAllowOnly(true) }
+                    )
+                }
+            }
+        }
+
+        if (state.enabled && state.allowOnly && state.allowed.isEmpty()) {
+            AppCard {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .background(WarnAmber.copy(alpha = 0.18f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = WarnAmber,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "The study list is empty, so every channel is held while " +
+                            "filtering is on. Add a channel, or switch to the block list.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = WarnAmber
                     )
                 }
             }

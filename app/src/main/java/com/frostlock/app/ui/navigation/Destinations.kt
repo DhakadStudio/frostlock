@@ -24,6 +24,7 @@ object Destinations {
         const val GRAPH = "shield"
         const val HOME = "shield/home"
         const val APPS = "shield/apps"
+        const val ADVANCED = "shield/apps/advanced"
         const val LIMITS = "shield/limits"
         const val SCHEDULES = "shield/schedules"
         const val WEBSITES = "shield/websites"
