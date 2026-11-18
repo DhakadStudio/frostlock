@@ -37,6 +37,8 @@ class DestinationsTest {
         Destinations.You.GOAL_EDITOR,
         Destinations.You.COUNTDOWN,
         Destinations.You.WIDGETS,
+        Destinations.You.PRIVACY,
+        Destinations.You.ABOUT,
         Destinations.You.DESIGN_PREVIEW
     )
 
@@ -87,6 +89,8 @@ class DestinationsTest {
             Destinations.You.GOALS,
             Destinations.You.COUNTDOWN,
             Destinations.You.WIDGETS,
+            Destinations.You.PRIVACY,
+            Destinations.You.ABOUT,
             Destinations.You.DESIGN_PREVIEW
         )
 

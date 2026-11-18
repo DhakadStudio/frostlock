@@ -11,14 +11,16 @@ import com.frostlock.app.ui.screens.goals.GoalEditorScreen
 import com.frostlock.app.ui.screens.goals.GoalEditorViewModel
 import com.frostlock.app.ui.screens.goals.GoalsScreen
 import com.frostlock.app.ui.screens.preview.DesignPreviewScreen
+import com.frostlock.app.ui.screens.profile.AboutScreen
+import com.frostlock.app.ui.screens.profile.PrivacyScreen
 import com.frostlock.app.ui.screens.profile.ProfileScreen
+import com.frostlock.app.ui.screens.widgets.WidgetsScreen
 
 /**
- * You tab: preferences, planning, appearance and widgets.
+ * You tab: preferences, planning, appearance and privacy.
  *
- * Profile still carries a few links that Phase 5 removes (Reflections, Weekly
- * review, Channels). They point at their new homes now so the routes do not
- * change when the page is cleaned up.
+ * Settings-only. Blocking lives in Shield and insights live in Insights, so no
+ * row here duplicates another tab.
  */
 fun NavGraphBuilder.youNavGraph(navController: NavHostController) {
     navigation(
@@ -27,23 +29,20 @@ fun NavGraphBuilder.youNavGraph(navController: NavHostController) {
     ) {
         composable(Destinations.You.HOME) {
             ProfileScreen(
-                onNavigateToDesignPreview = {
-                    navController.navigateOnce(Destinations.You.DESIGN_PREVIEW)
-                },
-                onOpenDiary = {
-                    navController.navigateOnce(Destinations.Insights.REFLECTIONS)
-                },
-                onOpenWeeklyReport = {
-                    navController.navigateOnce(Destinations.Insights.WEEKLY)
+                onOpenGoals = {
+                    navController.navigateOnce(Destinations.You.GOALS)
                 },
                 onOpenDeadline = {
                     navController.navigateOnce(Destinations.You.COUNTDOWN)
                 },
-                onOpenGoals = {
-                    navController.navigateOnce(Destinations.You.GOALS)
+                onOpenWidgets = {
+                    navController.navigateOnce(Destinations.You.WIDGETS)
                 },
-                onOpenChannels = {
-                    navController.navigateOnce(Destinations.Shield.CHANNELS)
+                onOpenPrivacy = {
+                    navController.navigateOnce(Destinations.You.PRIVACY)
+                },
+                onOpenAbout = {
+                    navController.navigateOnce(Destinations.You.ABOUT)
                 }
             )
         }
@@ -74,6 +73,28 @@ fun NavGraphBuilder.youNavGraph(navController: NavHostController) {
 
         composable(Destinations.You.COUNTDOWN) {
             DeadlineScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Destinations.You.WIDGETS) {
+            WidgetsScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Destinations.You.PRIVACY) {
+            PrivacyScreen(
+                onBack = { navController.popBackStack() },
+                onOpenShield = {
+                    navController.navigateToTab(Destinations.Shield.HOME)
+                }
+            )
+        }
+
+        composable(Destinations.You.ABOUT) {
+            AboutScreen(
+                onBack = { navController.popBackStack() },
+                onOpenDesignPreview = {
+                    navController.navigateOnce(Destinations.You.DESIGN_PREVIEW)
+                }
+            )
         }
 
         composable(Destinations.You.DESIGN_PREVIEW) {

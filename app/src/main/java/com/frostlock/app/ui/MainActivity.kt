@@ -1,20 +1,15 @@
 package com.frostlock.app.ui
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.core.content.ContextCompat
 import com.frostlock.app.capability.CapabilityRepository
 import com.frostlock.app.data.local.prefs.AppLimitStore
 import com.frostlock.app.data.local.prefs.UnlockStore
@@ -39,15 +34,14 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var limitStore: AppLimitStore
     @Inject lateinit var unlockStore: UnlockStore
 
-    private val notificationPermission =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         WidgetUpdater.refreshAsync(this)
         scheduleReminders.rescheduleAll()
-        requestNotificationPermissionIfNeeded()
+        // Permission asks happen in context: You → Session alerts for
+        // notifications, and the feature that needs overlay or accessibility.
+        // Never on cold start, before onboarding has explained anything.
         // Seed the legacy palette before the first frame so a saved non-default
         // theme does not flash Frost on launch. New code reads the token
         // CompositionLocal, which FrostLockTheme provides immediately.
@@ -81,16 +75,5 @@ class MainActivity : ComponentActivity() {
         todayProvider.refresh()
         limitStore.onDateChanged()
         unlockStore.refresh()
-    }
-
-    private fun requestNotificationPermissionIfNeeded() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
-        val granted = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.POST_NOTIFICATIONS
-        ) == PackageManager.PERMISSION_GRANTED
-        if (!granted) {
-            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
     }
 }
