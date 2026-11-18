@@ -6,12 +6,9 @@ import androidx.compose.ui.graphics.Color
 /**
  * Semantic colour roles for the redesign.
  *
- * Screens should ask for a role (surface, text, danger), never for a palette
- * slot. That is what lets a palette change, or a future light theme, restyle
- * every screen without touching a composable.
- *
- * The legacy top-level colours in `Color.kt` remain as deprecated aliases until
- * each screen is migrated; new code uses [FrostTheme.colors].
+ * Screens ask for a role (surface, text, danger), never for a palette slot.
+ * That is what lets a palette change, or a future light theme, restyle every
+ * screen without touching a composable.
  */
 @Immutable
 data class FrostColors(
@@ -25,6 +22,7 @@ data class FrostColors(
     val onPrimary: Color,
     val secondary: Color,
     val tertiary: Color,
+    val glacier: Color,
     val outline: Color,
     val textPrimary: Color,
     val textSecondary: Color,
@@ -47,12 +45,13 @@ data class FrostColors(
             onPrimary = palette.ink,
             secondary = palette.accent,
             tertiary = palette.glow,
+            glacier = palette.glacier,
             outline = palette.strokeSoft,
             textPrimary = palette.textPrimary,
             textSecondary = palette.textSecondary,
-            success = SuccessGreen,
-            warning = WarnAmber,
-            danger = DangerRed,
+            success = Color(0xFF2DD4BF),
+            warning = Color(0xFFFCD34D),
+            danger = Color(0xFFFB7185),
             actionGradient = listOf(palette.primary, palette.glacier),
             heroGradient = listOf(
                 palette.glacier.copy(alpha = 0.55f),

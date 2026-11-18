@@ -2,6 +2,7 @@ package com.frostlock.app.ui.theme
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import androidx.compose.ui.graphics.Color
 import org.junit.Test
 
 class FrostColorsTest {
@@ -17,6 +18,7 @@ class FrostColorsTest {
             assertEquals(palette.textPrimary, colors.textPrimary)
             assertEquals(palette.textSecondary, colors.textSecondary)
             assertEquals(palette.ink, colors.onPrimary)
+            assertEquals(palette.glacier, colors.glacier)
         }
     }
 
@@ -36,9 +38,9 @@ class FrostColorsTest {
     fun `feedback roles are shared across palettes`() {
         IcePalettes.all.forEach { palette ->
             val colors = FrostColors.from(palette)
-            assertEquals(SuccessGreen, colors.success)
-            assertEquals(WarnAmber, colors.warning)
-            assertEquals(DangerRed, colors.danger)
+            assertEquals(Color(0xFF2DD4BF), colors.success)
+            assertEquals(Color(0xFFFCD34D), colors.warning)
+            assertEquals(Color(0xFFFB7185), colors.danger)
         }
     }
 

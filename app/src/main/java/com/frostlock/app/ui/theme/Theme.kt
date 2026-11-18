@@ -17,9 +17,8 @@ fun FrostLockTheme(
 ) {
     val colors = remember(palette) { FrostColors.from(palette) }
 
-    // Deprecated compatibility shim. Screens written before the token migration
-    // read the top-level colours in Color.kt, which still point at this state.
-    // New code reads FrostTheme.colors from the CompositionLocal below.
+    // Keep the shared palette state in sync so previews and the activity's
+    // initial frame agree on the palette. Real callers pass `palette` explicitly.
     SideEffect { FrostThemeState.palette = palette }
 
     val colorScheme = darkColorScheme(

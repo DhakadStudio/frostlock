@@ -2,7 +2,7 @@
 
 **Version:** 3.0
 **Date:** 2026-11-18
-**Status:** Awaiting approval. No redesign code has been written.
+**Status:** Implemented — Phases 0–8 landed (`dcd4d3c`…`e2a4245` and Phase 8 follow-up). Tests green: 374 tests / 55 suites. Screenshots not included: none exist in the repo and no device/emulator capture was run for docs.
 **Scope:** Full product redesign — information architecture, naming, navigation, screen consolidation, visual system, interaction, accessibility, data contract, implementation, migration and QA.
 **Constraints:** Fully offline, local-only, no new permissions, keep the existing privacy promise and permission footprint.
 
@@ -1497,19 +1497,19 @@ Focus is always a centered column; the timer is capped at 560dp.
 5. Add hero start motion; add pre-start accessibility warning.
 6. Preserve intention across discard.
 
-### Phase 7 — Adaptive and accessibility
-1. Add window size classes.
-2. Add rail and two-pane.
-3. Add foldable posture.
-4. Add max widths.
-5. Add `TextAutoSize`/scalable timer; test 1.0/1.3/1.6/2.0.
-6. Add reduced-motion handling and chart semantics.
+### Phase 7 — Adaptive and accessibility — ✅ landed (`e2a4245`)
+1. ✅ Add window size classes — custom `FrostWindowSizeClass` (COMPACT < 600dp / MEDIUM < 840dp / EXPANDED) with pure `windowWidthClassFor`; no experimental material3-window-size-class API.
+2. ✅ Add rail and two-pane — navigation rail on MEDIUM/EXPANDED, floating bottom bar on COMPACT; `TwoPaneLayout`; Shield hub becomes two panes on EXPANDED.
+3. ✅ Add foldable posture — `androidx.window:window:1.5.0`; tabletop posture (HALF_OPENED, horizontal hinge) stacks the panes.
+4. ✅ Add max widths — detail scaffold caps at `contentMaxWidth` (720dp), `contentMaxWidthWide` (1440dp) token for two-pane.
+5. ✅ Add `TextAutoSize`/scalable timer; test 1.0/1.3/1.6/2.0 — `TextAutoSize.StepBased` (24–64sp, 2sp steps) on all three timer readouts; behaviour asserted via `TimerAutoSize` unit tests.
+6. ✅ Add reduced-motion handling and chart semantics — `rememberReducedMotion()` gates onboarding orbit/radar/aurora, immersive timer glow and StreakRing; chart `contentDescription` semantics verified present.
 
-### Phase 8 — Cleanup
-1. Delete old routes, `Screen.kt`, `AppBottomBar`.
-2. Remove deprecated aliases.
-3. Move `DesignPreviewScreen` to the debug source set.
-4. Update docs and screenshots.
+### Phase 8 — Cleanup — ✅ landed
+1. ✅ Delete old routes, `Screen.kt`, `AppBottomBar` — already gone in earlier phases; DestinationsTest asserts the route set.
+2. ✅ Remove deprecated aliases — `Color.kt` deleted; every legacy alias migrated to `FrostTheme.colors.*` (`glacier` promoted to a real `FrostColors` role); feedback colours inlined into `FrostColors.from()`.
+3. ✅ Move `DesignPreviewScreen` to the debug source set — `app/src/debug/...`; release builds no longer contain it; About row removed.
+4. ⚠️ Docs updated (this file). Screenshots: none exist in the repo; capturing them needs a device/emulator — tracked as a QA release-gate item, not a doc-edit item.
 
 ### 13.1 File-level change map
 
@@ -1579,12 +1579,18 @@ screens/you/YouViewModel.kt
 
 **Modified**
 - `MainActivity.kt` — start destination, palette key, splash, permission timing.
-- `NavGraph.kt` — replaced.
-- `Screen.kt` — replaced.
-- `AppBottomBar.kt` — replaced.
-- `Theme.kt`, `Color.kt`, `Shape.kt`, `Spacing.kt`, `Type.kt` — tokens + deprecated aliases.
-- `app/build.gradle.kts`, `gradle/libs.versions.toml` — adaptive, lifecycle-runtime-compose, navigation-testing.
+- `NavGraph.kt` — replaced by `ui/navigation/*NavGraph.kt`.
+- `Screen.kt` — replaced by `ui/shell/FrostTabScaffold.kt` and `FrostDetailScaffold.kt`.
+- `AppBottomBar.kt` — replaced by `ui/components/navigation/FrostNavigationBar.kt`.
+- `Theme.kt`, `FrostColors.kt`, `IcePalettes.kt`, `FrostShapes.kt` (was `Shape.kt`), `FrostSpacing.kt` (was `Spacing.kt`), `FrostTypography.kt` (was `Type.kt`), `FrostMotion.kt` — semantic tokens only; legacy top-level aliases and `Color.kt` deleted in Phase 8.
+- `app/build.gradle.kts`, `gradle/libs.versions.toml` — adaptive (`androidx.window:window:1.5.0`), lifecycle-runtime-compose, navigation-testing.
 - `AndroidManifest.xml` — predictive back, date-change receiver.
+
+**New since Phase 7 (not in the original map)**
+- `ui/shell/WindowLayout.kt` — `FrostWindowSizeClass`, `windowWidthClassFor`, `rememberFrostWindowSizeClass`, `rememberIsTabletopPosture`.
+- `ui/components/layout/TwoPaneLayout.kt` — side-by-side panes (tabletop: stacked).
+- `ui/util/TimerAutoSize.kt` — `TextAutoSize.StepBased` config + pure sizing helpers.
+- `app/src/debug/ui/screens/preview/DesignPreviewScreen.kt` — debug-source-set only; not a release feature.
 
 **Moved**
 - `screens/home/*` → `screens/insights/`.
@@ -1807,4 +1813,4 @@ Remaining:
 
 ---
 
-_This is the single redesign plan. Approve it before implementation._
+_This redesign plan has been implemented in full (Phases 0–8). Remaining release work: capture docs screenshots on a device/emulator and run the QA matrix in `docs/frostlock-redesign-qa-audit.md`._

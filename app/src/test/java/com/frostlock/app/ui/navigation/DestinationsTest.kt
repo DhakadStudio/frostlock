@@ -38,8 +38,7 @@ class DestinationsTest {
         Destinations.You.COUNTDOWN,
         Destinations.You.WIDGETS,
         Destinations.You.PRIVACY,
-        Destinations.You.ABOUT,
-        Destinations.You.DESIGN_PREVIEW
+        Destinations.You.ABOUT
     )
 
     @Test
@@ -90,8 +89,7 @@ class DestinationsTest {
             Destinations.You.COUNTDOWN,
             Destinations.You.WIDGETS,
             Destinations.You.PRIVACY,
-            Destinations.You.ABOUT,
-            Destinations.You.DESIGN_PREVIEW
+            Destinations.You.ABOUT
         )
 
         details.forEach { route ->

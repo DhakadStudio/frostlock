@@ -81,23 +81,12 @@ import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.AppPickerDialog
 import com.frostlock.app.ui.components.FrostDatePickerDialog
 import com.frostlock.app.ui.components.PrimaryButton
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.DangerRed
-import com.frostlock.app.ui.theme.GradientFrost
-import com.frostlock.app.ui.theme.InkOnIce
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SurfaceCard
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
-import com.frostlock.app.ui.theme.WarnAmber
 import com.frostlock.app.ui.util.RuleOverlap
 import com.frostlock.app.ui.util.ruleOverlaps
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import com.frostlock.app.ui.theme.FrostTheme
 
 private enum class TimeField { START, END }
 
@@ -194,7 +183,7 @@ fun ScheduleEditorScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(FrostTheme.colors.background)
             .imePadding()
     ) {
         EditorTopBar(editing = initial != null, onBack = onDismiss)
@@ -283,7 +272,7 @@ fun ScheduleEditorScreen(
                 Text(
                     text = it,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = DangerRed
+                    color = FrostTheme.colors.danger
                 )
             }
             PrimaryButton(
@@ -324,12 +313,12 @@ fun ScheduleEditorScreen(
                         datePickerOpen = false
                     }
                 ) {
-                    Text(text = "Add", color = AccentFrost)
+                    Text(text = "Add", color = FrostTheme.colors.secondary)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { datePickerOpen = false }) {
-                    Text(text = "Cancel", color = TextSecondary)
+                    Text(text = "Cancel", color = FrostTheme.colors.textSecondary)
                 }
             }
         ) {
@@ -393,7 +382,7 @@ private fun EditorTopBar(editing: Boolean, onBack: () -> Unit) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Back",
-                tint = TextPrimary
+                tint = FrostTheme.colors.textPrimary
             )
         }
         Spacer(modifier = Modifier.width(4.dp))
@@ -401,24 +390,24 @@ private fun EditorTopBar(editing: Boolean, onBack: () -> Unit) {
             Text(
                 text = if (editing) "Edit rule" else "New rule",
                 style = MaterialTheme.typography.headlineMedium,
-                color = TextPrimary
+                color = FrostTheme.colors.textPrimary
             )
             Text(
                 text = "Name, apps, repeat and hours",
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
         }
         Box(
             modifier = Modifier
                 .clip(CircleShape)
-                .background(AccentFrost.copy(alpha = 0.14f))
+                .background(FrostTheme.colors.secondary.copy(alpha = 0.14f))
                 .padding(horizontal = 10.dp, vertical = 4.dp)
         ) {
             Text(
                 text = "LOCAL",
                 style = MaterialTheme.typography.labelSmall,
-                color = AccentFrost,
+                color = FrostTheme.colors.secondary,
                 letterSpacing = 0.12.em
             )
         }
@@ -438,15 +427,15 @@ private fun NameCard(label: String, onLabelChange: (String) -> Unit) {
                 value = label,
                 onValueChange = onLabelChange,
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("e.g. Study block", color = TextSecondary) },
+                placeholder = { Text("e.g. Study block", color = FrostTheme.colors.textSecondary) },
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodyLarge,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PrimaryIce,
-                    unfocusedBorderColor = StrokeSoft,
-                    focusedTextColor = TextPrimary,
-                    unfocusedTextColor = TextPrimary,
-                    cursorColor = AccentFrost
+                    focusedBorderColor = FrostTheme.colors.primary,
+                    unfocusedBorderColor = FrostTheme.colors.outline,
+                    focusedTextColor = FrostTheme.colors.textPrimary,
+                    unfocusedTextColor = FrostTheme.colors.textPrimary,
+                    cursorColor = FrostTheme.colors.secondary
                 ),
                 shape = MaterialTheme.shapes.medium
             )
@@ -481,7 +470,7 @@ private fun AppsCard(
                 Text(
                     text = "Pick apps to lock while this rule runs, or leave it empty to reuse your focus-session list.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -492,7 +481,7 @@ private fun AppsCard(
                             Text(
                                 text = app.label,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = TextPrimary,
+                                color = FrostTheme.colors.textPrimary,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.weight(1f)
@@ -501,14 +490,14 @@ private fun AppsCard(
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clip(CircleShape)
-                                    .background(SurfaceHigh)
+                                    .background(FrostTheme.colors.surfaceContainerHigh)
                                     .clickable { onRemoveApp(app.packageName) },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
                                     contentDescription = "Remove ${app.label}",
-                                    tint = TextSecondary,
+                                    tint = FrostTheme.colors.textSecondary,
                                     modifier = Modifier.size(13.dp)
                                 )
                             }
@@ -518,7 +507,7 @@ private fun AppsCard(
                         Text(
                             text = "+${packages.size - chosen.size} more",
                             style = MaterialTheme.typography.bodySmall,
-                            color = TextSecondary
+                            color = FrostTheme.colors.textSecondary
                         )
                     }
                 }
@@ -530,8 +519,8 @@ private fun AppsCard(
                     .fillMaxWidth()
                     .heightIn(min = 48.dp),
                 shape = CircleShape,
-                border = BorderStroke(1.dp, StrokeSoft),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = AccentFrost)
+                border = BorderStroke(1.dp, FrostTheme.colors.outline),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = FrostTheme.colors.secondary)
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -549,7 +538,7 @@ private fun AppsCard(
                 Text(
                     text = "Or copy a subject’s app list",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -574,10 +563,10 @@ private fun AppsCard(
                                 }
                             },
                             colors = FilterChipDefaults.filterChipColors(
-                                containerColor = SurfaceHigh,
-                                labelColor = TextSecondary,
-                                selectedContainerColor = PrimaryIce,
-                                selectedLabelColor = InkOnIce
+                                containerColor = FrostTheme.colors.surfaceContainerHigh,
+                                labelColor = FrostTheme.colors.textSecondary,
+                                selectedContainerColor = FrostTheme.colors.primary,
+                                selectedLabelColor = FrostTheme.colors.onPrimary
                             )
                         )
                     }
@@ -638,14 +627,14 @@ private fun RepeatCard(
                             .clip(CircleShape)
                             .background(
                                 if (selected) {
-                                    Brush.linearGradient(GradientFrost)
+                                    Brush.linearGradient(FrostTheme.colors.actionGradient)
                                 } else {
-                                    SolidColor(SurfaceHigh)
+                                    SolidColor(FrostTheme.colors.surfaceContainerHigh)
                                 }
                             )
                             .border(
                                 1.dp,
-                                if (selected) Color.Transparent else StrokeSoft,
+                                if (selected) Color.Transparent else FrostTheme.colors.outline,
                                 CircleShape
                             )
                             .clickable {
@@ -658,7 +647,7 @@ private fun RepeatCard(
                         Text(
                             text = name,
                             style = MaterialTheme.typography.labelSmall,
-                            color = if (selected) InkOnIce else TextSecondary,
+                            color = if (selected) FrostTheme.colors.onPrimary else FrostTheme.colors.textSecondary,
                             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
                         )
                     }
@@ -669,7 +658,7 @@ private fun RepeatCard(
                 Text(
                     text = "Date rules run once and ignore the weekdays above.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
 
@@ -677,7 +666,7 @@ private fun RepeatCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(StrokeSoft.copy(alpha = 0.6f))
+                    .background(FrostTheme.colors.outline.copy(alpha = 0.6f))
             )
 
             Row(
@@ -688,7 +677,7 @@ private fun RepeatCard(
                     Text(
                         text = "Specific dates",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                     Text(
                         text = if (dates.isEmpty()) {
@@ -697,7 +686,7 @@ private fun RepeatCard(
                             "${dates.size} added"
                         },
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
                 TextButton(onClick = onAddDate) {
@@ -707,7 +696,7 @@ private fun RepeatCard(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Add date", color = AccentFrost)
+                    Text(text = "Add date", color = FrostTheme.colors.secondary)
                 }
             }
 
@@ -729,10 +718,10 @@ private fun RepeatCard(
                                 )
                             },
                             colors = FilterChipDefaults.filterChipColors(
-                                containerColor = SurfaceHigh,
-                                labelColor = TextPrimary,
-                                selectedContainerColor = PrimaryIce,
-                                selectedLabelColor = InkOnIce
+                                containerColor = FrostTheme.colors.surfaceContainerHigh,
+                                labelColor = FrostTheme.colors.textPrimary,
+                                selectedContainerColor = FrostTheme.colors.primary,
+                                selectedLabelColor = FrostTheme.colors.onPrimary
                             )
                         )
                     }
@@ -782,7 +771,7 @@ private fun DateRangeCard(
                 Text(
                     text = "Runs ${formatDate(fromDate)} – ${formatDate(untilDate)}, then stops.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -801,8 +790,8 @@ private fun RangeDateRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(SurfaceHigh)
-            .border(1.dp, StrokeSoft, RoundedCornerShape(14.dp))
+            .background(FrostTheme.colors.surfaceContainerHigh)
+            .border(1.dp, FrostTheme.colors.outline, RoundedCornerShape(14.dp))
             .clickable(onClick = onPick)
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -811,12 +800,12 @@ private fun RangeDateRow(
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
             Text(
                 text = date?.let { formatDate(it) } ?: emptyText,
                 style = MaterialTheme.typography.bodyLarge,
-                color = if (date == null) TextSecondary else TextPrimary
+                color = if (date == null) FrostTheme.colors.textSecondary else FrostTheme.colors.textPrimary
             )
         }
         if (date != null) {
@@ -830,7 +819,7 @@ private fun RangeDateRow(
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Clear $label date",
-                    tint = TextSecondary,
+                    tint = FrostTheme.colors.textSecondary,
                     modifier = Modifier.size(15.dp)
                 )
             }
@@ -838,7 +827,7 @@ private fun RangeDateRow(
             Icon(
                 imageVector = Icons.Default.CalendarMonth,
                 contentDescription = null,
-                tint = AccentFrost,
+                tint = FrostTheme.colors.secondary,
                 modifier = Modifier.size(18.dp)
             )
         }
@@ -881,7 +870,7 @@ private fun TimeCard(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
-                    tint = TextSecondary,
+                    tint = FrostTheme.colors.textSecondary,
                     modifier = Modifier.size(18.dp)
                 )
                 TimeTile(
@@ -895,7 +884,7 @@ private fun TimeCard(
             Row(
                 modifier = Modifier
                     .clip(MaterialTheme.shapes.extraLarge)
-                    .background(SurfaceHigh)
+                    .background(FrostTheme.colors.surfaceContainerHigh)
                     .padding(horizontal = 10.dp, vertical = 5.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -906,14 +895,14 @@ private fun TimeCard(
                         if (overnight) append(" · crosses midnight")
                     },
                     style = MaterialTheme.typography.labelSmall,
-                    color = AccentFrost
+                    color = FrostTheme.colors.secondary
                 )
             }
 
             Text(
                 text = "Quick windows",
                 style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
 
             TIME_PRESETS.chunked(2).forEach { pair ->
@@ -941,7 +930,7 @@ private fun TimeCard(
                 text = repeatSummary(days, dates) +
                     " · tap a time to change it. Overnight windows like 22:00 to 02:00 work too.",
                 style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
         }
     }
@@ -955,14 +944,14 @@ private fun OverlapCard(overlaps: List<RuleOverlap>) {
                 Icon(
                     imageVector = Icons.Default.Warning,
                     contentDescription = null,
-                    tint = WarnAmber,
+                    tint = FrostTheme.colors.warning,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Overlaps another rule",
                     style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
             }
             Text(
@@ -972,7 +961,7 @@ private fun OverlapCard(overlaps: List<RuleOverlap>) {
                     "This window blocks at the same time as ${overlaps.size} other rules:"
                 },
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
             overlaps.forEach { overlap ->
                 Row(
@@ -982,7 +971,7 @@ private fun OverlapCard(overlaps: List<RuleOverlap>) {
                     Text(
                         text = "“${overlap.other.label}”",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = WarnAmber,
+                        color = FrostTheme.colors.warning,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
@@ -991,14 +980,14 @@ private fun OverlapCard(overlaps: List<RuleOverlap>) {
                     Text(
                         text = overlapDetail(overlap),
                         style = MaterialTheme.typography.labelSmall,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
             }
             Text(
                 text = "Both rules stay active — this is only a heads-up so you can tell them apart.",
                 style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
         }
     }
@@ -1022,8 +1011,8 @@ private fun PresetTile(
     Column(
         modifier = modifier
             .clip(shape)
-            .background(if (selected) PrimaryIce.copy(alpha = 0.16f) else SurfaceHigh)
-            .border(1.dp, if (selected) PrimaryIce else StrokeSoft, shape)
+            .background(if (selected) FrostTheme.colors.primary.copy(alpha = 0.16f) else FrostTheme.colors.surfaceContainerHigh)
+            .border(1.dp, if (selected) FrostTheme.colors.primary else FrostTheme.colors.outline, shape)
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 10.dp)
     ) {
@@ -1031,14 +1020,14 @@ private fun PresetTile(
             Text(
                 text = preset.label,
                 style = MaterialTheme.typography.labelLarge,
-                color = if (selected) AccentFrost else TextPrimary,
+                color = if (selected) FrostTheme.colors.secondary else FrostTheme.colors.textPrimary,
                 modifier = Modifier.weight(1f)
             )
             if (selected) {
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = null,
-                    tint = AccentFrost,
+                    tint = FrostTheme.colors.secondary,
                     modifier = Modifier.size(14.dp)
                 )
             }
@@ -1046,7 +1035,7 @@ private fun PresetTile(
         Text(
             text = "${formatTime(preset.startMinutes)} – ${formatTime(preset.endMinutes)}",
             style = MaterialTheme.typography.bodySmall,
-            color = TextSecondary
+            color = FrostTheme.colors.textSecondary
         )
     }
 }
@@ -1061,8 +1050,8 @@ private fun TimeTile(
     Column(
         modifier = modifier
             .clip(MaterialTheme.shapes.medium)
-            .background(SurfaceHigh)
-            .border(1.dp, StrokeSoft, MaterialTheme.shapes.medium)
+            .background(FrostTheme.colors.surfaceContainerHigh)
+            .border(1.dp, FrostTheme.colors.outline, MaterialTheme.shapes.medium)
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 12.dp)
     ) {
@@ -1073,14 +1062,14 @@ private fun TimeTile(
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = AccentFrost,
+                color = FrostTheme.colors.secondary,
                 letterSpacing = 0.12.em,
                 modifier = Modifier.weight(1f)
             )
             Icon(
                 imageVector = Icons.Default.Schedule,
                 contentDescription = null,
-                tint = AccentFrost,
+                tint = FrostTheme.colors.secondary,
                 modifier = Modifier.size(14.dp)
             )
         }
@@ -1088,7 +1077,7 @@ private fun TimeTile(
         Text(
             text = formatTime(minutes),
             style = MaterialTheme.typography.headlineMedium,
-            color = TextPrimary
+            color = FrostTheme.colors.textPrimary
         )
     }
 }
@@ -1116,8 +1105,8 @@ private fun FrostTimePickerDialog(
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
                 .clip(RoundedCornerShape(28.dp))
-                .background(SurfaceCard)
-                .border(1.dp, StrokeSoft, RoundedCornerShape(28.dp))
+                .background(FrostTheme.colors.surfaceContainer)
+                .border(1.dp, FrostTheme.colors.outline, RoundedCornerShape(28.dp))
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -1129,13 +1118,13 @@ private fun FrostTimePickerDialog(
                     modifier = Modifier
                         .size(38.dp)
                         .clip(CircleShape)
-                        .background(SurfaceHigh),
+                        .background(FrostTheme.colors.surfaceContainerHigh),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Schedule,
                         contentDescription = null,
-                        tint = AccentFrost,
+                        tint = FrostTheme.colors.secondary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -1144,12 +1133,12 @@ private fun FrostTimePickerDialog(
                     Text(
                         text = title,
                         style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                     Text(
                         text = "24-hour · tap the dial or type",
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
             }
@@ -1160,15 +1149,15 @@ private fun FrostTimePickerDialog(
                 state = state,
                 layoutType = TimePickerLayoutType.Vertical,
                 colors = TimePickerDefaults.colors(
-                    clockDialColor = SurfaceHigh,
-                    clockDialSelectedContentColor = InkOnIce,
-                    clockDialUnselectedContentColor = TextPrimary,
-                    selectorColor = PrimaryIce,
+                    clockDialColor = FrostTheme.colors.surfaceContainerHigh,
+                    clockDialSelectedContentColor = FrostTheme.colors.onPrimary,
+                    clockDialUnselectedContentColor = FrostTheme.colors.textPrimary,
+                    selectorColor = FrostTheme.colors.primary,
                     containerColor = Color.Transparent,
-                    timeSelectorSelectedContainerColor = PrimaryIce,
-                    timeSelectorSelectedContentColor = InkOnIce,
-                    timeSelectorUnselectedContainerColor = SurfaceHigh,
-                    timeSelectorUnselectedContentColor = TextSecondary
+                    timeSelectorSelectedContainerColor = FrostTheme.colors.primary,
+                    timeSelectorSelectedContentColor = FrostTheme.colors.onPrimary,
+                    timeSelectorUnselectedContainerColor = FrostTheme.colors.surfaceContainerHigh,
+                    timeSelectorUnselectedContentColor = FrostTheme.colors.textSecondary
                 )
             )
 
@@ -1182,21 +1171,21 @@ private fun FrostTimePickerDialog(
                     onClick = onDismiss,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(text = "Cancel", color = TextSecondary)
+                    Text(text = "Cancel", color = FrostTheme.colors.textSecondary)
                 }
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .heightIn(min = 48.dp)
                         .clip(CircleShape)
-                        .background(Brush.horizontalGradient(GradientFrost))
+                        .background(Brush.horizontalGradient(FrostTheme.colors.actionGradient))
                         .clickable { onConfirm(state.hour * 60 + state.minute) },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "Set ${formatTime(state.hour * 60 + state.minute)}",
                         style = MaterialTheme.typography.labelLarge,
-                        color = InkOnIce
+                        color = FrostTheme.colors.onPrimary
                     )
                 }
             }
@@ -1211,13 +1200,13 @@ private fun SectionTitle(icon: ImageVector, title: String, subtitle: String? = n
             modifier = Modifier
                 .size(38.dp)
                 .clip(CircleShape)
-                .background(SurfaceHigh),
+                .background(FrostTheme.colors.surfaceContainerHigh),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = AccentFrost,
+                tint = FrostTheme.colors.secondary,
                 modifier = Modifier.size(18.dp)
             )
         }
@@ -1226,13 +1215,13 @@ private fun SectionTitle(icon: ImageVector, title: String, subtitle: String? = n
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
-                color = TextPrimary
+                color = FrostTheme.colors.textPrimary
             )
             subtitle?.let {
                 Text(
                     text = it,
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -1252,14 +1241,14 @@ private fun QuickPill(
             .clip(CircleShape)
             .background(
                 if (selected) {
-                    Brush.linearGradient(GradientFrost)
+                    Brush.linearGradient(FrostTheme.colors.actionGradient)
                 } else {
-                    SolidColor(SurfaceHigh)
+                    SolidColor(FrostTheme.colors.surfaceContainerHigh)
                 }
             )
             .border(
                 1.dp,
-                if (selected) Color.Transparent else StrokeSoft,
+                if (selected) Color.Transparent else FrostTheme.colors.outline,
                 CircleShape
             )
             .clickable(onClick = onClick)
@@ -1269,7 +1258,7 @@ private fun QuickPill(
         Text(
             text = text,
             style = MaterialTheme.typography.labelMedium,
-            color = if (selected) InkOnIce else TextSecondary,
+            color = if (selected) FrostTheme.colors.onPrimary else FrostTheme.colors.textSecondary,
             maxLines = 1
         )
     }
@@ -1290,13 +1279,13 @@ private fun AppGlyph(app: InstalledApp, size: androidx.compose.ui.unit.Dp) {
             modifier = Modifier
                 .size(size)
                 .clip(RoundedCornerShape(8.dp))
-                .background(SurfaceHigh),
+                .background(FrostTheme.colors.surfaceContainerHigh),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = app.label.take(1).uppercase(),
                 style = MaterialTheme.typography.labelMedium,
-                color = AccentFrost
+                color = FrostTheme.colors.secondary
             )
         }
     }

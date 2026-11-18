@@ -46,21 +46,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.frostlock.app.ui.components.AchievementBadge
 import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.SectionHeader
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.GlacierBlue
-import com.frostlock.app.ui.theme.GradientFrost
-import com.frostlock.app.ui.theme.InkOnIce
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SurfaceCard
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.util.Achievement
 import com.frostlock.app.ui.util.AchievementCategory
 import com.frostlock.app.ui.util.achievementCategoryLabel
 import com.frostlock.app.ui.util.achievementShareText
+import com.frostlock.app.ui.theme.FrostTheme
 
 /**
  * Full badge cabinet. Everything is derived from locally stored sessions, so no
@@ -80,7 +70,7 @@ fun BadgesScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(FrostTheme.colors.background)
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -90,7 +80,7 @@ fun BadgesScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = TextPrimary
+                    tint = FrostTheme.colors.textPrimary
                 )
             }
             Spacer(modifier = Modifier.width(4.dp))
@@ -98,12 +88,12 @@ fun BadgesScreen(
                 Text(
                     text = "Badges",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = "Milestones from your focus history.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -114,7 +104,7 @@ fun BadgesScreen(
                     Icon(
                         imageVector = Icons.Default.AcUnit,
                         contentDescription = null,
-                        tint = AccentFrost,
+                        tint = FrostTheme.colors.secondary,
                         modifier = Modifier.width(26.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
@@ -122,7 +112,7 @@ fun BadgesScreen(
                         Text(
                             text = "$unlocked of $total collected",
                             style = MaterialTheme.typography.titleLarge,
-                            color = TextPrimary
+                            color = FrostTheme.colors.textPrimary
                         )
                         Text(
                             text = if (unlocked == total && total > 0) {
@@ -131,7 +121,7 @@ fun BadgesScreen(
                                 "Keep focusing to thaw the next one."
                             },
                             style = MaterialTheme.typography.bodyMedium,
-                            color = TextSecondary
+                            color = FrostTheme.colors.textSecondary
                         )
                     }
                 }
@@ -196,8 +186,8 @@ private fun AchievementShareDialog(
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
                 .clip(RoundedCornerShape(28.dp))
-                .background(SurfaceCard)
-                .border(1.dp, StrokeSoft, RoundedCornerShape(28.dp))
+                .background(FrostTheme.colors.surfaceContainer)
+                .border(1.dp, FrostTheme.colors.outline, RoundedCornerShape(28.dp))
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -206,19 +196,19 @@ private fun AchievementShareDialog(
             Text(
                 text = achievement.title,
                 style = MaterialTheme.typography.headlineMedium,
-                color = TextPrimary,
+                color = FrostTheme.colors.textPrimary,
                 textAlign = TextAlign.Center
             )
             Text(
                 text = achievement.description,
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary,
+                color = FrostTheme.colors.textSecondary,
                 textAlign = TextAlign.Center
             )
             Text(
                 text = achievement.progressLabel,
                 style = MaterialTheme.typography.labelMedium,
-                color = AccentFrost
+                color = FrostTheme.colors.secondary
             )
             Spacer(modifier = Modifier.height(4.dp))
             Row(
@@ -229,14 +219,14 @@ private fun AchievementShareDialog(
                     onClick = onDismiss,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(text = "Close", color = TextSecondary)
+                    Text(text = "Close", color = FrostTheme.colors.textSecondary)
                 }
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .heightIn(min = 48.dp)
                         .clip(RoundedCornerShape(100.dp))
-                        .background(Brush.horizontalGradient(GradientFrost))
+                        .background(Brush.horizontalGradient(FrostTheme.colors.actionGradient))
                         .clickable {
                             val intent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
@@ -252,7 +242,7 @@ private fun AchievementShareDialog(
                     Text(
                         text = "Share",
                         style = MaterialTheme.typography.labelLarge,
-                        color = InkOnIce
+                        color = FrostTheme.colors.onPrimary
                     )
                 }
             }
@@ -275,13 +265,13 @@ private fun AchievementTile(
         Text(
             text = achievement.title,
             style = MaterialTheme.typography.labelMedium,
-            color = if (achievement.unlocked) TextPrimary else TextSecondary,
+            color = if (achievement.unlocked) FrostTheme.colors.textPrimary else FrostTheme.colors.textSecondary,
             textAlign = TextAlign.Center
         )
         Text(
             text = achievement.progressLabel,
             style = MaterialTheme.typography.labelSmall,
-            color = if (achievement.unlocked) AccentFrost else TextSecondary,
+            color = if (achievement.unlocked) FrostTheme.colors.secondary else FrostTheme.colors.textSecondary,
             textAlign = TextAlign.Center
         )
     }
@@ -294,14 +284,14 @@ private fun ProgressBar(progress: Float) {
             .fillMaxWidth()
             .height(8.dp)
             .clip(RoundedCornerShape(4.dp))
-            .background(SurfaceHigh)
+            .background(FrostTheme.colors.surfaceContainerHigh)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxHeight()
                 .fillMaxWidth(progress.coerceIn(0f, 1f))
                 .clip(RoundedCornerShape(4.dp))
-                .background(Brush.horizontalGradient(listOf(PrimaryIce, GlacierBlue)))
+                .background(Brush.horizontalGradient(listOf(FrostTheme.colors.primary, FrostTheme.colors.glacier)))
         )
     }
 }

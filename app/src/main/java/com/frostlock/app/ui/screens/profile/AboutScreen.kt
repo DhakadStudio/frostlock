@@ -9,13 +9,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import com.frostlock.app.ui.components.surface.FrostCard
-import com.frostlock.app.ui.components.surface.StatusRow
 import com.frostlock.app.ui.shell.FrostDetailScaffold
 import com.frostlock.app.ui.theme.FrostTheme
 
@@ -28,8 +26,7 @@ import com.frostlock.app.ui.theme.FrostTheme
  */
 @Composable
 fun AboutScreen(
-    onBack: () -> Unit,
-    onOpenDesignPreview: () -> Unit
+    onBack: () -> Unit
 ) {
     FrostDetailScaffold(title = "About", onBack = onBack) { padding ->
         LazyColumn(
@@ -85,22 +82,6 @@ fun AboutScreen(
                         text = "•  Pause or schedule notification blocking",
                         style = FrostTheme.typography.bodyMedium,
                         color = FrostTheme.colors.textSecondary
-                    )
-                }
-            }
-
-            item {
-                FrostCard(
-                    contentPadding = PaddingValues(
-                        horizontal = FrostTheme.spacing.lg,
-                        vertical = FrostTheme.spacing.xs
-                    )
-                ) {
-                    StatusRow(
-                        title = "Design preview",
-                        status = "See the components and motion tokens",
-                        icon = Icons.Default.Palette,
-                        onClick = onOpenDesignPreview
                     )
                 }
             }

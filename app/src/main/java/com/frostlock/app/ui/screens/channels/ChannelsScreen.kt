@@ -48,18 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.MoodChip
 import com.frostlock.app.ui.components.SectionHeader
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.DangerRed
-import com.frostlock.app.ui.theme.GradientFrost
-import com.frostlock.app.ui.theme.InkOnIce
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SuccessGreen
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
-import com.frostlock.app.ui.theme.WarnAmber
+import com.frostlock.app.ui.theme.FrostTheme
 
 /**
  * Opt-in, fully local YouTube / YouTube Music channel filtering. The
@@ -82,7 +71,7 @@ fun ChannelsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(FrostTheme.colors.background)
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -92,7 +81,7 @@ fun ChannelsScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = TextPrimary
+                    tint = FrostTheme.colors.textPrimary
                 )
             }
             Spacer(modifier = Modifier.width(4.dp))
@@ -100,12 +89,12 @@ fun ChannelsScreen(
                 Text(
                     text = "YouTube & Music",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = "Channel filtering, held only while focus is active",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -118,9 +107,9 @@ fun ChannelsScreen(
                         .clip(CircleShape)
                         .background(
                             if (state.enabled) {
-                                Brush.linearGradient(GradientFrost)
+                                Brush.linearGradient(FrostTheme.colors.actionGradient)
                             } else {
-                                androidx.compose.ui.graphics.SolidColor(SurfaceHigh)
+                                androidx.compose.ui.graphics.SolidColor(FrostTheme.colors.surfaceContainerHigh)
                             }
                         ),
                     contentAlignment = Alignment.Center
@@ -128,7 +117,7 @@ fun ChannelsScreen(
                     Icon(
                         imageVector = Icons.Default.VideoLibrary,
                         contentDescription = null,
-                        tint = if (state.enabled) InkOnIce else TextSecondary,
+                        tint = if (state.enabled) FrostTheme.colors.onPrimary else FrostTheme.colors.textSecondary,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -137,7 +126,7 @@ fun ChannelsScreen(
                     Text(
                         text = "Channel filtering",
                         style = MaterialTheme.typography.titleMedium,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                     Text(
                         text = when {
@@ -148,7 +137,7 @@ fun ChannelsScreen(
                             else -> "Off — every channel plays"
                         },
                         style = MaterialTheme.typography.bodyMedium,
-                        color = if (state.enabled) SuccessGreen else TextSecondary
+                        color = if (state.enabled) FrostTheme.colors.success else FrostTheme.colors.textSecondary
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -157,9 +146,9 @@ fun ChannelsScreen(
                     onCheckedChange = viewModel::setEnabled,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
-                        checkedTrackColor = PrimaryIce,
-                        uncheckedThumbColor = TextSecondary,
-                        uncheckedTrackColor = SurfaceHigh
+                        checkedTrackColor = FrostTheme.colors.primary,
+                        uncheckedThumbColor = FrostTheme.colors.textSecondary,
+                        uncheckedTrackColor = FrostTheme.colors.surfaceContainerHigh
                     )
                 )
             }
@@ -171,13 +160,13 @@ fun ChannelsScreen(
                     modifier = Modifier
                         .size(38.dp)
                         .clip(CircleShape)
-                        .background(SurfaceHigh),
+                        .background(FrostTheme.colors.surfaceContainerHigh),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.VideoLibrary,
                         contentDescription = null,
-                        tint = AccentFrost,
+                        tint = FrostTheme.colors.secondary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -188,7 +177,7 @@ fun ChannelsScreen(
                         "and the home feed are never judged by their channel. " +
                         "Only checked during a focus session or an active schedule.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -204,7 +193,7 @@ fun ChannelsScreen(
                             "Block list: the channels below are held during focus; everything else plays."
                     },
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     MoodChip(
@@ -228,13 +217,13 @@ fun ChannelsScreen(
                         modifier = Modifier
                             .size(38.dp)
                             .clip(CircleShape)
-                            .background(WarnAmber.copy(alpha = 0.18f)),
+                            .background(FrostTheme.colors.warning.copy(alpha = 0.18f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Warning,
                             contentDescription = null,
-                            tint = WarnAmber,
+                            tint = FrostTheme.colors.warning,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -243,7 +232,7 @@ fun ChannelsScreen(
                         text = "The study list is empty, so every channel is held while " +
                             "filtering is on. Add a channel, or switch to the block list.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = WarnAmber
+                        color = FrostTheme.colors.warning
                     )
                 }
             }
@@ -318,7 +307,7 @@ private fun StudyListCard(
                     "Only these channels can play during focus. Everyone else is held."
                 },
                 style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -331,17 +320,17 @@ private fun StudyListCard(
                     placeholder = {
                         Text(
                             text = if (blockedMode) "@distractingchannel" else "@studychannel",
-                            color = TextSecondary
+                            color = FrostTheme.colors.textSecondary
                         )
                     },
                     singleLine = true,
                     textStyle = MaterialTheme.typography.bodyLarge,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PrimaryIce,
-                        unfocusedBorderColor = StrokeSoft,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary,
-                        cursorColor = AccentFrost
+                        focusedBorderColor = FrostTheme.colors.primary,
+                        unfocusedBorderColor = FrostTheme.colors.outline,
+                        focusedTextColor = FrostTheme.colors.textPrimary,
+                        unfocusedTextColor = FrostTheme.colors.textPrimary,
+                        cursorColor = FrostTheme.colors.secondary
                     ),
                     shape = MaterialTheme.shapes.medium
                 )
@@ -350,14 +339,14 @@ private fun StudyListCard(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(Brush.linearGradient(GradientFrost))
+                        .background(Brush.linearGradient(FrostTheme.colors.actionGradient))
                         .clickable(onClick = onAdd),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add channel",
-                        tint = InkOnIce
+                        tint = FrostTheme.colors.onPrimary
                     )
                 }
             }
@@ -366,7 +355,7 @@ private fun StudyListCard(
                 Text(
                     text = message,
                     style = MaterialTheme.typography.bodySmall,
-                    color = DangerRed
+                    color = FrostTheme.colors.danger
                 )
             }
 
@@ -378,7 +367,7 @@ private fun StudyListCard(
                         "No study channels yet."
                     },
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             } else {
                 channels.forEach { channel ->
@@ -403,21 +392,21 @@ private fun ChannelRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(SurfaceHigh)
+            .background(FrostTheme.colors.surfaceContainerHigh)
             .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Default.PlayArrow,
             contentDescription = null,
-            tint = if (blockedMode) AccentFrost else SuccessGreen,
+            tint = if (blockedMode) FrostTheme.colors.secondary else FrostTheme.colors.success,
             modifier = Modifier.size(18.dp)
         )
         Spacer(modifier = Modifier.width(10.dp))
         Text(
             text = channel,
             style = MaterialTheme.typography.bodyLarge,
-            color = TextPrimary,
+            color = FrostTheme.colors.textPrimary,
             modifier = Modifier.weight(1f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
@@ -426,7 +415,7 @@ private fun ChannelRow(
             Icon(
                 imageVector = Icons.Default.Delete,
                 contentDescription = "Remove $channel",
-                tint = TextSecondary
+                tint = FrostTheme.colors.textSecondary
             )
         }
     }

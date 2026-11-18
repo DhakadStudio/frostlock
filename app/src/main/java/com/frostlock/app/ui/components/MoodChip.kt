@@ -15,11 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.PrimaryIce
 import com.frostlock.app.ui.theme.FrostLockTheme
-import com.frostlock.app.ui.theme.SurfaceCard
-import com.frostlock.app.ui.theme.TextPrimary
+import com.frostlock.app.ui.theme.FrostTheme
 
 @Composable
 fun MoodChip(
@@ -28,8 +25,8 @@ fun MoodChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = if (selected) PrimaryIce else SurfaceCard
-    val borderColor = if (selected) AccentFrost else SurfaceCard
+    val backgroundColor = if (selected) FrostTheme.colors.primary else FrostTheme.colors.surfaceContainer
+    val borderColor = if (selected) FrostTheme.colors.secondary else FrostTheme.colors.surfaceContainer
 
     Box(
         modifier = modifier
@@ -45,7 +42,7 @@ fun MoodChip(
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,
-            color = if (selected) MaterialTheme.colorScheme.onPrimary else TextPrimary
+            color = if (selected) MaterialTheme.colorScheme.onPrimary else FrostTheme.colors.textPrimary
         )
     }
 }

@@ -55,7 +55,6 @@ object Destinations {
         const val WIDGETS = "you/widgets"
         const val PRIVACY = "you/privacy"
         const val ABOUT = "you/about"
-        const val DESIGN_PREVIEW = "you/design-preview"
 
         fun goalEditor(goalId: Long = -1L) = "you/goals/editor?goalId=$goalId"
     }

@@ -49,17 +49,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.StatTile
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.GradientHero
-import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.DangerRed
-import com.frostlock.app.ui.theme.GlacierBlue
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SuccessGreen
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.util.ImprovementMetric
 import com.frostlock.app.ui.util.ImprovementReport
 import com.frostlock.app.ui.util.ImprovementTrend
@@ -70,6 +59,7 @@ import com.frostlock.app.ui.util.formatDuration
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+import com.frostlock.app.ui.theme.FrostTheme
 
 /**
  * A local, offline weekly review: totals, a comparison with the previous week,
@@ -91,7 +81,7 @@ fun WeeklyReviewScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .background(BackgroundDark),
+            .background(FrostTheme.colors.background),
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
@@ -101,7 +91,7 @@ fun WeeklyReviewScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = TextPrimary
+                        tint = FrostTheme.colors.textPrimary
                     )
                 }
                 Spacer(modifier = Modifier.width(4.dp))
@@ -109,12 +99,12 @@ fun WeeklyReviewScreen(
                     Text(
                         text = "Weekly review",
                         style = MaterialTheme.typography.headlineMedium,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                     Text(
                         text = "Your focus, one week at a time.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
             }
@@ -198,7 +188,7 @@ fun WeeklyReviewScreen(
                         Text(
                             text = "By subject",
                             style = MaterialTheme.typography.titleLarge,
-                            color = TextPrimary
+                            color = FrostTheme.colors.textPrimary
                         )
                         SubjectBreakdown(subjects = report.subjects)
                     }
@@ -214,13 +204,13 @@ fun WeeklyReviewScreen(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
-                                .background(SurfaceHigh),
+                                .background(FrostTheme.colors.surfaceContainerHigh),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.EditNote,
                                 contentDescription = null,
-                                tint = AccentFrost,
+                                tint = FrostTheme.colors.secondary,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -233,18 +223,18 @@ fun WeeklyReviewScreen(
                                     "${report.reflections} ${if (report.reflections == 1) "reflection" else "reflections"} $period"
                                 },
                                 style = MaterialTheme.typography.titleMedium,
-                                color = TextPrimary
+                                color = FrostTheme.colors.textPrimary
                             )
                             Text(
                                 text = "Open reflections",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = TextSecondary
+                                color = FrostTheme.colors.textSecondary
                             )
                         }
                         Icon(
                             imageVector = Icons.Default.ArrowForwardIos,
                             contentDescription = null,
-                            tint = TextSecondary,
+                            tint = FrostTheme.colors.textSecondary,
                             modifier = Modifier.size(14.dp)
                         )
                     }
@@ -264,25 +254,25 @@ fun WeeklyReviewScreen(
                             modifier = Modifier
                                 .size(48.dp)
                                 .clip(CircleShape)
-                                .background(SurfaceHigh),
+                                .background(FrostTheme.colors.surfaceContainerHigh),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.AcUnit,
                                 contentDescription = null,
-                                tint = AccentFrost,
+                                tint = FrostTheme.colors.secondary,
                                 modifier = Modifier.size(22.dp)
                             )
                         }
                         Text(
                             text = "No focus logged $period",
                             style = MaterialTheme.typography.titleMedium,
-                            color = TextPrimary
+                            color = FrostTheme.colors.textPrimary
                         )
                         Text(
                             text = "A single session is enough to start the graph.",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = TextSecondary,
+                            color = FrostTheme.colors.textSecondary,
                             textAlign = TextAlign.Center
                         )
                         PrimaryButton(
@@ -313,7 +303,7 @@ private fun WeekSwitcher(
                 Icon(
                     imageVector = Icons.Default.ChevronLeft,
                     contentDescription = "Previous week",
-                    tint = AccentFrost
+                    tint = FrostTheme.colors.secondary
                 )
             }
             Column(
@@ -323,19 +313,19 @@ private fun WeekSwitcher(
                 Text(
                     text = label,
                     style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = range,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
             IconButton(onClick = onNext, enabled = canGoForward) {
                 Icon(
                     imageVector = Icons.Default.ChevronRight,
                     contentDescription = "Next week",
-                    tint = if (canGoForward) AccentFrost else SurfaceHigh
+                    tint = if (canGoForward) FrostTheme.colors.secondary else FrostTheme.colors.surfaceContainerHigh
                 )
             }
         }
@@ -349,9 +339,9 @@ private fun HeroCard(report: WeeklyReport, isCurrentWeek: Boolean) {
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.large)
             .background(
-                Brush.verticalGradient(GradientHero)
+                Brush.verticalGradient(FrostTheme.colors.heroGradient)
             )
-            .border(1.dp, StrokeSoft, MaterialTheme.shapes.large)
+            .border(1.dp, FrostTheme.colors.outline, MaterialTheme.shapes.large)
             .padding(18.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -359,7 +349,7 @@ private fun HeroCard(report: WeeklyReport, isCurrentWeek: Boolean) {
                 Text(
                     text = if (isCurrentWeek) "FOCUSED THIS WEEK" else "FOCUSED THAT WEEK",
                     style = MaterialTheme.typography.labelMedium,
-                    color = AccentFrost,
+                    color = FrostTheme.colors.secondary,
                     modifier = Modifier.weight(1f)
                 )
                 ChangeChip(report = report)
@@ -367,7 +357,7 @@ private fun HeroCard(report: WeeklyReport, isCurrentWeek: Boolean) {
             Text(
                 text = formatDuration(report.totalSeconds),
                 style = MaterialTheme.typography.displayMedium,
-                color = TextPrimary
+                color = FrostTheme.colors.textPrimary
             )
             Text(
                 text = if (report.sessions == 0) {
@@ -382,13 +372,13 @@ private fun HeroCard(report: WeeklyReport, isCurrentWeek: Boolean) {
                     }
                 },
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
             if (report.previousSeconds > 0L) {
                 Text(
                     text = "Week before: ${formatDuration(report.previousSeconds)}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -400,18 +390,18 @@ private fun ChangeChip(report: WeeklyReport) {
     val change = report.changePercent
     val (text, color, icon) = when {
         change == null && report.totalSeconds > 0L ->
-            Triple("Fresh start", SuccessGreen, null)
+            Triple("Fresh start", FrostTheme.colors.success, null)
         change == null ->
-            Triple("No data", TextSecondary, null)
-        change > 0 -> Triple("+$change%", SuccessGreen, Icons.Default.ArrowUpward)
-        change < 0 -> Triple("$change%", DangerRed, Icons.Default.ArrowDownward)
-        else -> Triple("Same as last week", TextSecondary, null)
+            Triple("No data", FrostTheme.colors.textSecondary, null)
+        change > 0 -> Triple("+$change%", FrostTheme.colors.success, Icons.Default.ArrowUpward)
+        change < 0 -> Triple("$change%", FrostTheme.colors.danger, Icons.Default.ArrowDownward)
+        else -> Triple("Same as last week", FrostTheme.colors.textSecondary, null)
     }
 
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(100.dp))
-            .background(SurfaceHigh.copy(alpha = 0.7f))
+            .background(FrostTheme.colors.surfaceContainerHigh.copy(alpha = 0.7f))
             .padding(horizontal = 10.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -442,12 +432,12 @@ private fun ImprovementCard(report: ImprovementReport, onStartFocus: () -> Unit)
                     Text(
                         text = "Your baseline starts today",
                         style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                     Text(
                         text = "Focus for 7 days and FrostLock will show how your time, sessions and streak improve. Everything stays on this device.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                     PrimaryButton(
                         text = "Start a focus session",
@@ -460,12 +450,12 @@ private fun ImprovementCard(report: ImprovementReport, onStartFocus: () -> Unit)
                     Text(
                         text = "Day ${report.baselineDaysCollected} of ${report.baselineTargetDays}",
                         style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                     Text(
                         text = "Keep focusing. Your first week becomes the baseline for every improvement report.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                     BaselineProgress(
                         collected = report.baselineDaysCollected,
@@ -477,13 +467,13 @@ private fun ImprovementCard(report: ImprovementReport, onStartFocus: () -> Unit)
                     Text(
                         text = "Baseline saved",
                         style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                     Text(
                         text = "Your first comparison unlocks in ${report.daysUntilComparison} " +
                             "${if (report.daysUntilComparison == 1) "day" else "days"}. Keep the rhythm going.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                     BaselineProgress(
                         collected = report.baselineTargetDays,
@@ -495,7 +485,7 @@ private fun ImprovementCard(report: ImprovementReport, onStartFocus: () -> Unit)
                     Text(
                         text = "Compared with your first 7 days",
                         style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                     report.metrics.forEach { metric ->
                         ImprovementMetricRow(metric = metric)
@@ -511,7 +501,7 @@ private fun ImprovementHeader(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.labelMedium,
-        color = AccentFrost
+        color = FrostTheme.colors.secondary
     )
 }
 
@@ -523,14 +513,14 @@ private fun BaselineProgress(collected: Int, target: Int) {
             .fillMaxWidth()
             .height(6.dp)
             .clip(RoundedCornerShape(3.dp))
-            .background(SurfaceHigh)
+            .background(FrostTheme.colors.surfaceContainerHigh)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxHeight()
                 .fillMaxWidth(fraction)
                 .clip(RoundedCornerShape(3.dp))
-                .background(Brush.horizontalGradient(listOf(PrimaryIce, GlacierBlue)))
+                .background(Brush.horizontalGradient(listOf(FrostTheme.colors.primary, FrostTheme.colors.glacier)))
         )
     }
 }
@@ -538,16 +528,16 @@ private fun BaselineProgress(collected: Int, target: Int) {
 @Composable
 private fun ImprovementMetricRow(metric: ImprovementMetric) {
     val color = when (metric.trend) {
-        ImprovementTrend.UP -> SuccessGreen
-        ImprovementTrend.DOWN -> DangerRed
-        ImprovementTrend.FLAT -> TextSecondary
+        ImprovementTrend.UP -> FrostTheme.colors.success
+        ImprovementTrend.DOWN -> FrostTheme.colors.danger
+        ImprovementTrend.FLAT -> FrostTheme.colors.textSecondary
     }
     Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = metric.label,
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextPrimary,
+                color = FrostTheme.colors.textPrimary,
                 modifier = Modifier.weight(1f)
             )
             Row(
@@ -580,7 +570,7 @@ private fun ImprovementMetricRow(metric: ImprovementMetric) {
         Text(
             text = "First week ${metric.baselineText}  →  now ${metric.currentText}",
             style = MaterialTheme.typography.bodySmall,
-            color = TextSecondary
+            color = FrostTheme.colors.textSecondary
         )
     }
 }
@@ -593,14 +583,14 @@ private fun DailyRhythm(report: WeeklyReport) {
                 Text(
                     text = "Daily rhythm",
                     style = MaterialTheme.typography.titleLarge,
-                    color = TextPrimary,
+                    color = FrostTheme.colors.textPrimary,
                     modifier = Modifier.weight(1f)
                 )
                 report.bestDay?.let { best ->
                     Text(
                         text = "Best: ${best.date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.US)}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = AccentFrost
+                        color = FrostTheme.colors.secondary
                     )
                 }
             }
@@ -632,7 +622,7 @@ private fun WeeklyBars(days: List<WeekDay>, bestDate: java.time.LocalDate?) {
                     Text(
                         text = formatDuration(day.seconds),
                         style = MaterialTheme.typography.labelMedium,
-                        color = if (isBest) AccentFrost else TextSecondary,
+                        color = if (isBest) FrostTheme.colors.secondary else FrostTheme.colors.textSecondary,
                         maxLines = 1
                     )
                     Spacer(modifier = Modifier.height(4.dp))
@@ -646,13 +636,13 @@ private fun WeeklyBars(days: List<WeekDay>, bestDate: java.time.LocalDate?) {
                         .background(
                             when {
                                 isBest -> Brush.verticalGradient(
-                                    listOf(PrimaryIce, GlacierBlue)
+                                    listOf(FrostTheme.colors.primary, FrostTheme.colors.glacier)
                                 )
                                 day.isToday -> Brush.verticalGradient(
-                                    listOf(PrimaryIce.copy(alpha = 0.75f), GlacierBlue.copy(alpha = 0.55f))
+                                    listOf(FrostTheme.colors.primary.copy(alpha = 0.75f), FrostTheme.colors.glacier.copy(alpha = 0.55f))
                                 )
                                 else -> Brush.verticalGradient(
-                                    listOf(PrimaryIce.copy(alpha = 0.4f), GlacierBlue.copy(alpha = 0.22f))
+                                    listOf(FrostTheme.colors.primary.copy(alpha = 0.4f), FrostTheme.colors.glacier.copy(alpha = 0.22f))
                                 )
                             }
                         )
@@ -662,9 +652,9 @@ private fun WeeklyBars(days: List<WeekDay>, bestDate: java.time.LocalDate?) {
                     text = day.label,
                     style = MaterialTheme.typography.bodyMedium,
                     color = when {
-                        isBest -> AccentFrost
-                        day.isToday -> TextPrimary
-                        else -> TextSecondary
+                        isBest -> FrostTheme.colors.secondary
+                        day.isToday -> FrostTheme.colors.textPrimary
+                        else -> FrostTheme.colors.textSecondary
                     }
                 )
             }
@@ -680,13 +670,13 @@ private fun BestDayCard(day: WeekDay) {
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(SurfaceHigh),
+                    .background(FrostTheme.colors.surfaceContainerHigh),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Star,
                     contentDescription = null,
-                    tint = AccentFrost,
+                    tint = FrostTheme.colors.secondary,
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -695,24 +685,24 @@ private fun BestDayCard(day: WeekDay) {
                 Text(
                     text = "Best day",
                     style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = day.date.format(DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale.US)),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = formatDuration(day.seconds),
                     style = MaterialTheme.typography.titleMedium,
-                    color = AccentFrost
+                    color = FrostTheme.colors.secondary
                 )
                 Text(
                     text = "${day.sessions} ${if (day.sessions == 1) "session" else "sessions"}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -740,13 +730,13 @@ private fun SubjectBreakdown(subjects: List<WeekSubject>) {
                     Text(
                         text = subject.tag,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextPrimary,
+                        color = FrostTheme.colors.textPrimary,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
                         text = formatDuration(subject.seconds),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
                 Box(
@@ -754,7 +744,7 @@ private fun SubjectBreakdown(subjects: List<WeekSubject>) {
                         .fillMaxWidth()
                         .height(6.dp)
                         .clip(RoundedCornerShape(3.dp))
-                        .background(SurfaceHigh)
+                        .background(FrostTheme.colors.surfaceContainerHigh)
                 ) {
                     Box(
                         modifier = Modifier

@@ -15,8 +15,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.frostlock.app.ui.theme.FrostLockTheme
-import com.frostlock.app.ui.theme.GradientFrost
-import com.frostlock.app.ui.theme.TextPrimary
+import com.frostlock.app.ui.theme.FrostTheme
 
 @Composable
 fun PrimaryButton(
@@ -30,7 +29,7 @@ fun PrimaryButton(
             Modifier
                 .matchParentSize()
                 .background(
-                    brush = Brush.horizontalGradient(GradientFrost),
+                    brush = Brush.horizontalGradient(FrostTheme.colors.actionGradient),
                     shape = CircleShape
                 )
         )

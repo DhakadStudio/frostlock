@@ -40,19 +40,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SectionHeader
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.GlacierBlue
-import com.frostlock.app.ui.theme.GradientHero
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.util.FocusLevel
 import com.frostlock.app.ui.util.FocusLevelStep
 import com.frostlock.app.ui.util.focusLevelLadder
 import com.frostlock.app.ui.util.focusLevelShareText
+import com.frostlock.app.ui.theme.FrostTheme
 
 /**
  * The full freeze ladder. Every rung is derived from locally saved sessions, so
@@ -71,7 +63,7 @@ fun LevelsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(FrostTheme.colors.background)
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -81,7 +73,7 @@ fun LevelsScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = TextPrimary
+                    tint = FrostTheme.colors.textPrimary
                 )
             }
             Spacer(modifier = Modifier.width(4.dp))
@@ -89,12 +81,12 @@ fun LevelsScreen(
                 Text(
                     text = "Levels",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = "Titles earned from lifetime focus.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -118,7 +110,7 @@ fun LevelsScreen(
             text = "Each title needs more focus time than the last. Progress is " +
                 "measured from every saved session on this device.",
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary
+            color = FrostTheme.colors.textSecondary
         )
 
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -138,13 +130,13 @@ fun LevelsScreen(
                     modifier = Modifier
                         .size(38.dp)
                         .clip(CircleShape)
-                        .background(SurfaceHigh),
+                        .background(FrostTheme.colors.surfaceContainerHigh),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.AcUnit,
                         contentDescription = null,
-                        tint = AccentFrost,
+                        tint = FrostTheme.colors.secondary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -153,7 +145,7 @@ fun LevelsScreen(
                     text = "Levels are calculated from your saved sessions — no " +
                         "currency, purchases or store, and nothing is uploaded.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -166,8 +158,8 @@ private fun LevelHero(level: FocusLevel) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(Brush.verticalGradient(GradientHero))
-            .border(1.dp, StrokeSoft, RoundedCornerShape(24.dp))
+            .background(Brush.verticalGradient(FrostTheme.colors.heroGradient))
+            .border(1.dp, FrostTheme.colors.outline, RoundedCornerShape(24.dp))
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -176,13 +168,13 @@ private fun LevelHero(level: FocusLevel) {
                 modifier = Modifier
                     .size(56.dp)
                     .clip(CircleShape)
-                    .background(SurfaceHigh),
+                    .background(FrostTheme.colors.surfaceContainerHigh),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = level.level.toString(),
                     style = MaterialTheme.typography.headlineMedium,
-                    color = AccentFrost
+                    color = FrostTheme.colors.secondary
                 )
             }
             Spacer(modifier = Modifier.width(14.dp))
@@ -190,18 +182,18 @@ private fun LevelHero(level: FocusLevel) {
                 Text(
                     text = "CURRENT TITLE",
                     style = MaterialTheme.typography.labelSmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
                 Text(
                     text = level.title,
                     style = MaterialTheme.typography.headlineMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
             }
             Text(
                 text = minutesLabel(level.totalMinutes),
                 style = MaterialTheme.typography.titleMedium,
-                color = AccentFrost
+                color = FrostTheme.colors.secondary
             )
         }
 
@@ -210,14 +202,14 @@ private fun LevelHero(level: FocusLevel) {
                 .fillMaxWidth()
                 .height(10.dp)
                 .clip(RoundedCornerShape(5.dp))
-                .background(SurfaceHigh)
+                .background(FrostTheme.colors.surfaceContainerHigh)
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(level.progress.coerceIn(0f, 1f))
                     .clip(RoundedCornerShape(5.dp))
-                    .background(Brush.horizontalGradient(listOf(PrimaryIce, GlacierBlue)))
+                    .background(Brush.horizontalGradient(listOf(FrostTheme.colors.primary, FrostTheme.colors.glacier)))
             )
         }
 
@@ -226,13 +218,13 @@ private fun LevelHero(level: FocusLevel) {
                 text = "${minutesLabel(level.minutesIntoLevel)} / " +
                     minutesLabel(level.minutesForNextLevel),
                 style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "${minutesLabel(level.minutesToNextLevel)} to level ${level.level + 1}",
                 style = MaterialTheme.typography.bodySmall,
-                color = AccentFrost
+                color = FrostTheme.colors.secondary
             )
         }
     }
@@ -251,10 +243,10 @@ private fun LevelRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(shape)
-            .background(SurfaceHigh.copy(alpha = if (isCurrent) 0.9f else 0.45f))
+            .background(FrostTheme.colors.surfaceContainerHigh.copy(alpha = if (isCurrent) 0.9f else 0.45f))
             .border(
                 width = 1.dp,
-                color = if (isCurrent) AccentFrost else StrokeSoft,
+                color = if (isCurrent) FrostTheme.colors.secondary else FrostTheme.colors.outline,
                 shape = shape
             )
             .padding(horizontal = 14.dp, vertical = 12.dp),
@@ -266,9 +258,9 @@ private fun LevelRow(
                 .clip(CircleShape)
                 .background(
                     if (step.reached) {
-                        Brush.linearGradient(listOf(PrimaryIce, GlacierBlue))
+                        Brush.linearGradient(listOf(FrostTheme.colors.primary, FrostTheme.colors.glacier))
                     } else {
-                        Brush.linearGradient(listOf(SurfaceHigh, SurfaceHigh))
+                        Brush.linearGradient(listOf(FrostTheme.colors.surfaceContainerHigh, FrostTheme.colors.surfaceContainerHigh))
                     }
                 ),
             contentAlignment = Alignment.Center
@@ -277,14 +269,14 @@ private fun LevelRow(
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = null,
-                    tint = BackgroundDark,
+                    tint = FrostTheme.colors.background,
                     modifier = Modifier.size(20.dp)
                 )
             } else {
                 Text(
                     text = step.level.toString(),
                     style = MaterialTheme.typography.titleMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -293,7 +285,7 @@ private fun LevelRow(
             Text(
                 text = step.title,
                 style = MaterialTheme.typography.titleMedium,
-                color = if (step.reached) TextPrimary else TextSecondary
+                color = if (step.reached) FrostTheme.colors.textPrimary else FrostTheme.colors.textSecondary
             )
             Text(
                 text = if (step.minutesRequired == 0L) {
@@ -302,7 +294,7 @@ private fun LevelRow(
                     "Starts at ${minutesLabel(step.minutesRequired)} focused"
                 },
                 style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
         }
         Text(
@@ -313,9 +305,9 @@ private fun LevelRow(
             },
             style = MaterialTheme.typography.labelMedium,
             color = when {
-                isCurrent -> AccentFrost
-                step.reached -> TextSecondary
-                else -> TextSecondary
+                isCurrent -> FrostTheme.colors.secondary
+                step.reached -> FrostTheme.colors.textSecondary
+                else -> FrostTheme.colors.textSecondary
             }
         )
     }

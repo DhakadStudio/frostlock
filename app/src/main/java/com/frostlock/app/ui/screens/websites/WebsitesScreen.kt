@@ -56,19 +56,8 @@ import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.MoodChip
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SectionHeader
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.DangerRed
-import com.frostlock.app.ui.theme.GradientFrost
-import com.frostlock.app.ui.theme.InkOnIce
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SuccessGreen
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
-import com.frostlock.app.ui.theme.WarnAmber
 import com.frostlock.app.ui.util.WebsiteCategory
+import com.frostlock.app.ui.theme.FrostTheme
 
 /**
  * Opt-in, fully local website blocking. FrostLock reads the browser address bar
@@ -100,7 +89,7 @@ fun WebsitesScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(FrostTheme.colors.background)
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -110,7 +99,7 @@ fun WebsitesScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = TextPrimary
+                    tint = FrostTheme.colors.textPrimary
                 )
             }
             Spacer(modifier = Modifier.width(4.dp))
@@ -118,12 +107,12 @@ fun WebsitesScreen(
                 Text(
                     text = "Website blocking",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = "Held only while focus is active",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -143,13 +132,13 @@ fun WebsitesScreen(
                         Icon(
                             imageVector = Icons.Default.Shield,
                             contentDescription = null,
-                            tint = WarnAmber
+                            tint = FrostTheme.colors.warning
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = "Accessibility is off",
                             style = MaterialTheme.typography.titleMedium,
-                            color = TextPrimary
+                            color = FrostTheme.colors.textPrimary
                         )
                     }
                     Text(
@@ -157,7 +146,7 @@ fun WebsitesScreen(
                             "accessibility service. Without it, sites cannot be detected. " +
                             "FrostLock never stores pages or typing.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                     PrimaryButton(
                         text = "Open accessibility settings",
@@ -173,13 +162,13 @@ fun WebsitesScreen(
                     modifier = Modifier
                         .size(38.dp)
                         .clip(CircleShape)
-                        .background(SurfaceHigh),
+                        .background(FrostTheme.colors.surfaceContainerHigh),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Language,
                         contentDescription = null,
-                        tint = AccentFrost,
+                        tint = FrostTheme.colors.secondary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -189,7 +178,7 @@ fun WebsitesScreen(
                         "active schedule. No VPN, no internet permission, and " +
                         "nothing leaves this device.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -207,7 +196,7 @@ fun WebsitesScreen(
                                 "everything else opens."
                     },
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     MoodChip(
@@ -249,17 +238,17 @@ fun WebsitesScreen(
                             },
                             modifier = Modifier.weight(1f),
                             placeholder = {
-                                Text(text = "example.com", color = TextSecondary)
+                                Text(text = "example.com", color = FrostTheme.colors.textSecondary)
                             },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
                             textStyle = MaterialTheme.typography.bodyLarge,
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = PrimaryIce,
-                                unfocusedBorderColor = StrokeSoft,
-                                focusedTextColor = TextPrimary,
-                                unfocusedTextColor = TextPrimary,
-                                cursorColor = AccentFrost
+                                focusedBorderColor = FrostTheme.colors.primary,
+                                unfocusedBorderColor = FrostTheme.colors.outline,
+                                focusedTextColor = FrostTheme.colors.textPrimary,
+                                unfocusedTextColor = FrostTheme.colors.textPrimary,
+                                cursorColor = FrostTheme.colors.secondary
                             ),
                             shape = MaterialTheme.shapes.medium
                         )
@@ -268,7 +257,7 @@ fun WebsitesScreen(
                             modifier = Modifier
                                 .size(48.dp)
                                 .clip(CircleShape)
-                                .background(Brush.linearGradient(GradientFrost))
+                                .background(Brush.linearGradient(FrostTheme.colors.actionGradient))
                                 .clickable {
                                     val added = newDomain.isNotBlank() &&
                                         viewModel.addDomain(newDomain)
@@ -284,7 +273,7 @@ fun WebsitesScreen(
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = "Add site",
-                                tint = InkOnIce
+                                tint = FrostTheme.colors.onPrimary
                             )
                         }
                     }
@@ -293,7 +282,7 @@ fun WebsitesScreen(
                         Text(
                             text = message,
                             style = MaterialTheme.typography.bodySmall,
-                            color = DangerRed
+                            color = FrostTheme.colors.danger
                         )
                     }
 
@@ -302,7 +291,7 @@ fun WebsitesScreen(
                             text = "No custom sites yet. Curated lists above are always " +
                                 "editable, and any domain you add stays on this device.",
                             style = MaterialTheme.typography.bodySmall,
-                            color = TextSecondary
+                            color = FrostTheme.colors.textSecondary
                         )
                     } else {
                         state.customDomains.forEach { domain ->
@@ -328,14 +317,14 @@ fun WebsitesScreen(
                                 "block list. Useful for study resources and reference pages."
                     },
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
                 if (state.allowOnly && state.allowedDomains.isEmpty()) {
                     Text(
                         text = "The study list is empty, so nothing is held yet. " +
                             "Add the sites you want to keep.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = WarnAmber
+                        color = FrostTheme.colors.warning
                     )
                 }
                 Row(
@@ -350,17 +339,17 @@ fun WebsitesScreen(
                         },
                         modifier = Modifier.weight(1f),
                         placeholder = {
-                            Text(text = "wikipedia.org", color = TextSecondary)
+                            Text(text = "wikipedia.org", color = FrostTheme.colors.textSecondary)
                         },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
                         textStyle = MaterialTheme.typography.bodyLarge,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryIce,
-                            unfocusedBorderColor = StrokeSoft,
-                            focusedTextColor = TextPrimary,
-                            unfocusedTextColor = TextPrimary,
-                            cursorColor = AccentFrost
+                            focusedBorderColor = FrostTheme.colors.primary,
+                            unfocusedBorderColor = FrostTheme.colors.outline,
+                            focusedTextColor = FrostTheme.colors.textPrimary,
+                            unfocusedTextColor = FrostTheme.colors.textPrimary,
+                            cursorColor = FrostTheme.colors.secondary
                         ),
                         shape = MaterialTheme.shapes.medium
                     )
@@ -369,7 +358,7 @@ fun WebsitesScreen(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(CircleShape)
-                            .background(Brush.linearGradient(GradientFrost))
+                            .background(Brush.linearGradient(FrostTheme.colors.actionGradient))
                             .clickable {
                                 val added = newAllowedDomain.isNotBlank() &&
                                     viewModel.addAllowedDomain(newAllowedDomain)
@@ -385,7 +374,7 @@ fun WebsitesScreen(
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Allow site",
-                            tint = InkOnIce
+                            tint = FrostTheme.colors.onPrimary
                         )
                     }
                 }
@@ -394,7 +383,7 @@ fun WebsitesScreen(
                     Text(
                         text = message,
                         style = MaterialTheme.typography.bodySmall,
-                        color = DangerRed
+                        color = FrostTheme.colors.danger
                     )
                 }
 
@@ -402,7 +391,7 @@ fun WebsitesScreen(
                     Text(
                         text = "No allowed sites yet.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 } else {
                     state.allowedDomains.sorted().forEach { domain ->
@@ -435,9 +424,9 @@ private fun WebsiteToggleCard(
                     .clip(CircleShape)
                     .background(
                         if (enabled) {
-                            Brush.linearGradient(GradientFrost)
+                            Brush.linearGradient(FrostTheme.colors.actionGradient)
                         } else {
-                            androidx.compose.ui.graphics.SolidColor(SurfaceHigh)
+                            androidx.compose.ui.graphics.SolidColor(FrostTheme.colors.surfaceContainerHigh)
                         }
                     ),
                 contentAlignment = Alignment.Center
@@ -445,7 +434,7 @@ private fun WebsiteToggleCard(
                 Icon(
                     imageVector = Icons.Default.Language,
                     contentDescription = null,
-                    tint = if (enabled) InkOnIce else TextSecondary,
+                    tint = if (enabled) FrostTheme.colors.onPrimary else FrostTheme.colors.textSecondary,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -454,7 +443,7 @@ private fun WebsiteToggleCard(
                 Text(
                     text = "Block distracting sites",
                     style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = when {
@@ -463,7 +452,7 @@ private fun WebsiteToggleCard(
                         else -> "Off — websites are never checked"
                     },
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (enabled) SuccessGreen else TextSecondary
+                    color = if (enabled) FrostTheme.colors.success else FrostTheme.colors.textSecondary
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
@@ -472,9 +461,9 @@ private fun WebsiteToggleCard(
                 onCheckedChange = onToggle,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
-                    checkedTrackColor = PrimaryIce,
-                    uncheckedThumbColor = TextSecondary,
-                    uncheckedTrackColor = SurfaceHigh
+                    checkedTrackColor = FrostTheme.colors.primary,
+                    uncheckedThumbColor = FrostTheme.colors.textSecondary,
+                    uncheckedTrackColor = FrostTheme.colors.surfaceContainerHigh
                 )
             )
         }
@@ -500,7 +489,7 @@ private fun CategoryCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(1.dp)
-                            .background(StrokeSoft)
+                            .background(FrostTheme.colors.outline)
                     )
                 }
             }
@@ -524,7 +513,7 @@ private fun DomainRow(
         Text(
             text = domain,
             style = MaterialTheme.typography.bodyLarge,
-            color = if (checked) TextPrimary else TextSecondary,
+            color = if (checked) FrostTheme.colors.textPrimary else FrostTheme.colors.textSecondary,
             modifier = Modifier.weight(1f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
@@ -534,9 +523,9 @@ private fun DomainRow(
             onCheckedChange = onToggle,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = PrimaryIce,
-                uncheckedThumbColor = TextSecondary,
-                uncheckedTrackColor = SurfaceHigh
+                checkedTrackColor = FrostTheme.colors.primary,
+                uncheckedThumbColor = FrostTheme.colors.textSecondary,
+                uncheckedTrackColor = FrostTheme.colors.surfaceContainerHigh
             )
         )
     }
@@ -548,21 +537,21 @@ private fun CustomDomainRow(domain: String, onRemove: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(SurfaceHigh)
+            .background(FrostTheme.colors.surfaceContainerHigh)
             .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Default.Language,
             contentDescription = null,
-            tint = AccentFrost,
+            tint = FrostTheme.colors.secondary,
             modifier = Modifier.size(18.dp)
         )
         Spacer(modifier = Modifier.width(10.dp))
         Text(
             text = domain,
             style = MaterialTheme.typography.bodyLarge,
-            color = TextPrimary,
+            color = FrostTheme.colors.textPrimary,
             modifier = Modifier.weight(1f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
@@ -571,7 +560,7 @@ private fun CustomDomainRow(domain: String, onRemove: () -> Unit) {
             Icon(
                 imageVector = Icons.Default.Delete,
                 contentDescription = "Remove $domain",
-                tint = TextSecondary
+                tint = FrostTheme.colors.textSecondary
             )
         }
     }
@@ -583,21 +572,21 @@ private fun AllowedDomainRow(domain: String, onRemove: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(SurfaceHigh)
+            .background(FrostTheme.colors.surfaceContainerHigh)
             .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Default.Shield,
             contentDescription = null,
-            tint = SuccessGreen,
+            tint = FrostTheme.colors.success,
             modifier = Modifier.size(18.dp)
         )
         Spacer(modifier = Modifier.width(10.dp))
         Text(
             text = domain,
             style = MaterialTheme.typography.bodyLarge,
-            color = TextPrimary,
+            color = FrostTheme.colors.textPrimary,
             modifier = Modifier.weight(1f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
@@ -606,7 +595,7 @@ private fun AllowedDomainRow(domain: String, onRemove: () -> Unit) {
             Icon(
                 imageVector = Icons.Default.Delete,
                 contentDescription = "Remove $domain",
-                tint = TextSecondary
+                tint = FrostTheme.colors.textSecondary
             )
         }
     }

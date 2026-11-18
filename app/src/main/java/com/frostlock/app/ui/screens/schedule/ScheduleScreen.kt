@@ -48,15 +48,6 @@ import com.frostlock.app.data.local.prefs.FocusSchedule
 import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SectionHeader
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.DangerRed
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.SuccessGreen
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
-import com.frostlock.app.ui.theme.WarnAmber
 import com.frostlock.app.ui.util.UpcomingSession
 import com.frostlock.app.ui.util.hasOverlap
 import com.frostlock.app.ui.util.upcomingCountdown
@@ -67,6 +58,7 @@ import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.frostlock.app.ui.theme.FrostTheme
 
 @Composable
 fun ScheduleScreen(
@@ -110,7 +102,7 @@ fun ScheduleScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(FrostTheme.colors.background)
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -125,7 +117,7 @@ fun ScheduleScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = TextPrimary
+                        tint = FrostTheme.colors.textPrimary
                     )
                 }
                 Spacer(modifier = Modifier.width(4.dp))
@@ -133,12 +125,12 @@ fun ScheduleScreen(
                     Text(
                         text = "Blocking rules",
                         style = MaterialTheme.typography.headlineMedium,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                     Text(
                         text = "Different apps, days, dates and times",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
             }
@@ -149,7 +141,7 @@ fun ScheduleScreen(
                 Text(
                     text = "Each rule blocks its own set of apps, so “Study” and “Work” can lock different apps at different times. Rules run independently of the focus-blocking switch. When rules overlap, every matching rule applies.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = AccentFrost
+                    color = FrostTheme.colors.secondary
                 )
             }
         }
@@ -161,13 +153,13 @@ fun ScheduleScreen(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(SurfaceHigh),
+                            .background(FrostTheme.colors.surfaceContainerHigh),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.NotificationsActive,
                             contentDescription = null,
-                            tint = AccentFrost,
+                            tint = FrostTheme.colors.secondary,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -176,12 +168,12 @@ fun ScheduleScreen(
                         Text(
                             text = "Start & end reminders",
                             style = MaterialTheme.typography.titleMedium,
-                            color = TextPrimary
+                            color = FrostTheme.colors.textPrimary
                         )
                         Text(
                             text = "Local alerts when a rule starts or ends.",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = TextSecondary
+                            color = FrostTheme.colors.textSecondary
                         )
                     }
                     Spacer(modifier = Modifier.width(10.dp))
@@ -189,10 +181,10 @@ fun ScheduleScreen(
                         checked = remindersEnabled,
                         onCheckedChange = viewModel::setRemindersEnabled,
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = TextPrimary,
-                            checkedTrackColor = PrimaryIce,
-                            uncheckedThumbColor = TextSecondary,
-                            uncheckedTrackColor = SurfaceHigh
+                            checkedThumbColor = FrostTheme.colors.textPrimary,
+                            checkedTrackColor = FrostTheme.colors.primary,
+                            uncheckedThumbColor = FrostTheme.colors.textSecondary,
+                            uncheckedTrackColor = FrostTheme.colors.surfaceContainerHigh
                         )
                     )
                 }
@@ -224,7 +216,7 @@ fun ScheduleScreen(
                     Text(
                         text = "No rules yet. Add one to lock a set of apps on chosen days, dates and times.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
             }
@@ -294,20 +286,20 @@ private fun ScheduleRow(
                         Text(
                             text = schedule.label,
                             style = MaterialTheme.typography.titleLarge,
-                            color = TextPrimary
+                            color = FrostTheme.colors.textPrimary
                         )
                         if (isActive) {
                             Spacer(modifier = Modifier.width(8.dp))
                             Box(
                                 modifier = Modifier
                                     .clip(MaterialTheme.shapes.extraLarge)
-                                    .background(SuccessGreen.copy(alpha = 0.16f))
+                                    .background(FrostTheme.colors.success.copy(alpha = 0.16f))
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
                                 Text(
                                     text = "Active now",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = SuccessGreen
+                                    color = FrostTheme.colors.success
                                 )
                             }
                         }
@@ -316,13 +308,13 @@ private fun ScheduleRow(
                             Box(
                                 modifier = Modifier
                                     .clip(MaterialTheme.shapes.extraLarge)
-                                    .background(WarnAmber.copy(alpha = 0.14f))
+                                    .background(FrostTheme.colors.warning.copy(alpha = 0.14f))
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
                                 Text(
                                     text = "Overlaps",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = WarnAmber
+                                    color = FrostTheme.colors.warning
                                 )
                             }
                         }
@@ -334,29 +326,29 @@ private fun ScheduleRow(
                             else -> daysSummary(schedule.days)
                         },
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                     dateRangeSummary(schedule.fromDate, schedule.untilDate)?.let { range ->
                         Text(
                             text = range,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = TextSecondary
+                            color = FrostTheme.colors.textSecondary
                         )
                     }
                     Text(
                         text = "${formatTime(schedule.startMinutes)} – ${formatTime(schedule.endMinutes)}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = AccentFrost
+                        color = FrostTheme.colors.secondary
                     )
                 }
                 Switch(
                     checked = schedule.enabled,
                     onCheckedChange = onToggle,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = TextPrimary,
-                        checkedTrackColor = PrimaryIce,
-                        uncheckedThumbColor = TextSecondary,
-                        uncheckedTrackColor = SurfaceHigh
+                        checkedThumbColor = FrostTheme.colors.textPrimary,
+                        checkedTrackColor = FrostTheme.colors.primary,
+                        uncheckedThumbColor = FrostTheme.colors.textSecondary,
+                        uncheckedTrackColor = FrostTheme.colors.surfaceContainerHigh
                     )
                 )
             }
@@ -364,7 +356,7 @@ private fun ScheduleRow(
             Text(
                 text = appsSummary(schedule.packages, labels),
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary,
+                color = FrostTheme.colors.textSecondary,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -374,10 +366,10 @@ private fun ScheduleRow(
                 horizontalArrangement = Arrangement.End
             ) {
                 TextButton(onClick = onEdit) {
-                    Text(text = "Edit", color = AccentFrost)
+                    Text(text = "Edit", color = FrostTheme.colors.secondary)
                 }
                 TextButton(onClick = onDelete) {
-                    Text(text = "Delete", color = DangerRed)
+                    Text(text = "Delete", color = FrostTheme.colors.danger)
                 }
             }
         }
@@ -392,13 +384,13 @@ private fun StreakCard(days: Int) {
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(SurfaceHigh),
+                    .background(FrostTheme.colors.surfaceContainerHigh),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.AcUnit,
                     contentDescription = null,
-                    tint = if (days > 0) AccentFrost else TextSecondary,
+                    tint = if (days > 0) FrostTheme.colors.secondary else FrostTheme.colors.textSecondary,
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -411,7 +403,7 @@ private fun StreakCard(days: Int) {
                         "Schedule streak"
                     },
                     style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = if (days > 0) {
@@ -420,7 +412,7 @@ private fun StreakCard(days: Int) {
                         "Start a session during a rule window to build one."
                     },
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -435,14 +427,14 @@ private fun UpcomingCard(upcoming: List<UpcomingSession>, now: ZonedDateTime) {
                 Text(
                     text = "NEXT 7 DAYS",
                     style = MaterialTheme.typography.labelSmall,
-                    color = AccentFrost
+                    color = FrostTheme.colors.secondary
                 )
             }
             if (upcoming.isEmpty()) {
                 Text(
                     text = "No rule windows in the next 7 days. Paused rules and one-off dates that already passed are skipped.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             } else {
                 upcoming.forEach { session ->
@@ -460,13 +452,13 @@ private fun UpcomingRow(session: UpcomingSession, now: ZonedDateTime) {
             modifier = Modifier
                 .size(34.dp)
                 .clip(CircleShape)
-                .background(SurfaceHigh),
+                .background(FrostTheme.colors.surfaceContainerHigh),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Schedule,
                 contentDescription = null,
-                tint = AccentFrost,
+                tint = FrostTheme.colors.secondary,
                 modifier = Modifier.size(16.dp)
             )
         }
@@ -475,7 +467,7 @@ private fun UpcomingRow(session: UpcomingSession, now: ZonedDateTime) {
             Text(
                 text = session.label,
                 style = MaterialTheme.typography.titleMedium,
-                color = TextPrimary,
+                color = FrostTheme.colors.textPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -486,7 +478,7 @@ private fun UpcomingRow(session: UpcomingSession, now: ZonedDateTime) {
                     else -> "${session.packageCount} apps"
                 },
                 style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary,
+                color = FrostTheme.colors.textSecondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -495,13 +487,13 @@ private fun UpcomingRow(session: UpcomingSession, now: ZonedDateTime) {
         Box(
             modifier = Modifier
                 .clip(CircleShape)
-                .background(SurfaceHigh)
+                .background(FrostTheme.colors.surfaceContainerHigh)
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             Text(
                 text = upcomingCountdown(session.start, now),
                 style = MaterialTheme.typography.labelSmall,
-                color = AccentFrost
+                color = FrostTheme.colors.secondary
             )
         }
     }

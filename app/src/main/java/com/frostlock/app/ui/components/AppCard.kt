@@ -13,9 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.frostlock.app.ui.theme.FrostLockTheme
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SurfaceCard
-import com.frostlock.app.ui.theme.TextPrimary
+import com.frostlock.app.ui.theme.FrostTheme
 
 /** Standard content card: soft surface, subtle border, large corners. */
 @Composable
@@ -26,9 +24,9 @@ fun AppCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = SurfaceCard),
+        colors = CardDefaults.cardColors(containerColor = FrostTheme.colors.surfaceContainer),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(1.dp, StrokeSoft)
+        border = BorderStroke(1.dp, FrostTheme.colors.outline)
     ) {
         Box(modifier = Modifier.padding(16.dp)) {
             content()
@@ -40,6 +38,6 @@ fun AppCard(
 @Composable
 private fun AppCardPreview() {
     FrostLockTheme {
-        AppCard { Text(text = "Card", color = TextPrimary) }
+        AppCard { Text(text = "Card", color = FrostTheme.colors.textPrimary) }
     }
 }

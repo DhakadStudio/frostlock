@@ -20,16 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.FrostLockTheme
-import com.frostlock.app.ui.theme.GlacierBlue
-import com.frostlock.app.ui.theme.InkOnIce
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.util.Achievement
+import com.frostlock.app.ui.theme.FrostTheme
 
 /**
  * Hexagonal ice badge, matching the freezer motif. Unlocked badges get a frost
@@ -53,13 +46,14 @@ fun AchievementBadge(
             modifier = Modifier.size(size),
             contentAlignment = Alignment.Center
         ) {
+            val colors = FrostTheme.colors
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val path = hexagonPath(this.size.width, this.size.height)
                 if (unlocked) {
                     drawPath(
                         path = path,
                         brush = Brush.linearGradient(
-                            colors = listOf(PrimaryIce, GlacierBlue)
+                            colors = listOf(colors.primary, colors.glacier)
                         )
                     )
                     drawPath(
@@ -68,10 +62,10 @@ fun AchievementBadge(
                         style = Stroke(width = 1.5.dp.toPx())
                     )
                 } else {
-                    drawPath(path = path, color = SurfaceHigh)
+                    drawPath(path = path, color = colors.surfaceContainerHigh)
                     drawPath(
                         path = path,
-                        color = StrokeSoft,
+                        color = colors.outline,
                         style = Stroke(width = 1.5.dp.toPx())
                     )
                 }
@@ -80,7 +74,7 @@ fun AchievementBadge(
                 text = label ?: achievement.badge,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = if (unlocked) InkOnIce else TextSecondary,
+                color = if (unlocked) FrostTheme.colors.onPrimary else FrostTheme.colors.textSecondary,
                 textAlign = TextAlign.Center
             )
         }
@@ -88,7 +82,7 @@ fun AchievementBadge(
             Text(
                 text = caption,
                 style = MaterialTheme.typography.labelSmall,
-                color = if (unlocked) AccentFrost else TextSecondary,
+                color = if (unlocked) FrostTheme.colors.secondary else FrostTheme.colors.textSecondary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 6.dp)
             )

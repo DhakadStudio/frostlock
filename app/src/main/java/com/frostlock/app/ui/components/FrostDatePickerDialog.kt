@@ -35,18 +35,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.GradientFrost
-import com.frostlock.app.ui.theme.InkOnIce
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SurfaceCard
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
+import com.frostlock.app.ui.theme.FrostTheme
 
 /**
  * Themed 24-hour date dialog shared by the deadline and focus-goal editors.
@@ -75,8 +67,8 @@ fun FrostDatePickerDialog(
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
                 .clip(RoundedCornerShape(28.dp))
-                .background(SurfaceCard)
-                .border(1.dp, StrokeSoft, RoundedCornerShape(28.dp))
+                .background(FrostTheme.colors.surfaceContainer)
+                .border(1.dp, FrostTheme.colors.outline, RoundedCornerShape(28.dp))
                 .padding(16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -84,13 +76,13 @@ fun FrostDatePickerDialog(
                     modifier = Modifier
                         .size(38.dp)
                         .clip(CircleShape)
-                        .background(SurfaceHigh),
+                        .background(FrostTheme.colors.surfaceContainerHigh),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.CalendarMonth,
                         contentDescription = null,
-                        tint = AccentFrost,
+                        tint = FrostTheme.colors.secondary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -99,12 +91,12 @@ fun FrostDatePickerDialog(
                     Text(
                         text = title,
                         style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
             }
@@ -116,21 +108,21 @@ fun FrostDatePickerDialog(
                 showModeToggle = false,
                 colors = DatePickerDefaults.colors(
                     containerColor = Color.Transparent,
-                    titleContentColor = TextPrimary,
-                    headlineContentColor = TextPrimary,
-                    weekdayContentColor = TextSecondary,
-                    subheadContentColor = TextSecondary,
-                    navigationContentColor = TextSecondary,
-                    yearContentColor = TextPrimary,
-                    currentYearContentColor = AccentFrost,
-                    selectedYearContentColor = InkOnIce,
-                    selectedYearContainerColor = PrimaryIce,
-                    dayContentColor = TextPrimary,
-                    selectedDayContentColor = InkOnIce,
-                    selectedDayContainerColor = PrimaryIce,
-                    todayContentColor = AccentFrost,
-                    todayDateBorderColor = AccentFrost,
-                    dividerColor = StrokeSoft
+                    titleContentColor = FrostTheme.colors.textPrimary,
+                    headlineContentColor = FrostTheme.colors.textPrimary,
+                    weekdayContentColor = FrostTheme.colors.textSecondary,
+                    subheadContentColor = FrostTheme.colors.textSecondary,
+                    navigationContentColor = FrostTheme.colors.textSecondary,
+                    yearContentColor = FrostTheme.colors.textPrimary,
+                    currentYearContentColor = FrostTheme.colors.secondary,
+                    selectedYearContentColor = FrostTheme.colors.onPrimary,
+                    selectedYearContainerColor = FrostTheme.colors.primary,
+                    dayContentColor = FrostTheme.colors.textPrimary,
+                    selectedDayContentColor = FrostTheme.colors.onPrimary,
+                    selectedDayContainerColor = FrostTheme.colors.primary,
+                    todayContentColor = FrostTheme.colors.secondary,
+                    todayDateBorderColor = FrostTheme.colors.secondary,
+                    dividerColor = FrostTheme.colors.outline
                 )
             )
 
@@ -142,14 +134,14 @@ fun FrostDatePickerDialog(
                     onClick = onDismiss,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(text = "Cancel", color = TextSecondary)
+                    Text(text = "Cancel", color = FrostTheme.colors.textSecondary)
                 }
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .heightIn(min = 48.dp)
                         .clip(CircleShape)
-                        .background(Brush.horizontalGradient(GradientFrost))
+                        .background(Brush.horizontalGradient(FrostTheme.colors.actionGradient))
                         .clickable {
                             state.selectedDateMillis?.let { millis ->
                                 onConfirm(fromUtcMillis(millis).toString())
@@ -160,7 +152,7 @@ fun FrostDatePickerDialog(
                     Text(
                         text = confirmLabel,
                         style = MaterialTheme.typography.labelLarge,
-                        color = InkOnIce
+                        color = FrostTheme.colors.onPrimary
                     )
                 }
             }

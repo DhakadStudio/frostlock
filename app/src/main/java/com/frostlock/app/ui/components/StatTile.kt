@@ -23,9 +23,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.frostlock.app.ui.theme.FrostLockTheme
-import com.frostlock.app.ui.theme.GradientFrost
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
+import com.frostlock.app.ui.theme.FrostTheme
 
 /** Small stat card with a gradient icon chip — used for quick-glance numbers. */
 @Composable
@@ -40,7 +38,7 @@ fun StatTile(
             Box(
                 modifier = Modifier
                     .size(38.dp)
-                    .background(Brush.linearGradient(GradientFrost), CircleShape),
+                    .background(Brush.linearGradient(FrostTheme.colors.actionGradient), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -55,12 +53,12 @@ fun StatTile(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
                 Text(
                     text = value,
                     style = MaterialTheme.typography.titleLarge,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
             }
         }

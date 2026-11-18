@@ -10,7 +10,6 @@ import com.frostlock.app.ui.screens.deadline.DeadlineScreen
 import com.frostlock.app.ui.screens.goals.GoalEditorScreen
 import com.frostlock.app.ui.screens.goals.GoalEditorViewModel
 import com.frostlock.app.ui.screens.goals.GoalsScreen
-import com.frostlock.app.ui.screens.preview.DesignPreviewScreen
 import com.frostlock.app.ui.screens.profile.AboutScreen
 import com.frostlock.app.ui.screens.profile.PrivacyScreen
 import com.frostlock.app.ui.screens.profile.ProfileScreen
@@ -90,15 +89,8 @@ fun NavGraphBuilder.youNavGraph(navController: NavHostController) {
 
         composable(Destinations.You.ABOUT) {
             AboutScreen(
-                onBack = { navController.popBackStack() },
-                onOpenDesignPreview = {
-                    navController.navigateOnce(Destinations.You.DESIGN_PREVIEW)
-                }
+                onBack = { navController.popBackStack() }
             )
-        }
-
-        composable(Destinations.You.DESIGN_PREVIEW) {
-            DesignPreviewScreen(onBack = { navController.popBackStack() })
         }
     }
 }

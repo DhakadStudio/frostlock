@@ -52,24 +52,12 @@ import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.FrostDatePickerDialog
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SectionHeader
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.GradientHero
-import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.DangerRed
-import com.frostlock.app.ui.theme.GradientFrost
-import com.frostlock.app.ui.theme.InkOnIce
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SurfaceCard
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
-import com.frostlock.app.ui.theme.WarnAmber
 import com.frostlock.app.ui.util.deadlineCountdown
 import com.frostlock.app.ui.util.deadlineIsUrgent
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.frostlock.app.ui.theme.FrostTheme
 
 /**
  * A full page for the local deadline countdown. One name, one date, and a
@@ -96,7 +84,7 @@ fun DeadlineScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(FrostTheme.colors.background)
             .imePadding()
     ) {
         Row(
@@ -109,19 +97,19 @@ fun DeadlineScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = TextPrimary
+                    tint = FrostTheme.colors.textPrimary
                 )
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "Focus deadline",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = "A local countdown to what matters",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -147,13 +135,13 @@ fun DeadlineScreen(
                             modifier = Modifier
                                 .size(38.dp)
                                 .clip(CircleShape)
-                                .background(SurfaceHigh),
+                                .background(FrostTheme.colors.surfaceContainerHigh),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = null,
-                                tint = AccentFrost,
+                                tint = FrostTheme.colors.secondary,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -162,12 +150,12 @@ fun DeadlineScreen(
                             Text(
                                 text = "What are you counting down to?",
                                 style = MaterialTheme.typography.titleMedium,
-                                color = TextPrimary
+                                color = FrostTheme.colors.textPrimary
                             )
                             Text(
                                 text = "An exam, a launch, a personal goal.",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = TextSecondary
+                                color = FrostTheme.colors.textSecondary
                             )
                         }
                     }
@@ -178,15 +166,15 @@ fun DeadlineScreen(
                             if (it.length <= FocusDeadline.MAX_TITLE_LENGTH) title = it
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("e.g. Final exams", color = TextSecondary) },
+                        placeholder = { Text("e.g. Final exams", color = FrostTheme.colors.textSecondary) },
                         singleLine = true,
                         textStyle = MaterialTheme.typography.bodyLarge,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryIce,
-                            unfocusedBorderColor = StrokeSoft,
-                            focusedTextColor = TextPrimary,
-                            unfocusedTextColor = TextPrimary,
-                            cursorColor = AccentFrost
+                            focusedBorderColor = FrostTheme.colors.primary,
+                            unfocusedBorderColor = FrostTheme.colors.outline,
+                            focusedTextColor = FrostTheme.colors.textPrimary,
+                            unfocusedTextColor = FrostTheme.colors.textPrimary,
+                            cursorColor = FrostTheme.colors.secondary
                         ),
                         shape = MaterialTheme.shapes.medium
                     )
@@ -200,7 +188,7 @@ fun DeadlineScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(MaterialTheme.shapes.medium)
-                            .background(SurfaceHigh)
+                            .background(FrostTheme.colors.surfaceContainerHigh)
                             .clickable { pickerOpen = true }
                             .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -208,7 +196,7 @@ fun DeadlineScreen(
                         Icon(
                             imageVector = Icons.Default.CalendarMonth,
                             contentDescription = null,
-                            tint = AccentFrost,
+                            tint = FrostTheme.colors.secondary,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
@@ -216,25 +204,25 @@ fun DeadlineScreen(
                             Text(
                                 text = "Target date",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = TextSecondary
+                                color = FrostTheme.colors.textSecondary
                             )
                             Text(
                                 text = formatDeadlineDate(date),
                                 style = MaterialTheme.typography.titleMedium,
-                                color = TextPrimary
+                                color = FrostTheme.colors.textPrimary
                             )
                         }
                         Text(
                             text = "Change",
                             style = MaterialTheme.typography.labelLarge,
-                            color = AccentFrost
+                            color = FrostTheme.colors.secondary
                         )
                     }
 
                     Text(
                         text = "The countdown is stored only on this device. Nothing is uploaded and no calendar permission is needed.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
             }
@@ -246,7 +234,7 @@ fun DeadlineScreen(
                         onBack()
                     }
                 ) {
-                    Text(text = "Clear deadline", color = DangerRed)
+                    Text(text = "Clear deadline", color = FrostTheme.colors.danger)
                 }
             }
 
@@ -297,10 +285,10 @@ private fun PreviewCard(title: String, date: String, today: LocalDate) {
             .clip(MaterialTheme.shapes.large)
             .background(
                 Brush.verticalGradient(
-                    GradientHero
+                    FrostTheme.colors.heroGradient
                 )
             )
-            .border(1.dp, StrokeSoft, MaterialTheme.shapes.large)
+            .border(1.dp, FrostTheme.colors.outline, MaterialTheme.shapes.large)
             .padding(20.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -309,13 +297,13 @@ private fun PreviewCard(title: String, date: String, today: LocalDate) {
                     modifier = Modifier
                         .size(34.dp)
                         .clip(CircleShape)
-                        .background(SurfaceHigh),
+                        .background(FrostTheme.colors.surfaceContainerHigh),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Flag,
                         contentDescription = null,
-                        tint = if (urgent) WarnAmber else AccentFrost,
+                        tint = if (urgent) FrostTheme.colors.warning else FrostTheme.colors.secondary,
                         modifier = Modifier.size(17.dp)
                     )
                 }
@@ -323,24 +311,24 @@ private fun PreviewCard(title: String, date: String, today: LocalDate) {
                 Text(
                     text = "COUNTDOWN",
                     style = MaterialTheme.typography.labelSmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
             Text(
                 text = countdown ?: "Pick a date",
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.Bold,
-                color = if (urgent) WarnAmber else TextPrimary
+                color = if (urgent) FrostTheme.colors.warning else FrostTheme.colors.textPrimary
             )
             Text(
                 text = preview.title,
                 style = MaterialTheme.typography.titleLarge,
-                color = TextPrimary
+                color = FrostTheme.colors.textPrimary
             )
             Text(
                 text = formatDeadlineDate(date),
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
         }
     }

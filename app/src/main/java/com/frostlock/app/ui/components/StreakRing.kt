@@ -19,12 +19,9 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.PrimaryIce
 import com.frostlock.app.ui.theme.FrostLockTheme
 import com.frostlock.app.ui.theme.rememberReducedMotion
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
+import com.frostlock.app.ui.theme.FrostTheme
 
 @Composable
 fun StreakRing(
@@ -51,13 +48,14 @@ fun StreakRing(
         modifier = modifier.size(160.dp),
         contentAlignment = Alignment.Center
     ) {
+        val colors = FrostTheme.colors
         Canvas(modifier = Modifier.size(140.dp)) {
             val strokeWidth = 12.dp.toPx()
             val arcSize = Size(size.width, size.height)
 
             // Background Track
             drawArc(
-                color = SurfaceHigh,
+                color = colors.surfaceContainerHigh,
                 startAngle = -90f,
                 sweepAngle = 360f,
                 useCenter = false,
@@ -68,7 +66,7 @@ fun StreakRing(
             // Progress Arc
             drawArc(
                 brush = Brush.sweepGradient(
-                    listOf(PrimaryIce, AccentFrost)
+                    listOf(colors.primary, colors.secondary)
                 ),
                 startAngle = -90f,
                 sweepAngle = animatedProgress.value * 360f,
@@ -84,12 +82,12 @@ fun StreakRing(
             Text(
                 text = "$streakCount",
                 style = MaterialTheme.typography.displayLarge,
-                color = TextPrimary
+                color = FrostTheme.colors.textPrimary
             )
             Text(
                 text = "Day Streak",
                 style = MaterialTheme.typography.bodyMedium,
-                color = AccentFrost
+                color = FrostTheme.colors.secondary
             )
         }
     }

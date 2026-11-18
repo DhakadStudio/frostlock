@@ -6,8 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 
 /**
- * A complete ice palette. The app reads these through the top-level colour
- * properties in Color.kt, so switching the palette restyles every screen.
+ * A complete ice palette. FrostLockTheme turns a palette into the semantic
+ * roles in [FrostColors]; screens read those via FrostTheme.colors, so
+ * switching the palette restyles every screen.
  */
 data class IcePalette(
     val key: String,
@@ -109,8 +110,7 @@ object IcePalettes {
 }
 
 /**
- * The palette currently composed. Reading it from the colour properties makes
- * Compose recompose every screen when the user picks a different theme.
+ * The palette chosen by the user, used as the default for [FrostLockTheme].
  */
 object FrostThemeState {
     var palette: IcePalette by mutableStateOf(IcePalettes.Frost)

@@ -15,9 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.frostlock.app.ui.theme.FrostLockTheme
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
+import com.frostlock.app.ui.theme.FrostTheme
 
 @Composable
 fun SecondaryButton(
@@ -30,11 +28,11 @@ fun SecondaryButton(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 54.dp)
-            .border(1.dp, StrokeSoft, MaterialTheme.shapes.extraLarge),
+            .border(1.dp, FrostTheme.colors.outline, MaterialTheme.shapes.extraLarge),
         shape = MaterialTheme.shapes.extraLarge,
         colors = ButtonDefaults.buttonColors(
-            containerColor = SurfaceHigh,
-            contentColor = TextPrimary
+            containerColor = FrostTheme.colors.surfaceContainerHigh,
+            contentColor = FrostTheme.colors.textPrimary
         ),
         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 14.dp)
     ) {

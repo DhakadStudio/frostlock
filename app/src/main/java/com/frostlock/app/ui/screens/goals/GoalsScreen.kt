@@ -39,20 +39,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.PrimaryButton
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.GlacierBlue
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SuccessGreen
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
-import com.frostlock.app.ui.theme.WarnAmber
 import com.frostlock.app.ui.util.GoalProgress
 import com.frostlock.app.ui.util.goalDaysLabel
 import com.frostlock.app.ui.util.goalMinutesLabel
 import com.frostlock.app.ui.util.goalStatusLabel
+import com.frostlock.app.ui.theme.FrostTheme
 
 /**
  * Local focus goals — exams, projects or personal targets. Progress comes from
@@ -71,7 +62,7 @@ fun GoalsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(FrostTheme.colors.background)
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -81,7 +72,7 @@ fun GoalsScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = TextPrimary
+                    tint = FrostTheme.colors.textPrimary
                 )
             }
             Spacer(modifier = Modifier.width(4.dp))
@@ -89,12 +80,12 @@ fun GoalsScreen(
                 Text(
                     text = "Focus goals",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = "Local targets for exams and projects",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -106,27 +97,27 @@ fun GoalsScreen(
                         modifier = Modifier
                             .size(46.dp)
                             .clip(CircleShape)
-                            .background(SurfaceHigh),
+                            .background(FrostTheme.colors.surfaceContainerHigh),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Flag,
                             contentDescription = null,
-                            tint = AccentFrost,
+                            tint = FrostTheme.colors.secondary,
                             modifier = Modifier.size(22.dp)
                         )
                     }
                     Text(
                         text = "No goals yet",
                         style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                     Text(
                         text = "Set a target date and a focus-time goal. FrostLock " +
                             "counts only the sessions you finish before that date, " +
                             "all on this device.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
             }
@@ -151,10 +142,10 @@ fun GoalsScreen(
 @Composable
 private fun GoalCard(progress: GoalProgress, onClick: () -> Unit) {
     val statusColor = when {
-        progress.reached -> SuccessGreen
-        progress.expired -> TextSecondary
-        progress.onTrack -> AccentFrost
-        else -> WarnAmber
+        progress.reached -> FrostTheme.colors.success
+        progress.expired -> FrostTheme.colors.textSecondary
+        progress.onTrack -> FrostTheme.colors.secondary
+        else -> FrostTheme.colors.warning
     }
 
     AppCard(modifier = Modifier.clickable(onClick = onClick)) {
@@ -164,7 +155,7 @@ private fun GoalCard(progress: GoalProgress, onClick: () -> Unit) {
                     modifier = Modifier
                         .size(42.dp)
                         .clip(CircleShape)
-                        .background(SurfaceHigh),
+                        .background(FrostTheme.colors.surfaceContainerHigh),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -179,7 +170,7 @@ private fun GoalCard(progress: GoalProgress, onClick: () -> Unit) {
                     Text(
                         text = progress.goal.name,
                         style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary,
+                        color = FrostTheme.colors.textPrimary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -192,7 +183,7 @@ private fun GoalCard(progress: GoalProgress, onClick: () -> Unit) {
                 Icon(
                     imageVector = Icons.Default.ChevronRight,
                     contentDescription = null,
-                    tint = TextSecondary
+                    tint = FrostTheme.colors.textSecondary
                 )
             }
 
@@ -201,7 +192,7 @@ private fun GoalCard(progress: GoalProgress, onClick: () -> Unit) {
                     .fillMaxWidth()
                     .height(8.dp)
                     .clip(RoundedCornerShape(4.dp))
-                    .background(SurfaceHigh)
+                    .background(FrostTheme.colors.surfaceContainerHigh)
             ) {
                 Box(
                     modifier = Modifier
@@ -211,9 +202,9 @@ private fun GoalCard(progress: GoalProgress, onClick: () -> Unit) {
                         .background(
                             Brush.horizontalGradient(
                                 if (progress.reached) {
-                                    listOf(SuccessGreen, SuccessGreen)
+                                    listOf(FrostTheme.colors.success, FrostTheme.colors.success)
                                 } else {
-                                    listOf(PrimaryIce, GlacierBlue)
+                                    listOf(FrostTheme.colors.primary, FrostTheme.colors.glacier)
                                 }
                             )
                         )
@@ -225,13 +216,13 @@ private fun GoalCard(progress: GoalProgress, onClick: () -> Unit) {
                     text = "${goalMinutesLabel(progress.focusedMinutes)} of " +
                         goalMinutesLabel(progress.goal.targetMinutes.toLong()),
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = "${(progress.percent * 100).toInt()}%",
                     style = MaterialTheme.typography.labelLarge,
-                    color = if (progress.reached) SuccessGreen else AccentFrost
+                    color = if (progress.reached) FrostTheme.colors.success else FrostTheme.colors.secondary
                 )
             }
         }

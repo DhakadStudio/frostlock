@@ -14,8 +14,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.frostlock.app.ui.theme.DangerRed
 import com.frostlock.app.ui.theme.FrostLockTheme
+import com.frostlock.app.ui.theme.FrostTheme
 
 @Composable
 fun PanicButton(
@@ -25,9 +25,9 @@ fun PanicButton(
     Box(
         modifier = modifier
             .size(80.dp)
-            .shadow(16.dp, CircleShape, spotColor = DangerRed)
+            .shadow(16.dp, CircleShape, spotColor = FrostTheme.colors.danger)
             .clip(CircleShape)
-            .background(DangerRed)
+            .background(FrostTheme.colors.danger)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {

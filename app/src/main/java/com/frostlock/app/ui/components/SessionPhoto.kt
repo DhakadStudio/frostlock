@@ -50,15 +50,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.frostlock.app.data.SessionPhotoStore
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.SurfaceCard
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.util.SessionPhotos
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import com.frostlock.app.ui.theme.FrostTheme
 
 /**
  * Photo slot shared by the post-session summary and the diary editor: a local
@@ -84,7 +80,7 @@ fun SessionPhotoEditor(
         modifier = modifier
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.medium)
-            .background(SurfaceHigh.copy(alpha = 0.45f))
+            .background(FrostTheme.colors.surfaceContainerHigh.copy(alpha = 0.45f))
             .padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -104,12 +100,12 @@ fun SessionPhotoEditor(
                     Text(
                         text = "Session photo",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                     Text(
                         text = "Stays on this device",
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
             } else {
@@ -117,13 +113,13 @@ fun SessionPhotoEditor(
                     modifier = Modifier
                         .size(44.dp)
                         .clip(CircleShape)
-                        .background(SurfaceCard),
+                        .background(FrostTheme.colors.surfaceContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.PhotoCamera,
                         contentDescription = null,
-                        tint = AccentFrost,
+                        tint = FrostTheme.colors.secondary,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -131,12 +127,12 @@ fun SessionPhotoEditor(
                     Text(
                         text = "Add a photo",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                     Text(
                         text = "A quick visual note from this session",
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
             }
@@ -158,12 +154,12 @@ fun SessionPhotoEditor(
             ) {
                 Text(
                     text = if (name.isBlank()) "Choose photo" else "Change photo",
-                    color = AccentFrost
+                    color = FrostTheme.colors.secondary
                 )
             }
             if (name.isNotBlank()) {
                 TextButton(onClick = onRemove) {
-                    Text(text = "Remove", color = TextSecondary)
+                    Text(text = "Remove", color = FrostTheme.colors.textSecondary)
                 }
             }
         }
@@ -198,7 +194,7 @@ fun SessionPhotoThumbnail(
     Box(
         modifier = modifier
             .clip(shape)
-            .background(SurfaceHigh)
+            .background(FrostTheme.colors.surfaceContainerHigh)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         contentAlignment = Alignment.Center
     ) {
@@ -214,7 +210,7 @@ fun SessionPhotoThumbnail(
             Icon(
                 imageVector = Icons.Default.BrokenImage,
                 contentDescription = null,
-                tint = TextSecondary,
+                tint = FrostTheme.colors.textSecondary,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -262,7 +258,7 @@ fun SessionPhotoViewer(name: String, onDismiss: () -> Unit) {
                     Text(
                         text = "This photo is no longer available.",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = TextSecondary,
+                        color = FrostTheme.colors.textSecondary,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -270,7 +266,7 @@ fun SessionPhotoViewer(name: String, onDismiss: () -> Unit) {
                 Text(
                     text = "Stored only on this device",
                     style = MaterialTheme.typography.bodySmall,
-                    color = AccentFrost
+                    color = FrostTheme.colors.secondary
                 )
             }
             IconButton(

@@ -53,22 +53,12 @@ import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.FrostDatePickerDialog
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SectionHeader
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.DangerRed
-import com.frostlock.app.ui.theme.GradientHero
-import com.frostlock.app.ui.theme.InkOnIce
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SurfaceCard
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.util.goalMinutesLabel
 import com.frostlock.app.ui.util.goalTargetLabel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.frostlock.app.ui.theme.FrostTheme
 
 /** Create or edit one local focus goal. */
 @Composable
@@ -95,7 +85,7 @@ fun GoalEditorScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(FrostTheme.colors.background)
             .imePadding()
     ) {
         Row(
@@ -108,19 +98,19 @@ fun GoalEditorScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = TextPrimary
+                    tint = FrostTheme.colors.textPrimary
                 )
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = if (viewModel.isEditing) "Edit goal" else "New focus goal",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = "Stored only on this device",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -150,16 +140,16 @@ fun GoalEditorScreen(
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Name", color = TextSecondary) },
-                        placeholder = { Text("e.g. Final exams", color = TextSecondary) },
+                        label = { Text("Name", color = FrostTheme.colors.textSecondary) },
+                        placeholder = { Text("e.g. Final exams", color = FrostTheme.colors.textSecondary) },
                         singleLine = true,
                         textStyle = MaterialTheme.typography.bodyLarge,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryIce,
-                            unfocusedBorderColor = StrokeSoft,
-                            focusedTextColor = TextPrimary,
-                            unfocusedTextColor = TextPrimary,
-                            cursorColor = AccentFrost
+                            focusedBorderColor = FrostTheme.colors.primary,
+                            unfocusedBorderColor = FrostTheme.colors.outline,
+                            focusedTextColor = FrostTheme.colors.textPrimary,
+                            unfocusedTextColor = FrostTheme.colors.textPrimary,
+                            cursorColor = FrostTheme.colors.secondary
                         ),
                         shape = MaterialTheme.shapes.medium
                     )
@@ -167,7 +157,7 @@ fun GoalEditorScreen(
                     Text(
                         text = "Target focus time",
                         style = MaterialTheme.typography.labelMedium,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf(10, 25, 50, 100).forEach { preset ->
@@ -185,7 +175,7 @@ fun GoalEditorScreen(
                     Text(
                         text = "Custom hours",
                         style = MaterialTheme.typography.labelMedium,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                     OutlinedTextField(
                         value = hoursText,
@@ -196,17 +186,17 @@ fun GoalEditorScreen(
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("10", color = TextSecondary) },
-                        suffix = { Text("hours", color = TextSecondary) },
+                        placeholder = { Text("10", color = FrostTheme.colors.textSecondary) },
+                        suffix = { Text("hours", color = FrostTheme.colors.textSecondary) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         textStyle = MaterialTheme.typography.bodyLarge,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryIce,
-                            unfocusedBorderColor = StrokeSoft,
-                            focusedTextColor = TextPrimary,
-                            unfocusedTextColor = TextPrimary,
-                            cursorColor = AccentFrost
+                            focusedBorderColor = FrostTheme.colors.primary,
+                            unfocusedBorderColor = FrostTheme.colors.outline,
+                            focusedTextColor = FrostTheme.colors.textPrimary,
+                            unfocusedTextColor = FrostTheme.colors.textPrimary,
+                            cursorColor = FrostTheme.colors.secondary
                         ),
                         shape = MaterialTheme.shapes.medium
                     )
@@ -220,7 +210,7 @@ fun GoalEditorScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(MaterialTheme.shapes.medium)
-                            .background(SurfaceHigh)
+                            .background(FrostTheme.colors.surfaceContainerHigh)
                             .clickable { pickerOpen = true }
                             .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -228,7 +218,7 @@ fun GoalEditorScreen(
                         Icon(
                             imageVector = Icons.Default.CalendarMonth,
                             contentDescription = null,
-                            tint = AccentFrost,
+                            tint = FrostTheme.colors.secondary,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
@@ -236,25 +226,25 @@ fun GoalEditorScreen(
                             Text(
                                 text = formatGoalDate(date),
                                 style = MaterialTheme.typography.titleMedium,
-                                color = TextPrimary
+                                color = FrostTheme.colors.textPrimary
                             )
                             Text(
                                 text = goalTargetLabel(date, today),
                                 style = MaterialTheme.typography.bodySmall,
-                                color = TextSecondary
+                                color = FrostTheme.colors.textSecondary
                             )
                         }
                         Text(
                             text = "Change",
                             style = MaterialTheme.typography.labelLarge,
-                            color = AccentFrost
+                            color = FrostTheme.colors.secondary
                         )
                     }
                     Text(
                         text = "Only sessions finished before this date count toward " +
                             "the goal. No calendar permission is needed.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
             }
@@ -263,13 +253,13 @@ fun GoalEditorScreen(
                 Text(
                     text = message,
                     style = MaterialTheme.typography.bodySmall,
-                    color = DangerRed
+                    color = FrostTheme.colors.danger
                 )
             }
 
             if (viewModel.isEditing) {
                 TextButton(onClick = { confirmDelete = true }) {
-                    Text(text = "Delete goal", color = DangerRed)
+                    Text(text = "Delete goal", color = FrostTheme.colors.danger)
                 }
             }
 
@@ -332,8 +322,8 @@ private fun GoalPreview(name: String, date: String, hours: Int) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(Brush.verticalGradient(GradientHero))
-            .border(1.dp, StrokeSoft, RoundedCornerShape(24.dp))
+            .background(Brush.verticalGradient(FrostTheme.colors.heroGradient))
+            .border(1.dp, FrostTheme.colors.outline, RoundedCornerShape(24.dp))
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -342,13 +332,13 @@ private fun GoalPreview(name: String, date: String, hours: Int) {
                 modifier = Modifier
                     .size(38.dp)
                     .clip(CircleShape)
-                    .background(SurfaceHigh),
+                    .background(FrostTheme.colors.surfaceContainerHigh),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Flag,
                     contentDescription = null,
-                    tint = AccentFrost,
+                    tint = FrostTheme.colors.secondary,
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -356,18 +346,18 @@ private fun GoalPreview(name: String, date: String, hours: Int) {
             Text(
                 text = "GOAL PREVIEW",
                 style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
         }
         Text(
             text = name,
             style = MaterialTheme.typography.headlineMedium,
-            color = TextPrimary
+            color = FrostTheme.colors.textPrimary
         )
         Text(
             text = "${goalMinutesLabel(hours.coerceAtLeast(1) * 60L)} · ${goalTargetLabel(date)}",
             style = MaterialTheme.typography.bodyMedium,
-            color = AccentFrost
+            color = FrostTheme.colors.secondary
         )
     }
 }
@@ -377,14 +367,14 @@ private fun HoursChip(hours: Int, selected: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .clip(CircleShape)
-            .background(if (selected) PrimaryIce else SurfaceHigh)
+            .background(if (selected) FrostTheme.colors.primary else FrostTheme.colors.surfaceContainerHigh)
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Text(
             text = "${hours}h",
             style = MaterialTheme.typography.labelLarge,
-            color = if (selected) InkOnIce else TextSecondary
+            color = if (selected) FrostTheme.colors.onPrimary else FrostTheme.colors.textSecondary
         )
     }
 }
@@ -404,42 +394,42 @@ private fun DeleteGoalDialog(
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
                 .clip(RoundedCornerShape(28.dp))
-                .background(SurfaceCard)
-                .border(1.dp, StrokeSoft, RoundedCornerShape(28.dp))
+                .background(FrostTheme.colors.surfaceContainer)
+                .border(1.dp, FrostTheme.colors.outline, RoundedCornerShape(28.dp))
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
                 text = "Delete goal?",
                 style = MaterialTheme.typography.headlineMedium,
-                color = TextPrimary
+                color = FrostTheme.colors.textPrimary
             )
             Text(
                 text = "\"$name\" will be removed from this device. Your focus " +
                     "sessions stay in the diary and stats.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 TextButton(onClick = onDismiss, modifier = Modifier.weight(1f)) {
-                    Text(text = "Keep it", color = TextSecondary)
+                    Text(text = "Keep it", color = FrostTheme.colors.textSecondary)
                 }
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .heightIn(min = 48.dp)
                         .clip(CircleShape)
-                        .background(DangerRed)
+                        .background(FrostTheme.colors.danger)
                         .clickable(onClick = onConfirm),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "Delete",
                         style = MaterialTheme.typography.labelLarge,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                 }
             }

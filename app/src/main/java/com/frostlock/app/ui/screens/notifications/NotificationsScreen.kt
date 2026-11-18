@@ -54,21 +54,11 @@ import com.frostlock.app.notifications.BlockedNotification
 import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SectionHeader
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.GlacierBlue
-import com.frostlock.app.ui.theme.GradientFrost
-import com.frostlock.app.ui.theme.InkOnIce
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
-import com.frostlock.app.ui.theme.WarnAmber
 import com.frostlock.app.ui.util.NotificationAppTotal
 import com.frostlock.app.ui.util.NotificationDay
 import com.frostlock.app.ui.util.formatSessionTime
 import com.frostlock.app.ui.util.notificationDayLabel
+import com.frostlock.app.ui.theme.FrostTheme
 
 /**
  * Inbox of notifications that were held while an app was blocked. Everything is
@@ -94,7 +84,7 @@ fun NotificationsScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .background(BackgroundDark),
+            .background(FrostTheme.colors.background),
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
@@ -104,7 +94,7 @@ fun NotificationsScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = TextPrimary
+                        tint = FrostTheme.colors.textPrimary
                     )
                 }
                 Spacer(modifier = Modifier.width(4.dp))
@@ -112,12 +102,12 @@ fun NotificationsScreen(
                     Text(
                         text = "Notification shield",
                         style = MaterialTheme.typography.headlineMedium,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                     Text(
                         text = "Held locally while an app was blocked.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
             }
@@ -152,11 +142,11 @@ fun NotificationsScreen(
                         Icon(
                             imageVector = Icons.Default.DeleteSweep,
                             contentDescription = null,
-                            tint = AccentFrost,
+                            tint = FrostTheme.colors.secondary,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "Clear all", color = AccentFrost)
+                        Text(text = "Clear all", color = FrostTheme.colors.secondary)
                     }
                 }
             }
@@ -199,9 +189,9 @@ private fun ShieldCard(
                         .clip(CircleShape)
                         .background(
                             if (active) {
-                                Brush.linearGradient(GradientFrost)
+                                Brush.linearGradient(FrostTheme.colors.actionGradient)
                             } else {
-                                androidx.compose.ui.graphics.SolidColor(SurfaceHigh)
+                                androidx.compose.ui.graphics.SolidColor(FrostTheme.colors.surfaceContainerHigh)
                             }
                         ),
                     contentAlignment = Alignment.Center
@@ -209,7 +199,7 @@ private fun ShieldCard(
                     Icon(
                         imageVector = Icons.Default.NotificationsActive,
                         contentDescription = null,
-                        tint = if (active) InkOnIce else TextSecondary,
+                        tint = if (active) FrostTheme.colors.onPrimary else FrostTheme.colors.textSecondary,
                         modifier = Modifier.size(21.dp)
                     )
                 }
@@ -218,7 +208,7 @@ private fun ShieldCard(
                     Text(
                         text = if (active) "Shield is on" else "Shield is off",
                         style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary
+                        color = FrostTheme.colors.textPrimary
                     )
                     Text(
                         text = when {
@@ -230,7 +220,7 @@ private fun ShieldCard(
                                 "Turn on to hold distracting alerts during focus."
                         },
                         style = MaterialTheme.typography.bodyMedium,
-                        color = if (enabled && !accessGranted) WarnAmber else TextSecondary
+                        color = if (enabled && !accessGranted) FrostTheme.colors.warning else FrostTheme.colors.textSecondary
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -239,9 +229,9 @@ private fun ShieldCard(
                     onCheckedChange = onToggle,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
-                        checkedTrackColor = PrimaryIce,
-                        uncheckedThumbColor = TextSecondary,
-                        uncheckedTrackColor = SurfaceHigh
+                        checkedTrackColor = FrostTheme.colors.primary,
+                        uncheckedThumbColor = FrostTheme.colors.textSecondary,
+                        uncheckedTrackColor = FrostTheme.colors.surfaceContainerHigh
                     )
                 )
             }
@@ -259,7 +249,7 @@ private fun ShieldCard(
                         "Nothing has been held yet."
                     },
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
         }
@@ -279,12 +269,12 @@ private fun AppRankingCard(
                 Text(
                     text = "Most held apps",
                     style = MaterialTheme.typography.titleLarge,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = "Where the interruptions came from.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
             totals.forEach { total ->
@@ -299,7 +289,7 @@ private fun AppRankingCard(
                             Text(
                                 text = total.appLabel,
                                 style = MaterialTheme.typography.titleSmall,
-                                color = TextPrimary,
+                                color = FrostTheme.colors.textPrimary,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.weight(1f)
@@ -307,7 +297,7 @@ private fun AppRankingCard(
                             Text(
                                 text = total.count.toString(),
                                 style = MaterialTheme.typography.titleSmall,
-                                color = AccentFrost
+                                color = FrostTheme.colors.secondary
                             )
                         }
                         Box(
@@ -315,14 +305,14 @@ private fun AppRankingCard(
                                 .fillMaxWidth()
                                 .height(5.dp)
                                 .clip(CircleShape)
-                                .background(SurfaceHigh)
+                                .background(FrostTheme.colors.surfaceContainerHigh)
                         ) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth(total.count.toFloat() / max.toFloat())
                                     .fillMaxHeight()
                                     .clip(CircleShape)
-                                    .background(Brush.horizontalGradient(GradientFrost))
+                                    .background(Brush.horizontalGradient(FrostTheme.colors.actionGradient))
                             )
                         }
                     }
@@ -341,13 +331,13 @@ private fun DayHeader(day: NotificationDay) {
         Text(
             text = notificationDayLabel(day.date),
             style = MaterialTheme.typography.titleMedium,
-            color = TextPrimary,
+            color = FrostTheme.colors.textPrimary,
             modifier = Modifier.weight(1f)
         )
         Text(
             text = "${day.items.size}",
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary
+            color = FrostTheme.colors.textSecondary
         )
     }
 }
@@ -359,9 +349,9 @@ private fun HeldNotificationCard(
     onDelete: () -> Unit
 ) {
     val reasonColor = when (item.reason) {
-        BlockReason.FOCUS -> AccentFrost
-        BlockReason.SCHEDULE -> GlacierBlue
-        BlockReason.LIMIT -> WarnAmber
+        BlockReason.FOCUS -> FrostTheme.colors.secondary
+        BlockReason.SCHEDULE -> FrostTheme.colors.glacier
+        BlockReason.LIMIT -> FrostTheme.colors.warning
     }
 
     AppCard {
@@ -373,21 +363,21 @@ private fun HeldNotificationCard(
                     Text(
                         text = item.appLabel,
                         style = MaterialTheme.typography.titleSmall,
-                        color = TextPrimary,
+                        color = FrostTheme.colors.textPrimary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = formatSessionTime(item.postedAt),
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
                 IconButton(onClick = onDelete) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Delete",
-                        tint = TextSecondary,
+                        tint = FrostTheme.colors.textSecondary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -396,7 +386,7 @@ private fun HeldNotificationCard(
             Text(
                 text = item.title,
                 style = MaterialTheme.typography.bodyLarge,
-                color = TextPrimary,
+                color = FrostTheme.colors.textPrimary,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
@@ -405,7 +395,7 @@ private fun HeldNotificationCard(
                 Text(
                     text = item.text,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary,
+                    color = FrostTheme.colors.textSecondary,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -415,8 +405,8 @@ private fun HeldNotificationCard(
                 Box(
                     modifier = Modifier
                         .clip(MaterialTheme.shapes.extraLarge)
-                        .background(SurfaceHigh)
-                        .border(1.dp, StrokeSoft, MaterialTheme.shapes.extraLarge)
+                        .background(FrostTheme.colors.surfaceContainerHigh)
+                        .border(1.dp, FrostTheme.colors.outline, MaterialTheme.shapes.extraLarge)
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
@@ -445,13 +435,13 @@ private fun AppIcon(label: String, icon: androidx.compose.ui.graphics.ImageBitma
             modifier = Modifier
                 .size(36.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(SurfaceHigh),
+                .background(FrostTheme.colors.surfaceContainerHigh),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = label.take(1).uppercase(),
                 style = MaterialTheme.typography.titleMedium,
-                color = AccentFrost
+                color = FrostTheme.colors.secondary
             )
         }
     }
@@ -471,20 +461,20 @@ private fun EmptyInbox(accessGranted: Boolean, enabled: Boolean) {
                 modifier = Modifier
                     .size(56.dp)
                     .clip(CircleShape)
-                    .background(SurfaceHigh),
+                    .background(FrostTheme.colors.surfaceContainerHigh),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.AcUnit,
                     contentDescription = null,
-                    tint = AccentFrost,
+                    tint = FrostTheme.colors.secondary,
                     modifier = Modifier.size(26.dp)
                 )
             }
             Text(
                 text = "Nothing held yet",
                 style = MaterialTheme.typography.titleMedium,
-                color = TextPrimary
+                color = FrostTheme.colors.textPrimary
             )
             Text(
                 text = when {
@@ -496,7 +486,7 @@ private fun EmptyInbox(accessGranted: Boolean, enabled: Boolean) {
                         "The next alert from a blocked app will wait here instead of interrupting you."
                 },
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
         }
     }

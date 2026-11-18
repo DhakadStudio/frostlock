@@ -92,21 +92,7 @@ import com.frostlock.app.ui.components.AppCard
 import com.frostlock.app.ui.components.MoodChip
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SecondaryButton
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.BackgroundDark
 import com.frostlock.app.ui.theme.FrostLockTheme
-import com.frostlock.app.ui.theme.GlacierBlue
-import com.frostlock.app.ui.theme.GlowIce
-import com.frostlock.app.ui.theme.GradientFrost
-import com.frostlock.app.ui.theme.InkOnIce
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SuccessGreen
-import com.frostlock.app.ui.theme.SurfaceCard
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
-import com.frostlock.app.ui.theme.WarnAmber
 import com.frostlock.app.ui.theme.rememberReducedMotion
 import com.frostlock.app.ui.util.Achievement
 import com.frostlock.app.ui.util.AchievementCategory
@@ -118,6 +104,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
+import com.frostlock.app.ui.theme.FrostTheme
 
 @Composable
 fun OnboardingScreen(
@@ -146,7 +133,7 @@ fun OnboardingScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(FrostTheme.colors.background)
     ) {
         OnboardingAurora()
 
@@ -178,7 +165,7 @@ fun OnboardingScreen(
                     OnboardingPages.WELCOME -> WelcomePage()
                     OnboardingPages.RADAR -> FeatureSlide(
                         kicker = "DISTRACTION RADAR",
-                        accent = GlowIce,
+                        accent = FrostTheme.colors.tertiary,
                         title = "They're circling your focus.",
                         subtitle = "The pull of a notification is designed, not accidental. " +
                             "FrostLock watches the usual suspects and freezes them first.",
@@ -191,7 +178,7 @@ fun OnboardingScreen(
                     )
                     OnboardingPages.FOCUS -> FeatureSlide(
                         kicker = "FOCUS TOOLKIT",
-                        accent = AccentFrost,
+                        accent = FrostTheme.colors.secondary,
                         title = "One timer. Zero excuses.",
                         subtitle = "Pomodoro, countdown or stopwatch — FrostLock keeps " +
                             "the clock and the apps in line.",
@@ -204,7 +191,7 @@ fun OnboardingScreen(
                     )
                     OnboardingPages.CONTROL -> FeatureSlide(
                         kicker = "APP CONTROL",
-                        accent = SuccessGreen,
+                        accent = FrostTheme.colors.success,
                         title = "Freeze the time sinks.",
                         subtitle = "Choose what locks during focus, and cap the apps that " +
                             "quietly eat your day.",
@@ -217,7 +204,7 @@ fun OnboardingScreen(
                     )
                     OnboardingPages.SCHEDULE -> FeatureSlide(
                         kicker = "AUTOMATIC ROUTINE",
-                        accent = GlowIce,
+                        accent = FrostTheme.colors.tertiary,
                         title = "Let your week run itself.",
                         subtitle = "Set a schedule once and FrostLock blocks at the right " +
                             "times, on the right days.",
@@ -230,7 +217,7 @@ fun OnboardingScreen(
                     )
                     OnboardingPages.PROGRESS -> FeatureSlide(
                         kicker = "VISIBLE PROGRESS",
-                        accent = PrimaryIce,
+                        accent = FrostTheme.colors.primary,
                         title = "Watch the ice build up.",
                         subtitle = "Streaks, weekly charts and milestone badges turn small " +
                             "sessions into momentum.",
@@ -307,13 +294,13 @@ private fun OnboardingTopBar(showSkip: Boolean, onSkip: () -> Unit) {
             modifier = Modifier
                 .size(26.dp)
                 .clip(CircleShape)
-                .background(Brush.linearGradient(GradientFrost)),
+                .background(Brush.linearGradient(FrostTheme.colors.actionGradient)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.AcUnit,
                 contentDescription = null,
-                tint = InkOnIce,
+                tint = FrostTheme.colors.onPrimary,
                 modifier = Modifier.size(16.dp)
             )
         }
@@ -321,7 +308,7 @@ private fun OnboardingTopBar(showSkip: Boolean, onSkip: () -> Unit) {
         Text(
             text = "FROSTLOCK",
             style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 2.sp),
-            color = TextSecondary
+            color = FrostTheme.colors.textSecondary
         )
         Spacer(modifier = Modifier.weight(1f))
         if (showSkip) {
@@ -329,7 +316,7 @@ private fun OnboardingTopBar(showSkip: Boolean, onSkip: () -> Unit) {
                 Text(
                     text = "Skip intro",
                     style = MaterialTheme.typography.labelMedium,
-                    color = AccentFrost
+                    color = FrostTheme.colors.secondary
                 )
             }
         }
@@ -349,11 +336,11 @@ private fun StepIndicator(current: Int) {
                 .clip(CircleShape)
                 .background(
                     when {
-                        index == current -> Brush.horizontalGradient(GradientFrost)
+                        index == current -> Brush.horizontalGradient(FrostTheme.colors.actionGradient)
                         index < current -> androidx.compose.ui.graphics.SolidColor(
-                            AccentFrost.copy(alpha = 0.45f)
+                            FrostTheme.colors.secondary.copy(alpha = 0.45f)
                         )
-                        else -> androidx.compose.ui.graphics.SolidColor(StrokeSoft)
+                        else -> androidx.compose.ui.graphics.SolidColor(FrostTheme.colors.outline)
                     }
                 )
             Box(modifier = modifier)
@@ -386,13 +373,14 @@ private fun WelcomePage() {
             modifier = Modifier.size(150.dp),
             contentAlignment = Alignment.Center
         ) {
+            val colors = FrostTheme.colors
             Canvas(
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer { rotationZ = rotation }
             ) {
                 drawCircle(
-                    color = AccentFrost.copy(alpha = 0.30f),
+                    color = colors.secondary.copy(alpha = 0.30f),
                     radius = size.minDimension / 2f - 4.dp.toPx(),
                     style = Stroke(
                         width = 1.2.dp.toPx(),
@@ -409,8 +397,8 @@ private fun WelcomePage() {
                     .background(
                         Brush.radialGradient(
                             listOf(
-                                AccentFrost.copy(alpha = 0.26f),
-                                PrimaryIce.copy(alpha = 0.06f)
+                                FrostTheme.colors.secondary.copy(alpha = 0.26f),
+                                FrostTheme.colors.primary.copy(alpha = 0.06f)
                             )
                         )
                     ),
@@ -420,13 +408,13 @@ private fun WelcomePage() {
                     modifier = Modifier
                         .size(84.dp)
                         .clip(CircleShape)
-                        .background(Brush.linearGradient(GradientFrost)),
+                        .background(Brush.linearGradient(FrostTheme.colors.actionGradient)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.AcUnit,
                         contentDescription = null,
-                        tint = InkOnIce,
+                        tint = FrostTheme.colors.onPrimary,
                         modifier = Modifier.size(44.dp)
                     )
                 }
@@ -436,20 +424,20 @@ private fun WelcomePage() {
         Text(
             text = "FOCUS, FROZEN IN PLACE",
             style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 2.sp),
-            color = AccentFrost
+            color = FrostTheme.colors.secondary
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
             text = stringResource(R.string.onb_welcome_title),
             style = MaterialTheme.typography.displayLarge,
-            color = TextPrimary,
+            color = FrostTheme.colors.textPrimary,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = stringResource(R.string.onb_welcome_subtitle),
             style = MaterialTheme.typography.bodyLarge,
-            color = TextSecondary,
+            color = FrostTheme.colors.textSecondary,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 12.dp)
         )
@@ -468,7 +456,7 @@ private fun WelcomePill(icon: ImageVector, label: String) {
         modifier = Modifier
             .clip(CircleShape)
             .background(Color.White.copy(alpha = 0.05f))
-            .border(1.dp, StrokeSoft, CircleShape)
+            .border(1.dp, FrostTheme.colors.outline, CircleShape)
             .padding(horizontal = 10.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(5.dp)
@@ -476,13 +464,13 @@ private fun WelcomePill(icon: ImageVector, label: String) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = AccentFrost,
+            tint = FrostTheme.colors.secondary,
             modifier = Modifier.size(13.dp)
         )
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = TextSecondary
+            color = FrostTheme.colors.textSecondary
         )
     }
 }
@@ -520,14 +508,14 @@ private fun FeatureSlide(
         Text(
             text = title,
             style = MaterialTheme.typography.headlineLarge,
-            color = TextPrimary,
+            color = FrostTheme.colors.textPrimary,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
             text = subtitle,
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary,
+            color = FrostTheme.colors.textSecondary,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 6.dp)
         )
@@ -566,7 +554,7 @@ private fun FeatureBullet(text: String, accent: Color) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary
+            color = FrostTheme.colors.textSecondary
         )
     }
 }
@@ -590,13 +578,13 @@ private fun FocusToolkitIllustration() {
             Icon(
                 imageVector = Icons.Default.Lock,
                 contentDescription = null,
-                tint = WarnAmber,
+                tint = FrostTheme.colors.warning,
                 modifier = Modifier.size(15.dp)
             )
             Text(
                 text = "Strict",
                 style = MaterialTheme.typography.labelSmall,
-                color = WarnAmber
+                color = FrostTheme.colors.warning
             )
         }
         Box(
@@ -620,6 +608,7 @@ private fun FocusToolkitIllustration() {
 @Composable
 private fun MiniTimerRing(progress: Float, time: String, label: String) {
     Box(modifier = Modifier.size(148.dp), contentAlignment = Alignment.Center) {
+        val colors = FrostTheme.colors
         Canvas(modifier = Modifier.fillMaxSize()) {
             val strokeWidth = 6.dp.toPx()
             drawArc(
@@ -632,7 +621,7 @@ private fun MiniTimerRing(progress: Float, time: String, label: String) {
             )
             drawArc(
                 brush = Brush.sweepGradient(
-                    listOf(AccentFrost, Color(0xFF22D3EE), GlowIce, AccentFrost)
+                    listOf(colors.secondary, Color(0xFF22D3EE), colors.tertiary, colors.secondary)
                 ),
                 startAngle = -90f,
                 sweepAngle = progress.coerceIn(0f, 1f) * 360f,
@@ -646,13 +635,13 @@ private fun MiniTimerRing(progress: Float, time: String, label: String) {
                 text = time,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = TextPrimary
+                color = FrostTheme.colors.textPrimary
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
         }
     }
@@ -673,13 +662,13 @@ private fun AppControlIllustration() {
                 modifier = Modifier
                     .size(30.dp)
                     .clip(CircleShape)
-                    .background(SuccessGreen.copy(alpha = 0.16f)),
+                    .background(FrostTheme.colors.success.copy(alpha = 0.16f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Shield,
                     contentDescription = null,
-                    tint = SuccessGreen,
+                    tint = FrostTheme.colors.success,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -687,13 +676,13 @@ private fun AppControlIllustration() {
             Text(
                 text = "App limits",
                 style = MaterialTheme.typography.titleMedium,
-                color = TextPrimary,
+                color = FrostTheme.colors.textPrimary,
                 modifier = Modifier.weight(1f)
             )
             Text(
                 text = if (apps.isEmpty()) "Reading apps…" else "${limited.size} active",
                 style = MaterialTheme.typography.labelSmall,
-                color = SuccessGreen
+                color = FrostTheme.colors.success
             )
         }
         Spacer(modifier = Modifier.height(4.dp))
@@ -723,7 +712,7 @@ private fun AppControlIllustration() {
             Text(
                 text = "+4 more",
                 style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
         }
     }
@@ -789,13 +778,13 @@ private fun AppIcon(app: InstalledApp, size: Dp = 34.dp) {
             modifier = Modifier
                 .size(size)
                 .clip(RoundedCornerShape(10.dp))
-                .background(SurfaceHigh),
+                .background(FrostTheme.colors.surfaceContainerHigh),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = app.label.take(1).uppercase(),
                 style = MaterialTheme.typography.labelLarge,
-                color = TextSecondary,
+                color = FrostTheme.colors.textSecondary,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -819,13 +808,13 @@ private fun MockLimitRow(
                 Text(
                     text = app.label,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextPrimary,
+                    color = FrostTheme.colors.textPrimary,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = detail,
                     style = MaterialTheme.typography.labelSmall,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             }
             Box(
@@ -833,14 +822,14 @@ private fun MockLimitRow(
                     .fillMaxWidth()
                     .height(4.dp)
                     .clip(CircleShape)
-                    .background(SurfaceHigh)
+                    .background(FrostTheme.colors.surfaceContainerHigh)
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(fraction.coerceIn(0f, 1f))
                         .height(4.dp)
                         .clip(CircleShape)
-                        .background(Brush.horizontalGradient(GradientFrost))
+                        .background(Brush.horizontalGradient(FrostTheme.colors.actionGradient))
                 )
             }
         }
@@ -859,18 +848,18 @@ private fun BlockedAppRow(app: InstalledApp) {
             Text(
                 text = app.label,
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextPrimary
+                color = FrostTheme.colors.textPrimary
             )
             Text(
                 text = "Blocked during focus",
                 style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary
+                color = FrostTheme.colors.textSecondary
             )
         }
         Icon(
             imageVector = Icons.Default.Lock,
             contentDescription = null,
-            tint = AccentFrost,
+            tint = FrostTheme.colors.secondary,
             modifier = Modifier.size(15.dp)
         )
     }
@@ -886,7 +875,7 @@ private fun PlaceholderAppRow(blocked: Boolean) {
             modifier = Modifier
                 .size(34.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(SurfaceHigh)
+                .background(FrostTheme.colors.surfaceContainerHigh)
         )
         Spacer(modifier = Modifier.width(10.dp))
         Column(
@@ -898,7 +887,7 @@ private fun PlaceholderAppRow(blocked: Boolean) {
                     .fillMaxWidth(if (blocked) 0.45f else 0.35f)
                     .height(9.dp)
                     .clip(CircleShape)
-                    .background(SurfaceHigh)
+                    .background(FrostTheme.colors.surfaceContainerHigh)
             )
             if (!blocked) {
                 Box(
@@ -906,7 +895,7 @@ private fun PlaceholderAppRow(blocked: Boolean) {
                         .fillMaxWidth()
                         .height(4.dp)
                         .clip(CircleShape)
-                        .background(SurfaceHigh)
+                        .background(FrostTheme.colors.surfaceContainerHigh)
                 )
             }
         }
@@ -923,14 +912,14 @@ private fun ScheduleIllustration() {
             Icon(
                 imageVector = Icons.Default.CalendarMonth,
                 contentDescription = null,
-                tint = GlowIce,
+                tint = FrostTheme.colors.tertiary,
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "This week",
                 style = MaterialTheme.typography.titleMedium,
-                color = TextPrimary,
+                color = FrostTheme.colors.textPrimary,
                 modifier = Modifier.weight(1f)
             )
             MiniChip(label = "Mon – Fri")
@@ -940,13 +929,13 @@ private fun ScheduleIllustration() {
             time = "06:00",
             title = "Morning study",
             duration = "2h",
-            accent = SuccessGreen
+            accent = FrostTheme.colors.success
         )
         MockScheduleRow(
             time = "14:00",
             title = "Afternoon deep work",
             duration = "2h",
-            accent = AccentFrost
+            accent = FrostTheme.colors.secondary
         )
         MockScheduleRow(
             time = "20:00",
@@ -980,13 +969,13 @@ private fun MockScheduleRow(time: String, title: String, duration: String, accen
         Text(
             text = title,
             style = MaterialTheme.typography.bodyMedium,
-            color = TextPrimary,
+            color = FrostTheme.colors.textPrimary,
             modifier = Modifier.weight(1f)
         )
         Text(
             text = duration,
             style = MaterialTheme.typography.labelSmall,
-            color = TextSecondary
+            color = FrostTheme.colors.textSecondary
         )
     }
 }
@@ -1024,20 +1013,20 @@ private fun ProgressIllustration() {
             Text(
                 text = "This week",
                 style = MaterialTheme.typography.titleMedium,
-                color = TextPrimary,
+                color = FrostTheme.colors.textPrimary,
                 modifier = Modifier.weight(1f)
             )
             Icon(
                 imageVector = Icons.Default.AcUnit,
                 contentDescription = null,
-                tint = PrimaryIce,
+                tint = FrostTheme.colors.primary,
                 modifier = Modifier.size(14.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = "7 day streak",
                 style = MaterialTheme.typography.labelSmall,
-                color = AccentFrost
+                color = FrostTheme.colors.secondary
             )
         }
         Row(
@@ -1060,8 +1049,8 @@ private fun ProgressIllustration() {
                             .background(
                                 Brush.verticalGradient(
                                     listOf(
-                                        PrimaryIce.copy(alpha = if (index == 3) 1f else 0.55f),
-                                        GlacierBlue.copy(alpha = if (index == 3) 1f else 0.35f)
+                                        FrostTheme.colors.primary.copy(alpha = if (index == 3) 1f else 0.55f),
+                                        FrostTheme.colors.glacier.copy(alpha = if (index == 3) 1f else 0.35f)
                                     )
                                 )
                             )
@@ -1070,7 +1059,7 @@ private fun ProgressIllustration() {
                     Text(
                         text = labels[index],
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (index == 3) TextPrimary else TextSecondary
+                        color = if (index == 3) FrostTheme.colors.textPrimary else FrostTheme.colors.textSecondary
                     )
                 }
             }
@@ -1167,6 +1156,7 @@ private fun DistractionRadarIllustration() {
             .height(258.dp),
         contentAlignment = Alignment.Center
     ) {
+        val colors = FrostTheme.colors
         Canvas(modifier = Modifier.size(232.dp)) {
             val radius = size.minDimension / 2f
             val center = Offset(size.width / 2f, size.height / 2f)
@@ -1174,7 +1164,7 @@ private fun DistractionRadarIllustration() {
             drawCircle(color = Color(0xFF04121B), radius = radius)
             drawCircle(
                 brush = Brush.radialGradient(
-                    listOf(AccentFrost.copy(alpha = 0.12f), Color.Transparent),
+                    listOf(colors.secondary.copy(alpha = 0.12f), Color.Transparent),
                     center = center,
                     radius = radius
                 ),
@@ -1205,8 +1195,8 @@ private fun DistractionRadarIllustration() {
                 drawArc(
                     brush = Brush.sweepGradient(
                         0.00f to Color.Transparent,
-                        0.72f to AccentFrost.copy(alpha = 0.02f),
-                        0.94f to AccentFrost.copy(alpha = 0.34f),
+                        0.72f to colors.secondary.copy(alpha = 0.02f),
+                        0.94f to colors.secondary.copy(alpha = 0.34f),
                         1.00f to Color.Transparent
                     ),
                     startAngle = 0f,
@@ -1216,24 +1206,24 @@ private fun DistractionRadarIllustration() {
             }
 
             drawCircle(
-                color = AccentFrost.copy(alpha = 0.22f),
+                color = colors.secondary.copy(alpha = 0.22f),
                 radius = radius,
                 style = Stroke(width = 1.2.dp.toPx())
             )
-            drawCircle(color = AccentFrost.copy(alpha = 0.55f), radius = 2.dp.toPx())
+            drawCircle(color = colors.secondary.copy(alpha = 0.55f), radius = 2.dp.toPx())
         }
 
         Box(
             modifier = Modifier
                 .size(46.dp)
                 .clip(CircleShape)
-                .background(Brush.linearGradient(GradientFrost)),
+                .background(Brush.linearGradient(FrostTheme.colors.actionGradient)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.AcUnit,
                 contentDescription = null,
-                tint = InkOnIce,
+                tint = FrostTheme.colors.onPrimary,
                 modifier = Modifier.size(25.dp)
             )
         }
@@ -1272,14 +1262,14 @@ private fun androidx.compose.foundation.layout.BoxScope.RadarAppIcon(
                     .absoluteOffset(x = 5.dp, y = 5.dp)
                     .size(16.dp)
                     .clip(CircleShape)
-                    .background(BackgroundDark)
-                    .border(1.dp, AccentFrost.copy(alpha = 0.55f), CircleShape),
+                    .background(FrostTheme.colors.background)
+                    .border(1.dp, FrostTheme.colors.secondary.copy(alpha = 0.55f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Lock,
                     contentDescription = null,
-                    tint = AccentFrost,
+                    tint = FrostTheme.colors.secondary,
                     modifier = Modifier.size(9.dp)
                 )
             }
@@ -1302,7 +1292,7 @@ private fun ShowcaseCard(
                     listOf(Color(0xFF0B3B52), Color(0xFF06141F))
                 )
             )
-            .border(1.dp, StrokeSoft, RoundedCornerShape(26.dp))
+            .border(1.dp, FrostTheme.colors.outline, RoundedCornerShape(26.dp))
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         content = content
@@ -1315,15 +1305,15 @@ private fun MiniChip(label: String, selected: Boolean = false) {
         modifier = Modifier
             .clip(CircleShape)
             .background(
-                if (selected) Brush.horizontalGradient(GradientFrost)
-                else androidx.compose.ui.graphics.SolidColor(SurfaceHigh)
+                if (selected) Brush.horizontalGradient(FrostTheme.colors.actionGradient)
+                else androidx.compose.ui.graphics.SolidColor(FrostTheme.colors.surfaceContainerHigh)
             )
             .padding(horizontal = 9.dp, vertical = 5.dp)
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = if (selected) InkOnIce else TextSecondary
+            color = if (selected) FrostTheme.colors.onPrimary else FrostTheme.colors.textSecondary
         )
     }
 }
@@ -1342,13 +1332,13 @@ private fun MiniPill(icon: ImageVector, label: String) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = AccentFrost,
+            tint = FrostTheme.colors.secondary,
             modifier = Modifier.size(13.dp)
         )
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = TextSecondary
+            color = FrostTheme.colors.textSecondary
         )
     }
 }
@@ -1362,17 +1352,17 @@ private fun PersonalizationHeader(title: String, subtitle: String) {
         Text(
             text = "PERSONALISE",
             style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 2.sp),
-            color = AccentFrost
+            color = FrostTheme.colors.secondary
         )
         Text(
             text = title,
             style = MaterialTheme.typography.headlineLarge,
-            color = TextPrimary
+            color = FrostTheme.colors.textPrimary
         )
         Text(
             text = subtitle,
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary
+            color = FrostTheme.colors.textSecondary
         )
     }
 }
@@ -1469,13 +1459,13 @@ fun ReasonPage(
                 .fillMaxWidth()
                 .heightIn(min = 120.dp),
             placeholder = {
-                Text(text = stringResource(R.string.onb_reason_hint), color = TextSecondary)
+                Text(text = stringResource(R.string.onb_reason_hint), color = FrostTheme.colors.textSecondary)
             },
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PrimaryIce,
-                unfocusedBorderColor = StrokeSoft,
-                focusedTextColor = TextPrimary,
-                unfocusedTextColor = TextPrimary
+                focusedBorderColor = FrostTheme.colors.primary,
+                unfocusedBorderColor = FrostTheme.colors.outline,
+                focusedTextColor = FrostTheme.colors.textPrimary,
+                unfocusedTextColor = FrostTheme.colors.textPrimary
             ),
             shape = MaterialTheme.shapes.medium
         )
@@ -1483,7 +1473,7 @@ fun ReasonPage(
         Text(
             text = "Characters: ${reason.trim().length} / 300 (min 10)",
             style = MaterialTheme.typography.bodyMedium,
-            color = if (reason.trim().length in 10..300) AccentFrost else TextSecondary
+            color = if (reason.trim().length in 10..300) FrostTheme.colors.secondary else FrostTheme.colors.textSecondary
         )
     }
 }
@@ -1504,13 +1494,13 @@ fun CommitmentPage(
         Text(
             text = "READY",
             style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 2.sp),
-            color = AccentFrost
+            color = FrostTheme.colors.secondary
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
             text = stringResource(R.string.onb_commitment_title),
             style = MaterialTheme.typography.headlineLarge,
-            color = TextPrimary,
+            color = FrostTheme.colors.textPrimary,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(18.dp))
@@ -1519,7 +1509,7 @@ fun CommitmentPage(
                 Text(
                     text = "Your plan",
                     style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 SummaryLine(
                     icon = Icons.Default.Check,
@@ -1544,8 +1534,8 @@ fun CommitmentPage(
                 .fillMaxWidth()
                 .height(58.dp)
                 .clip(MaterialTheme.shapes.extraLarge)
-                .background(SurfaceCard)
-                .border(1.dp, StrokeSoft, MaterialTheme.shapes.extraLarge)
+                .background(FrostTheme.colors.surfaceContainer)
+                .border(1.dp, FrostTheme.colors.outline, MaterialTheme.shapes.extraLarge)
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onPress = {
@@ -1580,19 +1570,19 @@ fun CommitmentPage(
                     .align(Alignment.CenterStart)
                     .fillMaxHeight()
                     .fillMaxWidth(progress.value)
-                    .background(Brush.horizontalGradient(GradientFrost))
+                    .background(Brush.horizontalGradient(FrostTheme.colors.actionGradient))
             )
             Text(
                 text = stringResource(R.string.onb_start_journey),
                 style = MaterialTheme.typography.labelLarge,
-                color = if (progress.value > 0.55f) InkOnIce else TextPrimary
+                color = if (progress.value > 0.55f) FrostTheme.colors.onPrimary else FrostTheme.colors.textPrimary
             )
         }
         Spacer(modifier = Modifier.height(10.dp))
         Text(
             text = "Hold for two seconds. No sign-up, nothing leaves this phone.",
             style = MaterialTheme.typography.labelSmall,
-            color = TextSecondary,
+            color = FrostTheme.colors.textSecondary,
             textAlign = TextAlign.Center
         )
     }
@@ -1604,7 +1594,7 @@ private fun SummaryLine(icon: ImageVector, text: String) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = AccentFrost,
+            tint = FrostTheme.colors.secondary,
             modifier = Modifier
                 .padding(top = 2.dp)
                 .size(15.dp)
@@ -1613,7 +1603,7 @@ private fun SummaryLine(icon: ImageVector, text: String) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary
+            color = FrostTheme.colors.textSecondary
         )
     }
 }

@@ -40,14 +40,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.frostlock.app.data.InstalledApp
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.GradientFrost
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.StrokeSoft
-import com.frostlock.app.ui.theme.SurfaceCard
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
+import com.frostlock.app.ui.theme.FrostTheme
 
 /** Searchable multi-select app picker shared by subjects and blocking rules. */
 @Composable
@@ -67,8 +60,8 @@ fun AppPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = SurfaceCard,
-        titleContentColor = TextPrimary,
+        containerColor = FrostTheme.colors.surfaceContainer,
+        titleContentColor = FrostTheme.colors.textPrimary,
         title = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
@@ -79,21 +72,21 @@ fun AppPickerDialog(
                     value = query,
                     onValueChange = { query = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Search apps", color = TextSecondary) },
+                    placeholder = { Text("Search apps", color = FrostTheme.colors.textSecondary) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = null,
-                            tint = TextSecondary
+                            tint = FrostTheme.colors.textSecondary
                         )
                     },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PrimaryIce,
-                        unfocusedBorderColor = StrokeSoft,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary,
-                        cursorColor = AccentFrost
+                        focusedBorderColor = FrostTheme.colors.primary,
+                        unfocusedBorderColor = FrostTheme.colors.outline,
+                        focusedTextColor = FrostTheme.colors.textPrimary,
+                        unfocusedTextColor = FrostTheme.colors.textPrimary,
+                        cursorColor = FrostTheme.colors.secondary
                     ),
                     shape = MaterialTheme.shapes.extraLarge
                 )
@@ -104,7 +97,7 @@ fun AppPickerDialog(
                 Text(
                     text = "No apps match that search.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
             } else {
                 LazyColumn(
@@ -140,13 +133,13 @@ fun AppPickerDialog(
                                     modifier = Modifier
                                         .size(34.dp)
                                         .clip(RoundedCornerShape(10.dp))
-                                        .background(SurfaceHigh),
+                                        .background(FrostTheme.colors.surfaceContainerHigh),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = app.label.take(1).uppercase(),
                                         style = MaterialTheme.typography.labelLarge,
-                                        color = AccentFrost
+                                        color = FrostTheme.colors.secondary
                                     )
                                 }
                             }
@@ -154,7 +147,7 @@ fun AppPickerDialog(
                             Text(
                                 text = app.label,
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = TextPrimary,
+                                color = FrostTheme.colors.textPrimary,
                                 maxLines = 1,
                                 modifier = Modifier.weight(1f)
                             )
@@ -164,14 +157,14 @@ fun AppPickerDialog(
                                     .clip(CircleShape)
                                     .background(
                                         if (checked) {
-                                            Brush.linearGradient(GradientFrost)
+                                            Brush.linearGradient(FrostTheme.colors.actionGradient)
                                         } else {
-                                            androidx.compose.ui.graphics.SolidColor(SurfaceHigh)
+                                            androidx.compose.ui.graphics.SolidColor(FrostTheme.colors.surfaceContainerHigh)
                                         }
                                     )
                                     .border(
                                         1.dp,
-                                        if (checked) Color.Transparent else StrokeSoft,
+                                        if (checked) Color.Transparent else FrostTheme.colors.outline,
                                         CircleShape
                                     ),
                                 contentAlignment = Alignment.Center
@@ -192,12 +185,12 @@ fun AppPickerDialog(
         },
         confirmButton = {
             TextButton(onClick = { onConfirm(working) }) {
-                Text(text = "Done", color = AccentFrost)
+                Text(text = "Done", color = FrostTheme.colors.secondary)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(text = "Cancel", color = TextSecondary)
+                Text(text = "Cancel", color = FrostTheme.colors.textSecondary)
             }
         }
     )

@@ -30,13 +30,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SecondaryButton
-import com.frostlock.app.ui.theme.AccentFrost
-import com.frostlock.app.ui.theme.BackgroundDark
-import com.frostlock.app.ui.theme.DangerRed
-import com.frostlock.app.ui.theme.PrimaryIce
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.util.formatClock
+import com.frostlock.app.ui.theme.FrostTheme
 
 @Composable
 fun BlockedScreen(
@@ -56,12 +51,12 @@ fun BlockedScreen(
     usedMinutes: Int = 0,
     ruleLabel: String? = null
 ) {
-    val accent = if (isLimitReached) DangerRed else AccentFrost
+    val accent = if (isLimitReached) FrostTheme.colors.danger else FrostTheme.colors.secondary
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(FrostTheme.colors.background)
             .padding(32.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -105,7 +100,7 @@ fun BlockedScreen(
                     else -> "Stay in the zone"
                 },
                 style = MaterialTheme.typography.headlineMedium,
-                color = TextPrimary,
+                color = FrostTheme.colors.textPrimary,
                 textAlign = TextAlign.Center
             )
 
@@ -143,7 +138,7 @@ fun BlockedScreen(
                     else -> "This app is blocked while you focus."
                 },
                 style = MaterialTheme.typography.bodyLarge,
-                color = TextSecondary,
+                color = FrostTheme.colors.textSecondary,
                 textAlign = TextAlign.Center
             )
 
@@ -153,18 +148,18 @@ fun BlockedScreen(
                 Text(
                     text = "${usedMinutes}m",
                     style = MaterialTheme.typography.displayLarge,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = "used today · resets at midnight",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = DangerRed
+                    color = FrostTheme.colors.danger
                 )
             } else if (remainingSeconds >= 0) {
                 Text(
                     text = formatClock(remainingSeconds),
                     style = MaterialTheme.typography.displayLarge,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = when {
@@ -175,13 +170,13 @@ fun BlockedScreen(
                         else -> "left in this session"
                     },
                     style = MaterialTheme.typography.bodyMedium,
-                    color = AccentFrost
+                    color = FrostTheme.colors.secondary
                 )
             } else {
                 Text(
                     text = "In progress",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = if (isWebsite) {
@@ -196,7 +191,7 @@ fun BlockedScreen(
                         "End the session in FrostLock to unlock apps."
                     },
                     style = MaterialTheme.typography.bodyMedium,
-                    color = AccentFrost,
+                    color = FrostTheme.colors.secondary,
                     textAlign = TextAlign.Center
                 )
             }

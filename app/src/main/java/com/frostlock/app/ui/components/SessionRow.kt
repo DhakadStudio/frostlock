@@ -18,14 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.frostlock.app.data.local.db.SessionEntity
-import com.frostlock.app.ui.theme.SuccessGreen
-import com.frostlock.app.ui.theme.SurfaceHigh
-import com.frostlock.app.ui.theme.TextPrimary
-import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.util.formatDuration
 import com.frostlock.app.ui.util.formatSessionTime
 import com.frostlock.app.ui.util.modeLabel
 import com.frostlock.app.ui.util.modeIcon
+import com.frostlock.app.ui.theme.FrostTheme
 
 @Composable
 fun SessionRow(
@@ -37,13 +34,13 @@ fun SessionRow(
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .background(SurfaceHigh, CircleShape),
+                    .background(FrostTheme.colors.surfaceContainerHigh, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = modeIcon(session.mode),
                     contentDescription = null,
-                    tint = com.frostlock.app.ui.theme.AccentFrost,
+                    tint = FrostTheme.colors.secondary,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -56,18 +53,18 @@ fun SessionRow(
                         "${modeLabel(session.mode)} · ${session.tag}"
                     },
                     style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 Text(
                     text = formatSessionTime(session.endedAt),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = FrostTheme.colors.textSecondary
                 )
                 if (session.note.isNotBlank()) {
                     Text(
                         text = "“${session.note}”",
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary,
+                        color = FrostTheme.colors.textSecondary,
                         maxLines = 2,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
@@ -77,13 +74,13 @@ fun SessionRow(
                 Text(
                     text = formatDuration(session.durationSeconds.toLong()),
                     style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary
+                    color = FrostTheme.colors.textPrimary
                 )
                 if (session.completed) {
                     Text(
                         text = "Completed",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = SuccessGreen
+                        color = FrostTheme.colors.success
                     )
                 }
             }
