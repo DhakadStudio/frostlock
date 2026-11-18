@@ -22,6 +22,12 @@ data class SessionEntity(
     /** Optional subject/tag the user picked for this session ("Physics", "Work", ...). */
     @ColumnInfo(defaultValue = "''")
     val tag: String = "",
+    /**
+     * The one outcome the user named before starting. Stored with the session so
+     * the summary can show what the session was for, even after a restart.
+     */
+    @ColumnInfo(defaultValue = "''")
+    val intent: String = "",
     /** A short reflection written after the session, shown in the study diary. */
     @ColumnInfo(defaultValue = "''")
     val note: String = "",

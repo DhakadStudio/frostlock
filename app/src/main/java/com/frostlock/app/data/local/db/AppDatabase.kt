@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [StreakEntity::class, ProfileEntity::class, SessionEntity::class],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -39,6 +39,15 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
                     "ALTER TABLE focus_sessions ADD COLUMN photoPath TEXT NOT NULL DEFAULT ''"
+                )
+            }
+        }
+
+        /** Adds the session intention so the summary can show what the work was for. */
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE focus_sessions ADD COLUMN intent TEXT NOT NULL DEFAULT ''"
                 )
             }
         }

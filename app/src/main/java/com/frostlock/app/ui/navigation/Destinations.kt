@@ -17,7 +17,10 @@ object Destinations {
 
         // Reserved for Phase 6.
         const val SESSION = "focus/session"
-        const val SUMMARY = "focus/summary/{sessionId}"
+        const val SUMMARY_ARG = "sessionId"
+        const val SUMMARY = "focus/summary/{$SUMMARY_ARG}"
+
+        fun summary(sessionId: Long) = "focus/summary/$sessionId"
     }
 
     object Shield {
