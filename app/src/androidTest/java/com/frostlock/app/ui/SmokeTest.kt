@@ -30,8 +30,11 @@ class SmokeTest {
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
+    private fun tabMatcher(label: String) = hasText(label) and hasClickAction()
+
     private fun tapTab(label: String) {
-        composeTestRule.onNode(hasText(label) and hasClickAction()).performClick()
+        composeTestRule.waitUntilAtLeastOneExists(tabMatcher(label), 10_000)
+        composeTestRule.onNode(tabMatcher(label)).performClick()
     }
 
     private fun waitFor(text: String, timeoutMillis: Long = 10_000) {
@@ -79,6 +82,7 @@ class SmokeTest {
 
     private fun onTab(label: String) {
         // Structural presence check: the nav item exists and is clickable.
-        composeTestRule.onNode(hasText(label) and hasClickAction()).assertExists()
+        composeTestRule.waitUntilAtLeastOneExists(tabMatcher(label), 10_000)
+        composeTestRule.onNode(tabMatcher(label)).assertExists()
     }
 }
