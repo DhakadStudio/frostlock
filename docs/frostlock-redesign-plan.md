@@ -2,7 +2,7 @@
 
 **Version:** 3.0
 **Date:** 2026-11-18
-**Status:** Implemented and on-device QA'd — Phases 0–8 landed (`dcd4d3c`…`f2fb398`). Tests green: 374 tests / 55 suites. On-device QA pass on 2026-11-18 (Realme RMX5101, Android 16): all four tabs, all Shield/Insights/You detail screens, and the full session loop verified; logcat clean — see `docs/frostlock-redesign-qa-audit.md` §9. Screenshots for docs still not captured.
+**Status:** Implemented and on-device QA'd — Phases 0–8 landed (`dcd4d3c`…`f2fb398`). Tests green: 374 tests / 55 suites. On-device QA pass on 2026-11-18 (Realme RMX5101, Android 16): all four tabs, all Shield/Insights/You detail screens, and the full session loop verified; logcat clean; instrumented smoke suite (`app/src/androidTest`, `b6e0ff7`) green; onboarding re-verified on 2026-11-19. Realme's device-care auto-uninstalled the debug build twice (§9 incident notes) — explicit Auto Backup rules shipped (`c4feb10`). Docs screenshots pending the PiP-free device state.
 **Scope:** Full product redesign — information architecture, naming, navigation, screen consolidation, visual system, interaction, accessibility, data contract, implementation, migration and QA.
 **Constraints:** Fully offline, local-only, no new permissions, keep the existing privacy promise and permission footprint.
 

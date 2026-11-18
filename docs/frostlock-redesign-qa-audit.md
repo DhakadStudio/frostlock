@@ -527,6 +527,10 @@ Between the instrumented test run (~19:08, 5/5 passed) and the font-scale check 
 
 **Mitigations for the future:** keep `allowBackup="true"`; ship real (not sample) backup-rule XMLs; consider an in-app export; confirm the app-locker keeps listing FrostLock after reinstall. **Data recovery was not possible** and the deficit is documented here, not papered over.
 
+### Incident follow-up — 2026-11-19 (second removal)
+
+The reinstalled build (`app-debug.apk`, 17:29 build) ran fine (onboarding re-completed at 00:38 on 2026-11-19, verified by screenshot), but when the instrumented suite was re-run at ~00:44 the package was again absent from `pm list packages`, with `com.heytap.market/com.oplus.exp.installed.rec.core.InstalledRecommendActivity` (Realme App Market "new app" screen) holding focus the whole time. Each `connectedDebugAndroidTest` reinstalls the debug APK (`adb install -r`); both removals happened within ~25 minutes of a reinstall. Realme's device-care/app-market pipeline is the likelier culprit (the same class of system decision as `MultiApp: uninstallIfNeed` logged earlier); user action cannot be ruled out. **Code mitigation shipped:** explicit Auto Backup rules (`backup_rules.xml`, `data_extraction_rules.xml` — commit `c4feb10`) now include `database` + `sharedpref` for cloud and device transfer. **User mitigation required:** in Phone Manager / Security settings, stop the cleaner uninstalling or hiding FrostLock, or this will keep destroying local data. Until then, installing via adb keeps triggering the market's new-app flow.
+
 ### Not verified on this device / still open
 
 - Onboarding flow (device already past onboarding; state not wiped).
