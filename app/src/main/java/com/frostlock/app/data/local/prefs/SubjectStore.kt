@@ -3,6 +3,9 @@ package com.frostlock.app.data.local.prefs
 import android.content.Context
 import android.content.SharedPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.Locale
@@ -68,11 +71,16 @@ class SubjectStore @Inject constructor(@ApplicationContext context: Context) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
+    private val _subjects = MutableStateFlow(load())
+    val subjectsFlow: StateFlow<List<FocusSubject>> = _subjects.asStateFlow()
+
     init {
         if (!prefs.contains(KEY_SUBJECTS)) save(defaults())
     }
 
-    fun subjects(): List<FocusSubject> {
+    fun subjects(): List<FocusSubject> = _subjects.value
+
+    private fun load(): List<FocusSubject> {
         val raw = prefs.getString(KEY_SUBJECTS, null) ?: return defaults()
         return runCatching {
             val array = JSONArray(raw)
@@ -134,8 +142,9 @@ class SubjectStore @Inject constructor(@ApplicationContext context: Context) {
     }
 
     fun save(subjects: List<FocusSubject>) {
+        val cleaned = subjects.distinctBy { subjectKey(it.name) }
         val array = JSONArray()
-        subjects.distinctBy { subjectKey(it.name) }.forEach { subject ->
+        cleaned.forEach { subject ->
             array.put(
                 JSONObject().apply {
                     put(KEY_ID, subject.id)
@@ -146,6 +155,7 @@ class SubjectStore @Inject constructor(@ApplicationContext context: Context) {
             )
         }
         prefs.edit().putString(KEY_SUBJECTS, array.toString()).apply()
+        _subjects.value = cleaned
     }
 
     private fun defaults(): List<FocusSubject> = listOf(

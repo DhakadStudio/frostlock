@@ -39,6 +39,11 @@ class UnlockStore @Inject constructor(@ApplicationContext context: Context) {
         return if (prefs.getString(KEY_DATE, null) == key) prefs.getInt(KEY_COUNT, 0) else 0
     }
 
+    /** Re-reads today's count after midnight, a clock change or returning to the app. */
+    fun refresh(today: LocalDate = LocalDate.now()) {
+        _todayCount.value = readTodayCount(today)
+    }
+
     companion object {
         const val PREFS_NAME = "frostlock_unlocks"
         const val KEY_DATE = "unlock_date"

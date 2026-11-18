@@ -17,6 +17,14 @@ interface SessionDao {
     @Query("SELECT * FROM focus_sessions ORDER BY startedAt DESC LIMIT :limit")
     fun recentSessions(limit: Int): Flow<List<SessionEntity>>
 
+    /** Sessions whose wall-clock span overlaps a local date range. */
+    @Query("SELECT * FROM focus_sessions WHERE startedAt <= :end AND endedAt >= :start ORDER BY endedAt DESC")
+    fun sessionsOverlapping(start: Long, end: Long): Flow<List<SessionEntity>>
+
+    /** Sessions that ended inside a local date range. */
+    @Query("SELECT * FROM focus_sessions WHERE endedAt >= :start AND endedAt <= :end ORDER BY endedAt DESC")
+    fun sessionsEndingBetween(start: Long, end: Long): Flow<List<SessionEntity>>
+
     @Query("SELECT COALESCE(SUM(durationSeconds), 0) FROM focus_sessions")
     fun totalSeconds(): Flow<Long>
 

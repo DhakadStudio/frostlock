@@ -66,7 +66,8 @@ class FrostNotificationListenerService : NotificationListenerService() {
             text = text,
             postedAt = sbn.postTime.takeIf { it > 0 } ?: System.currentTimeMillis(),
             reason = decision.reason,
-            ruleLabel = decision.ruleLabel
+            ruleLabel = decision.ruleLabel,
+            key = sbn.key
         )
 
         // Cancel by key so the held notification never appears in the shade.

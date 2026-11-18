@@ -17,6 +17,11 @@ import javax.inject.Singleton
  * Everything stays in SharedPreferences on the device: no listener data is ever
  * uploaded, and clearing the inbox removes it permanently. The list is capped so
  * a long-running install cannot grow without limit.
+ *
+ * Entries are deduplicated by platform notification key: when an app updates the
+ * same notification, the existing row is refreshed and moved to the top instead
+ * of being added twice. [capped] tells the inbox whether older entries were
+ * dropped so it can say "Showing latest 200" instead of implying a full history.
  */
 @Singleton
 class NotificationArchiveStore @Inject constructor(@ApplicationContext context: Context) {
@@ -24,10 +29,14 @@ class NotificationArchiveStore @Inject constructor(@ApplicationContext context: 
     private val prefs: SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    private val _items = MutableStateFlow(load())
+    private val initial = load()
+    private val _items = MutableStateFlow(initial)
     val items: StateFlow<List<BlockedNotification>> = _items.asStateFlow()
 
-    /** Adds an entry at the top. Returns the saved item. */
+    private val _capped = MutableStateFlow(initial.size >= MAX_ENTRIES)
+    val capped: StateFlow<Boolean> = _capped.asStateFlow()
+
+    /** Adds an entry at the top, replacing an existing entry with the same [key]. */
     fun add(
         packageName: String,
         appLabel: String,
@@ -35,21 +44,26 @@ class NotificationArchiveStore @Inject constructor(@ApplicationContext context: 
         text: String,
         postedAt: Long,
         reason: BlockReason,
-        ruleLabel: String? = null
+        ruleLabel: String? = null,
+        key: String? = null
     ): BlockedNotification {
+        val cleanKey = key?.take(MAX_KEY)
+        val existing = cleanKey?.let { k -> _items.value.firstOrNull { it.key == k } }
         val item = BlockedNotification(
-            id = nextId(),
+            id = existing?.id ?: nextId(),
             packageName = packageName,
             appLabel = appLabel,
             title = title.take(MAX_TITLE),
             text = text.take(MAX_TEXT),
             postedAt = postedAt,
             reason = reason,
-            ruleLabel = ruleLabel?.take(MAX_RULE_LABEL)
+            ruleLabel = ruleLabel?.take(MAX_RULE_LABEL),
+            key = cleanKey
         )
-        val updated = (listOf(item) + _items.value).take(MAX_ENTRIES)
+        val updated = mergeBlockedNotification(_items.value, item, MAX_ENTRIES)
         persist(updated)
         _items.value = updated
+        _capped.value = updated.size >= MAX_ENTRIES
         return item
     }
 
@@ -58,11 +72,13 @@ class NotificationArchiveStore @Inject constructor(@ApplicationContext context: 
         if (updated.size == _items.value.size) return
         persist(updated)
         _items.value = updated
+        _capped.value = updated.size >= MAX_ENTRIES
     }
 
     fun clear() {
         prefs.edit().remove(KEY_ITEMS).apply()
         _items.value = emptyList()
+        _capped.value = false
     }
 
     private fun nextId(): Long {
@@ -101,7 +117,8 @@ class NotificationArchiveStore @Inject constructor(@ApplicationContext context: 
             text = optString(KEY_TEXT),
             postedAt = optLong(KEY_AT),
             reason = reason,
-            ruleLabel = optString(KEY_RULE).takeIf { it.isNotBlank() }
+            ruleLabel = optString(KEY_RULE).takeIf { it.isNotBlank() },
+            key = optString(KEY_KEY).takeIf { it.isNotBlank() }
         )
     }
 
@@ -114,6 +131,7 @@ class NotificationArchiveStore @Inject constructor(@ApplicationContext context: 
         put(KEY_AT, postedAt)
         put(KEY_REASON, reason.name)
         ruleLabel?.let { put(KEY_RULE, it) }
+        key?.let { put(KEY_KEY, it) }
     }
 
     companion object {
@@ -122,6 +140,7 @@ class NotificationArchiveStore @Inject constructor(@ApplicationContext context: 
         private const val MAX_TITLE = 160
         private const val MAX_TEXT = 400
         private const val MAX_RULE_LABEL = 60
+        private const val MAX_KEY = 200
         private const val KEY_ITEMS = "blocked_notifications"
         private const val KEY_NEXT_ID = "next_id"
         private const val KEY_ID = "id"
@@ -132,5 +151,25 @@ class NotificationArchiveStore @Inject constructor(@ApplicationContext context: 
         private const val KEY_AT = "at"
         private const val KEY_REASON = "reason"
         private const val KEY_RULE = "rule"
+        private const val KEY_KEY = "key"
     }
+}
+
+/**
+ * Puts [incoming] at the top of [current], replacing any entry with the same
+ * notification key, then trims to [maxEntries].
+ *
+ * Kept free of Android and SharedPreferences so the dedupe and cap rules can be
+ * unit tested directly.
+ */
+internal fun mergeBlockedNotification(
+    current: List<BlockedNotification>,
+    incoming: BlockedNotification,
+    maxEntries: Int = NotificationArchiveStore.MAX_ENTRIES
+): List<BlockedNotification> {
+    if (maxEntries <= 0) return emptyList()
+    val withoutDuplicate = incoming.key?.let { key ->
+        current.filterNot { it.key == key }
+    } ?: current
+    return (listOf(incoming) + withoutDuplicate).take(maxEntries)
 }

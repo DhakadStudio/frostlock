@@ -15,6 +15,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import com.frostlock.app.capability.CapabilityRepository
+import com.frostlock.app.data.local.prefs.AppLimitStore
+import com.frostlock.app.data.local.prefs.UnlockStore
+import com.frostlock.app.insights.TodayProvider
 import com.frostlock.app.reminder.ScheduleReminderScheduler
 import com.frostlock.app.ui.navigation.AppNavGraph
 import com.frostlock.app.ui.navigation.Screen
@@ -29,6 +33,10 @@ class MainActivity : ComponentActivity() {
     private val mainViewModel: MainViewModel by viewModels()
 
     @Inject lateinit var scheduleReminders: ScheduleReminderScheduler
+    @Inject lateinit var capabilities: CapabilityRepository
+    @Inject lateinit var todayProvider: TodayProvider
+    @Inject lateinit var limitStore: AppLimitStore
+    @Inject lateinit var unlockStore: UnlockStore
 
     private val notificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -53,6 +61,17 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Permissions can be revoked and the clock can move while the app is in
+        // the background. Re-read everything date- or access-sensitive so Shield
+        // and Insights never show a stale "protected" state.
+        capabilities.refresh()
+        todayProvider.refresh()
+        limitStore.onDateChanged()
+        unlockStore.refresh()
     }
 
     private fun requestNotificationPermissionIfNeeded() {

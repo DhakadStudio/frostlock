@@ -3,7 +3,10 @@ package com.frostlock.app.data.local.prefs
 import android.content.Context
 import android.content.SharedPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -49,7 +52,7 @@ class AppLimitStore @Inject constructor(@ApplicationContext context: Context) {
         (usageMillisToday(packageName) / 60_000L).toInt()
 
     fun usageToday(): Map<String, Long> {
-        val prefix = usagePrefix()
+        val prefix = usagePrefix(LocalDate.now())
         return prefs.all
             .filterKeys { it.startsWith(prefix) }
             .mapNotNull { (key, value) ->
@@ -121,37 +124,51 @@ class AppLimitStore @Inject constructor(@ApplicationContext context: Context) {
      * Credits the time spent in the currently tracked app and stops tracking.
      *
      * Each credit is capped so a sleeping device (where the service stops getting
-     * events) cannot inflate usage by hours when it wakes up.
+     * events) cannot inflate usage by hours when it wakes up. Time is credited per
+     * local day, so a block that runs across midnight gives each day only its own
+     * share instead of dumping the whole span on the day the user switched away.
      */
-    fun commitActive(now: Long = System.currentTimeMillis()) {
+    fun commitActive(
+        now: Long = System.currentTimeMillis(),
+        zone: ZoneId = ZoneId.systemDefault()
+    ) {
         val pkg = prefs.getString(KEY_ACTIVE_PACKAGE, null) ?: return
         val since = prefs.getLong(KEY_ACTIVE_SINCE, 0L)
         val elapsed = (now - since).coerceIn(0L, MAX_SINGLE_CREDIT_MS)
-        val key = usageKey(pkg)
-        prefs.edit()
+        val slices = splitUsageAtMidnight(since, since + elapsed, zone)
+
+        val editor = prefs.edit()
             .remove(KEY_ACTIVE_PACKAGE)
             .remove(KEY_ACTIVE_SINCE)
-            .apply {
-                if (elapsed > 0L) putLong(key, prefs.getLong(key, 0L) + elapsed)
-            }
-            .apply()
+        slices.forEach { (date, millis) ->
+            val key = usageKey(pkg, date)
+            editor.putLong(key, prefs.getLong(key, 0L) + millis)
+        }
+        editor.apply()
         pruneOldUsageIfNeeded()
     }
 
     private fun limitKey(packageName: String) = "$KEY_LIMIT_PREFIX$packageName"
 
-    private fun usagePrefix() = "$USAGE_PREFIX${LocalDate.now()}_"
+    private fun usagePrefix(date: LocalDate) = "$USAGE_PREFIX${date}_"
 
-    private fun usageKey(packageName: String) = "${usagePrefix()}$packageName"
+    private fun usageKey(packageName: String, date: LocalDate = LocalDate.now()) =
+        "${usagePrefix(date)}$packageName"
 
     private fun warnedKey(packageName: String) = "$WARNED_PREFIX${LocalDate.now()}_$packageName"
+
+    /** Called on resume and after a date/time/timezone change. */
+    fun onDateChanged() {
+        lastPrunedDay = null
+        pruneOldUsageIfNeeded()
+    }
 
     /** Drops usage counters from previous days so the prefs file stays small. */
     private fun pruneOldUsageIfNeeded() {
         val today = LocalDate.now()
         if (lastPrunedDay == today) return
         lastPrunedDay = today
-        val keepUsage = usagePrefix()
+        val keepUsage = usagePrefix(today)
         val keepWarned = "$WARNED_PREFIX${today}_"
         val stale = prefs.all.keys.filter {
             (it.startsWith(USAGE_PREFIX) && !it.startsWith(keepUsage)) ||
@@ -182,6 +199,35 @@ class AppLimitStore @Inject constructor(@ApplicationContext context: Context) {
             if (limitMinutes <= 0) return false
             val budget = limitMinutes * 60_000L
             return usedMillis >= budget * WARN_FRACTION && usedMillis < budget
+        }
+
+        /**
+         * Splits a real usage span at local midnights.
+         *
+         * Returns one entry per local day touched, oldest first. Used by
+         * [commitActive] so a limit never charges yesterday's time to today. Uses
+         * [ZoneId] rather than fixed 24-hour arithmetic, so DST days stay exact.
+         */
+        fun splitUsageAtMidnight(
+            fromMillis: Long,
+            toMillis: Long,
+            zone: ZoneId = ZoneId.systemDefault()
+        ): List<Pair<LocalDate, Long>> {
+            if (toMillis <= fromMillis) return emptyList()
+
+            val end = Instant.ofEpochMilli(toMillis)
+            var cursor = Instant.ofEpochMilli(fromMillis)
+            val slices = mutableListOf<Pair<LocalDate, Long>>()
+
+            while (cursor.isBefore(end)) {
+                val date = cursor.atZone(zone).toLocalDate()
+                val nextMidnight = date.plusDays(1).atStartOfDay(zone).toInstant()
+                val sliceEnd = if (nextMidnight.isBefore(end)) nextMidnight else end
+                val millis = Duration.between(cursor, sliceEnd).toMillis()
+                if (millis > 0L) slices += date to millis
+                cursor = sliceEnd
+            }
+            return slices
         }
     }
 }
