@@ -519,6 +519,14 @@ Method: `adb`-driven manual QA on a physical device. `uiautomator` bounds for ta
 3. Mid-tab-restore can show a brief crossfade frame.
 4. Scroll positions are restored per tab (intended).
 
+### Incident note — 2026-11-18 evening: app uninstalled from the QA device
+
+Between the instrumented test run (~19:08, 5/5 passed) and the font-scale check (~19:19), FrostLock disappeared from the device. System logs show the package reported as `REPLACED` and then `REMOVED` at 19:19:53, followed by `MultiApp: uninstallIfNeed com.frostlock.app` from system_server (19:21:51). Causality is unconfirmed — the user's app-lock screen ("Security test — Unable to find this app") was on screen at 19:20, and an on-device cleaner is a plausible system-side cause; the instrumented test runner does not uninstall the app under test. The user may also have tapped something in the lock screen.
+
+**Data loss:** the uninstall wiped FrostLock's private storage (Room DB, prefs). On reinstall the app launches into onboarding. Lost: 2 test-era sessions (13s on 17 Nov, 56s on 18 Nov), the Day-2 streak, and any non-default preferences set during QA. No backup snapshot existed for this same-day debug install, and the sample `data_extraction_rules`/`backup_rules` contain only template comments (Auto Backup includes everything by default but had never run for this install window).
+
+**Mitigations for the future:** keep `allowBackup="true"`; ship real (not sample) backup-rule XMLs; consider an in-app export; confirm the app-locker keeps listing FrostLock after reinstall. **Data recovery was not possible** and the deficit is documented here, not papered over.
+
 ### Not verified on this device / still open
 
 - Onboarding flow (device already past onboarding; state not wiped).
