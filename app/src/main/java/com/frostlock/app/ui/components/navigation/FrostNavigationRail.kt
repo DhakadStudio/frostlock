@@ -2,6 +2,7 @@ package com.frostlock.app.ui.components.navigation
 
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
@@ -29,7 +30,7 @@ fun FrostNavigationRail(
         modifier = modifier,
         containerColor = FrostTheme.colors.surfaceContainerLow,
         contentColor = FrostTheme.colors.textPrimary,
-        windowInsets = WindowInsets(0, 0, 0, 0),
+        windowInsets = WindowInsets.safeDrawing,
         header = header
     ) {
         items.forEach { item ->

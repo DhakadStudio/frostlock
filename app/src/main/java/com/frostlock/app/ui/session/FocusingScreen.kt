@@ -69,7 +69,9 @@ import com.frostlock.app.ui.components.dialogs.EndSessionDialog
 import com.frostlock.app.ui.components.dialogs.TestBlockDialog
 import com.frostlock.app.ui.theme.FrostShapes
 import com.frostlock.app.ui.theme.FrostTheme
+import com.frostlock.app.ui.theme.rememberReducedMotion
 import com.frostlock.app.ui.util.formatClock
+import com.frostlock.app.ui.util.TimerAutoSize
 
 /**
  * The full-screen session: only the work, the time and what is held.
@@ -416,8 +418,9 @@ private fun ImmersiveTimerRing(
 ) {
     val colors = FrostTheme.colors
     val glow = if (isBreak) colors.secondary else colors.primary
+    val reduced = rememberReducedMotion()
     val breath = rememberInfiniteTransition(label = "timer glow")
-    val glowAlpha by breath.animateFloat(
+    val animatedGlowAlpha by breath.animateFloat(
         initialValue = 0.16f,
         targetValue = 0.28f,
         animationSpec = infiniteRepeatable(
@@ -426,6 +429,8 @@ private fun ImmersiveTimerRing(
         ),
         label = "timerGlowAlpha"
     )
+    // Reduced motion keeps a static mid-glow instead of a pulsing one.
+    val glowAlpha = if (reduced) 0.22f else animatedGlowAlpha
 
     Box(
         modifier = Modifier.size(288.dp),
@@ -478,7 +483,8 @@ private fun ImmersiveTimerRing(
             Text(
                 text = timeText,
                 style = FrostTheme.typography.displayTimer,
-                color = FrostTheme.colors.textPrimary
+                color = FrostTheme.colors.textPrimary,
+                autoSize = TimerAutoSize.autoSize()
             )
             Spacer(modifier = Modifier.height(FrostTheme.spacing.sm))
             Text(

@@ -107,6 +107,7 @@ import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 import com.frostlock.app.ui.theme.TextSecondary
 import com.frostlock.app.ui.theme.WarnAmber
+import com.frostlock.app.ui.theme.rememberReducedMotion
 import com.frostlock.app.ui.util.Achievement
 import com.frostlock.app.ui.util.AchievementCategory
 import com.frostlock.app.ui.util.onboardingShowcaseApps
@@ -363,7 +364,7 @@ private fun StepIndicator(current: Int) {
 @Composable
 private fun WelcomePage() {
     val orbit = rememberInfiniteTransition(label = "orbit")
-    val rotation by orbit.animateFloat(
+    val animatedRotation by orbit.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
@@ -371,6 +372,8 @@ private fun WelcomePage() {
         ),
         label = "orbitRotation"
     )
+    val reducedOrbit = rememberReducedMotion()
+    val rotation = if (reducedOrbit) 0f else animatedRotation
 
     Column(
         modifier = Modifier
@@ -1147,7 +1150,7 @@ private fun BrandTile(brand: BrandApp, size: Dp) {
 @Composable
 private fun DistractionRadarIllustration() {
     val transition = rememberInfiniteTransition(label = "radar")
-    val sweep by transition.animateFloat(
+    val animatedSweep by transition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
@@ -1155,6 +1158,8 @@ private fun DistractionRadarIllustration() {
         ),
         label = "radarSweep"
     )
+    val reducedRadar = rememberReducedMotion()
+    val sweep = if (reducedRadar) 0f else animatedSweep
 
     Box(
         modifier = Modifier
@@ -1620,7 +1625,7 @@ private fun SummaryLine(icon: ImageVector, text: String) {
 @Composable
 private fun OnboardingAurora() {
     val transition = rememberInfiniteTransition(label = "onboarding aurora")
-    val drift by transition.animateFloat(
+    val animatedDrift by transition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
@@ -1629,6 +1634,8 @@ private fun OnboardingAurora() {
         ),
         label = "auroraDrift"
     )
+    val reducedAurora = rememberReducedMotion()
+    val drift = if (reducedAurora) 0f else animatedDrift
     val stars = remember {
         List(64) { Triple(Random.nextFloat(), Random.nextFloat(), Random.nextFloat()) }
     }

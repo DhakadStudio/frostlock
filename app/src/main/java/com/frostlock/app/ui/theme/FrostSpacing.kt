@@ -29,6 +29,9 @@ object FrostSpacing {
     /** Content cap so lines stay readable on tablets. */
     val contentMaxWidth: Dp = 720.dp
 
+    /** Cap for two-pane layouts on expanded widths. */
+    val contentMaxWidthWide: Dp = 1440.dp
+
     /** Focus stays a centred column even on wide screens. */
     val focusMaxWidth: Dp = 560.dp
 }

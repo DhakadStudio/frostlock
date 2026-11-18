@@ -83,6 +83,7 @@ import com.frostlock.app.ui.util.formatClock
 import com.frostlock.app.ui.util.formatDuration
 import com.frostlock.app.ui.util.formatSessionTime
 import com.frostlock.app.ui.util.pauseOptionLabel
+import com.frostlock.app.ui.util.TimerAutoSize
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -594,7 +595,8 @@ private fun ActiveSessionPreview(
                     formatClock(state.remainingSeconds)
                 },
                 style = FrostTheme.typography.displayTimer,
-                color = FrostTheme.colors.textPrimary
+                color = FrostTheme.colors.textPrimary,
+                autoSize = TimerAutoSize.autoSize()
             )
             Text(
                 text = state.tag.trim().ifBlank { "No subject" },
@@ -728,7 +730,8 @@ private fun FocusDial(
                 Text(
                     text = timeText,
                     style = FrostTheme.typography.displayTimer,
-                    color = FrostTheme.colors.textPrimary
+                    color = FrostTheme.colors.textPrimary,
+                    autoSize = TimerAutoSize.autoSize()
                 )
                 Spacer(modifier = Modifier.height(FrostTheme.spacing.xs))
                 Text(

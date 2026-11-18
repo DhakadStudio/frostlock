@@ -1,7 +1,10 @@
 package com.frostlock.app.ui.theme
 
+import android.provider.Settings
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.spring
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * Motion tokens.
@@ -24,4 +27,31 @@ object FrostMotion {
 
     /** Snappier spring for taps on small controls. */
     fun <T> control(): SpringSpec<T> = fastSpatial()
+}
+
+/**
+ * True when the system animator duration scale is `0`, i.e. the user asked
+ * the system to remove animations ("Remove animations" accessibility switch).
+ *
+ * Infinite/decorative animations must check this before reading their animated
+ * values — the animation composables may stay in the tree, but the motion
+ * itself has to come to a stop:
+ *
+ * ```kotlin
+ * val state by infiniteTransition.animateFloat(...)
+ * val rotation = if (rememberReducedMotion()) 0f else state
+ * ```
+ */
+@Composable
+fun rememberReducedMotion(): Boolean {
+    val context = LocalContext.current
+    return androidx.compose.runtime.remember(context) {
+        runCatching {
+            Settings.Global.getFloat(
+                context.contentResolver,
+                Settings.Global.ANIMATOR_DURATION_SCALE,
+                1f
+            ) == 0f
+        }.getOrDefault(false)
+    }
 }

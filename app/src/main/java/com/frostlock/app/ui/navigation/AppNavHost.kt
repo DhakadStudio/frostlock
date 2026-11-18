@@ -1,7 +1,10 @@
 package com.frostlock.app.ui.navigation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,11 +24,14 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.frostlock.app.ui.components.navigation.FrostNavigationBar
+import com.frostlock.app.ui.components.navigation.FrostNavigationRail
 import com.frostlock.app.ui.session.FocusSessionHostViewModel
 import com.frostlock.app.ui.session.ImmersiveSessionHost
 import com.frostlock.app.ui.session.RunningSessionBar
 import com.frostlock.app.ui.screens.onboarding.OnboardingScreen
 import com.frostlock.app.ui.screens.onboarding.OnboardingViewModel
+import com.frostlock.app.ui.shell.FrostWindowSizeClass
+import com.frostlock.app.ui.shell.rememberFrostWindowSizeClass
 import com.frostlock.app.ui.theme.FrostTheme
 
 /**
@@ -35,9 +41,12 @@ import com.frostlock.app.ui.theme.FrostTheme
  * graphs, so system back and predictive back behave like a single app rather
  * than two hosts fighting over the dispatcher.
  *
+ * Compact widths get a floating bottom bar; medium and expanded widths get a
+ * navigation rail on the leading edge instead.
+ *
  * Phase 6: the active session is hosted by the shell-level [ImmersiveSessionHost]
  * above the NavHost, so tab switches never tear it down. A session that was
- * minimised lives as a running-session bar in the bottom bar instead.
+ * minimised lives as a running-session bar above the navigation instead.
  */
 @Composable
 fun AppNavHost(
@@ -55,65 +64,98 @@ fun AppNavHost(
     val immersive = state.immersiveVisible || state.justCompleted
     val showNavigation =
         currentTab != null && !immersive && currentRoute !in Destinations.immersiveRoutes
+    val showMiniPlayer = state.hasStarted && !state.immersiveVisible && !state.justCompleted
+
+    val widthClass = rememberFrostWindowSizeClass()
+    val useRail = showNavigation && widthClass != FrostWindowSizeClass.COMPACT
+
+    val navItems = TopLevelDestination.entries.map { it.navItem }
+    val selectedRoute = currentTab?.route ?: Destinations.Focus.HOME
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            containerColor = FrostTheme.colors.background,
-            bottomBar = {
-                if (showNavigation) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        if (state.hasStarted && !state.immersiveVisible && !state.justCompleted) {
-                            RunningSessionBar(
-                                state = state,
-                                onOpen = viewModel::showImmersive,
-                                onPause = viewModel::pause,
-                                onResume = viewModel::startOrResume,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(
-                                        start = 16.dp,
-                                        end = 16.dp,
-                                        top = 8.dp,
-                                        bottom = 4.dp
-                                    )
-                            )
-                        }
-                        FrostNavigationBar(
-                            items = TopLevelDestination.entries.map { it.navItem },
-                            selectedRoute = currentTab?.route ?: Destinations.Focus.HOME,
-                            onSelect = navController::navigateToTab
+        if (useRail) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(FrostTheme.colors.background)
+            ) {
+                FrostNavigationRail(
+                    items = navItems,
+                    selectedRoute = selectedRoute,
+                    onSelect = navController::navigateToTab,
+                    modifier = Modifier.fillMaxHeight()
+                )
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
+                    Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                        SessionNavHost(
+                            navController = navController,
+                            startDestination = startDestination,
+                            onFinishApp = onFinishApp,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    if (showMiniPlayer) {
+                        RunningSessionBar(
+                            state = state,
+                            onOpen = viewModel::showImmersive,
+                            onPause = viewModel::pause,
+                            onResume = viewModel::startOrResume,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    top = 8.dp,
+                                    bottom = 12.dp
+                                )
                         )
                     }
                 }
             }
-        ) { padding ->
-            NavHost(
-                navController = navController,
-                startDestination = startDestination,
-                modifier = Modifier.padding(padding)
-            ) {
-                composable(Destinations.ONBOARDING) {
-                    val onboardingViewModel: OnboardingViewModel = hiltViewModel()
-                    OnboardingScreen(
-                        viewModel = onboardingViewModel,
-                        onFinished = {
-                            navController.navigate(Destinations.MAIN) {
-                                popUpTo(Destinations.ONBOARDING) { inclusive = true }
+        } else {
+            Scaffold(
+                containerColor = FrostTheme.colors.background,
+                bottomBar = {
+                    if (showNavigation) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            if (showMiniPlayer) {
+                                RunningSessionBar(
+                                    state = state,
+                                    onOpen = viewModel::showImmersive,
+                                    onPause = viewModel::pause,
+                                    onResume = viewModel::startOrResume,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(
+                                            start = 16.dp,
+                                            end = 16.dp,
+                                            top = 8.dp,
+                                            bottom = 4.dp
+                                        )
+                                )
                             }
-                        },
-                        onExit = onFinishApp
-                    )
+                            FrostNavigationBar(
+                                items = navItems,
+                                selectedRoute = selectedRoute,
+                                onSelect = navController::navigateToTab
+                            )
+                        }
+                    }
                 }
-
-                navigation(
-                    route = Destinations.MAIN,
-                    startDestination = Destinations.Focus.GRAPH
-                ) {
-                    mainNavGraph(navController)
-                }
+            ) { padding ->
+                SessionNavHost(
+                    navController = navController,
+                    startDestination = startDestination,
+                    onFinishApp = onFinishApp,
+                    modifier = Modifier.padding(padding)
+                )
             }
         }
 
@@ -134,6 +176,41 @@ fun AppNavHost(
         viewModel.consumeSummary()
         navController.navigate(Destinations.Focus.summary(id)) {
             launchSingleTop = true
+        }
+    }
+}
+
+/** The NavHost shared by the rail and bottom-bar layouts. */
+@Composable
+private fun SessionNavHost(
+    navController: NavHostController,
+    startDestination: String,
+    onFinishApp: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    NavHost(
+        navController = navController,
+        startDestination = startDestination,
+        modifier = modifier
+    ) {
+        composable(Destinations.ONBOARDING) {
+            val onboardingViewModel: OnboardingViewModel = hiltViewModel()
+            OnboardingScreen(
+                viewModel = onboardingViewModel,
+                onFinished = {
+                    navController.navigate(Destinations.MAIN) {
+                        popUpTo(Destinations.ONBOARDING) { inclusive = true }
+                    }
+                },
+                onExit = onFinishApp
+            )
+        }
+
+        navigation(
+            route = Destinations.MAIN,
+            startDestination = Destinations.Focus.GRAPH
+        ) {
+            mainNavGraph(navController)
         }
     }
 }

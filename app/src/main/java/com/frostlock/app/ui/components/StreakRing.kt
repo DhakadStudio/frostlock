@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.frostlock.app.ui.theme.AccentFrost
 import com.frostlock.app.ui.theme.PrimaryIce
 import com.frostlock.app.ui.theme.FrostLockTheme
+import com.frostlock.app.ui.theme.rememberReducedMotion
 import com.frostlock.app.ui.theme.SurfaceHigh
 import com.frostlock.app.ui.theme.TextPrimary
 
@@ -32,12 +33,18 @@ fun StreakRing(
     modifier: Modifier = Modifier
 ) {
     val animatedProgress = remember { Animatable(0f) }
+    val reducedMotion = rememberReducedMotion()
 
-    LaunchedEffect(progress) {
-        animatedProgress.animateTo(
-            targetValue = progress.coerceIn(0f, 1f),
-            animationSpec = tween(durationMillis = 1000)
-        )
+    LaunchedEffect(progress, reducedMotion) {
+        val target = progress.coerceIn(0f, 1f)
+        if (reducedMotion) {
+            animatedProgress.snapTo(target)
+        } else {
+            animatedProgress.animateTo(
+                targetValue = target,
+                animationSpec = tween(durationMillis = 1000)
+            )
+        }
     }
 
     Box(
