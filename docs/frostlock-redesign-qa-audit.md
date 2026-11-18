@@ -498,3 +498,32 @@ Ship the redesign only when all of these are true:
 5. Adaptive layout + typography scaling (F9, F10).
 6. Widget palette/freshness (F3, F16).
 7. Lifecycle polish (F11–F15) and cross-cutting QA.
+---
+
+## 9. On-device QA pass — 2026-11-18 (Realme RMX5101, Android 16, debug build)
+
+Method: `adb`-driven manual QA on a physical device. `uiautomator` bounds for tap targets, screenshots for visual verification, logcat watch for crashes. This was a **smoke + navigation pass on real hardware, not a release-gate certification**; the gates in §7 remain open where noted below.
+
+### Verified on device
+
+- **Focus tab** — cold launch renders (mode chips, duration chips, subject chips, intention field, timer dial). Start → immersive Focusing screen (bottom bar hidden, floating timer pill shown) → Pause (state label + Resume) → Resume → End → "End this session?" dialog (elapsed copy correct: "56s of 10m") → Save and end → Session summary ("Stopped early", planned vs actual, streak day) → back pops to Focus → Insights recomputed immediately (56s today, 1 session, week bar).
+- **Shield tab** — hero status ("Access is off" while accessibility is off), permission banner, Protection rows; detail screens **Apps, Limits, Schedules ("Blocking rules"), Websites, Channels ("YouTube & Music"), Notifications** all render with correct empty states and usage. Bottom bar retained on detail screens as designed.
+- **Insights tab** — TODAY hero (goal ring, streak chip), This week chart (bars, today highlighted, "16 Nov – 22 Nov", "Fresh start"), Consistency heatmap → **History** (active days marked; day detail), LEVEL card → **Levels** (ladder, progress 1m/1h), NEXT BADGE card → **Badges** (1 of 16, focus milestones grid), weekly card → **Weekly review** (1m, sessions, day-of-7 baseline), **Reflections** empty state, "All insights are calculated on this device." footer.
+- **You tab** — Focus section (Daily target editor: bottom sheet, current value checked; opened/closed without changing settings), Strict mode, Pauses, Pomodoro breaks, Break length, Reminders, Floating timer, Sound; Planning section (Goals, Countdown); Appearance (4 palettes). **Widgets** (6 rows, each with a Pin action — Pins not exercised), **Privacy** (offline/storage/permissions copy), **About** (roadmap, "No account. No ads. No tracking.").
+- **Logcat** — no FrostLock exceptions, no `FATAL`/`AndroidRuntime` crashes across the whole pass.
+
+### Observations (non-blocking, not fixed)
+
+1. Timer dial's lower half sits behind the floating bottom bar in the resting Focus state (scrolls into view; 48dp bottom padding).
+2. Duration chip row overflows past the right edge (60m clipped by design; scrollable).
+3. Mid-tab-restore can show a brief crossfade frame.
+4. Scroll positions are restored per tab (intended).
+
+### Not verified on this device / still open
+
+- Onboarding flow (device already past onboarding; state not wiped).
+- Actual app blocking via accessibility (permission is OFF on this phone).
+- Widget pinning, wallpaper/notification surfaces, break-timer alerts, reboot/process-death recovery.
+- **§7 release gates remain open**, notably gate 9 (instrumentation/Compose UI tests do not exist yet — 374 unit tests / 55 suites are all JVM-local), gate 6 (TalkBack/RTL/reduce-motion/2.0 font on device), gates 1–4 (state-table truth model, midnight behaviour, overlap edge cases) beyond unit-test coverage, and tablet/foldable layouts (rail path is unit-tested for the size-class mapping only).
+- No docs screenshots exist in the repo; capturing them remains a release-gate item.
+- The QA pass created a 56-second "Stopped early" session in the user's history (streak day 2, week total 1m). Kept with the user's consent — it is honest data from a real test.

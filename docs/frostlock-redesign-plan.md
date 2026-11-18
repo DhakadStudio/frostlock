@@ -2,7 +2,7 @@
 
 **Version:** 3.0
 **Date:** 2026-11-18
-**Status:** Implemented — Phases 0–8 landed (`dcd4d3c`…`e2a4245` and Phase 8 follow-up). Tests green: 374 tests / 55 suites. Screenshots not included: none exist in the repo and no device/emulator capture was run for docs.
+**Status:** Implemented and on-device QA'd — Phases 0–8 landed (`dcd4d3c`…`f2fb398`). Tests green: 374 tests / 55 suites. On-device QA pass on 2026-11-18 (Realme RMX5101, Android 16): all four tabs, all Shield/Insights/You detail screens, and the full session loop verified; logcat clean — see `docs/frostlock-redesign-qa-audit.md` §9. Screenshots for docs still not captured.
 **Scope:** Full product redesign — information architecture, naming, navigation, screen consolidation, visual system, interaction, accessibility, data contract, implementation, migration and QA.
 **Constraints:** Fully offline, local-only, no new permissions, keep the existing privacy promise and permission footprint.
 
@@ -1813,4 +1813,4 @@ Remaining:
 
 ---
 
-_This redesign plan has been implemented in full (Phases 0–8). Remaining release work: capture docs screenshots on a device/emulator and run the QA matrix in `docs/frostlock-redesign-qa-audit.md`._
+_This redesign plan has been implemented in full (Phases 0–8) and smoke-verified on a physical device (§9 of the QA audit). Remaining release work: capture docs screenshots, close the open §7 release gates in `docs/frostlock-redesign-qa-audit.md` — notably instrumentation tests, midnight behaviour verification, and the accessibility sweep._
