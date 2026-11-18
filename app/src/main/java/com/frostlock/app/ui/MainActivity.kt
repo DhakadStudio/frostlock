@@ -23,6 +23,7 @@ import com.frostlock.app.reminder.ScheduleReminderScheduler
 import com.frostlock.app.ui.navigation.AppNavGraph
 import com.frostlock.app.ui.navigation.Screen
 import com.frostlock.app.ui.theme.FrostLockTheme
+import com.frostlock.app.ui.theme.FrostThemeState
 import com.frostlock.app.ui.theme.IcePalettes
 import com.frostlock.app.widget.WidgetUpdater
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,6 +48,10 @@ class MainActivity : ComponentActivity() {
         WidgetUpdater.refreshAsync(this)
         scheduleReminders.rescheduleAll()
         requestNotificationPermissionIfNeeded()
+        // Seed the legacy palette before the first frame so a saved non-default
+        // theme does not flash Frost on launch. New code reads the token
+        // CompositionLocal, which FrostLockTheme provides immediately.
+        FrostThemeState.palette = IcePalettes.fromKey(mainViewModel.themeKey.value)
         setContent {
             val themeKey by mainViewModel.themeKey.collectAsState()
             FrostLockTheme(palette = IcePalettes.fromKey(themeKey)) {
