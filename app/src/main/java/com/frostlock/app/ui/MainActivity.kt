@@ -20,8 +20,8 @@ import com.frostlock.app.data.local.prefs.AppLimitStore
 import com.frostlock.app.data.local.prefs.UnlockStore
 import com.frostlock.app.insights.TodayProvider
 import com.frostlock.app.reminder.ScheduleReminderScheduler
-import com.frostlock.app.ui.navigation.AppNavGraph
-import com.frostlock.app.ui.navigation.Screen
+import com.frostlock.app.ui.navigation.AppNavHost
+import com.frostlock.app.ui.navigation.Destinations
 import com.frostlock.app.ui.theme.FrostLockTheme
 import com.frostlock.app.ui.theme.FrostThemeState
 import com.frostlock.app.ui.theme.IcePalettes
@@ -57,8 +57,12 @@ class MainActivity : ComponentActivity() {
             FrostLockTheme(palette = IcePalettes.fromKey(themeKey)) {
                 val onboardingDone by mainViewModel.onboardingDone.collectAsState()
                 if (onboardingDone != null) {
-                    AppNavGraph(
-                        startDestination = if (onboardingDone == true) Screen.Home.route else Screen.Onboarding.route,
+                    AppNavHost(
+                        startDestination = if (onboardingDone == true) {
+                            Destinations.MAIN
+                        } else {
+                            Destinations.ONBOARDING
+                        },
                         onFinishApp = { finish() }
                     )
                 } else {
