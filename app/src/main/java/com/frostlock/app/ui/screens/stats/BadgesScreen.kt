@@ -67,11 +67,11 @@ import com.frostlock.app.ui.util.achievementShareText
  * account or sync is needed to unlock anything.
  */
 @Composable
-fun AchievementsScreen(
+fun BadgesScreen(
     onBack: () -> Unit,
-    viewModel: StatsViewModel = hiltViewModel()
+    viewModel: com.frostlock.app.ui.screens.insights.BadgesViewModel = hiltViewModel()
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.state.collectAsState()
     val achievements = state.achievements
     val total = achievements.size
     val unlocked = state.unlockedCount
@@ -96,12 +96,12 @@ fun AchievementsScreen(
             Spacer(modifier = Modifier.width(4.dp))
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    text = "Achievements",
+                    text = "Badges",
                     style = MaterialTheme.typography.headlineMedium,
                     color = TextPrimary
                 )
                 Text(
-                    text = "Milestones from your focus history",
+                    text = "Milestones from your focus history.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary
                 )

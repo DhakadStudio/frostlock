@@ -37,6 +37,10 @@ fun formatDuration(totalSeconds: Long): String {
     }
 }
 
+/** Like [formatDuration], but a true zero reads "0m" instead of "0s". */
+fun formatDurationOrZero(totalSeconds: Long): String =
+    if (totalSeconds <= 0L) "0m" else formatDuration(totalSeconds)
+
 fun modeLabel(mode: String): String = when (mode) {
     "TIMER" -> "Timer"
     "POMODORO" -> "Pomodoro"

@@ -76,11 +76,11 @@ import java.util.Locale
  * the daily rhythm, subject split and reflections. No account or upload.
  */
 @Composable
-fun WeeklyReportScreen(
+fun WeeklyReviewScreen(
     onBack: () -> Unit,
-    onOpenDiary: () -> Unit,
+    onOpenReflections: () -> Unit,
     onStartFocus: () -> Unit,
-    viewModel: WeeklyReportViewModel = hiltViewModel()
+    viewModel: WeeklyReviewViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
     val report = state.report
@@ -107,7 +107,7 @@ fun WeeklyReportScreen(
                 Spacer(modifier = Modifier.width(4.dp))
                 Column {
                     Text(
-                        text = "Weekly report",
+                        text = "Weekly review",
                         style = MaterialTheme.typography.headlineMedium,
                         color = TextPrimary
                     )
@@ -208,7 +208,7 @@ fun WeeklyReportScreen(
 
         if (report.totalSeconds > 0L) {
             item {
-                AppCard(modifier = Modifier.clickable(onClick = onOpenDiary)) {
+                AppCard(modifier = Modifier.clickable(onClick = onOpenReflections)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
@@ -236,7 +236,7 @@ fun WeeklyReportScreen(
                                 color = TextPrimary
                             )
                             Text(
-                                text = "Open the study diary",
+                                text = "Open reflections",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = TextSecondary
                             )

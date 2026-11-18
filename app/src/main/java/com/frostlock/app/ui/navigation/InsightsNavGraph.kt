@@ -4,19 +4,19 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.frostlock.app.ui.screens.calendar.CalendarScreen
-import com.frostlock.app.ui.screens.diary.DiaryScreen
-import com.frostlock.app.ui.screens.report.WeeklyReportScreen
-import com.frostlock.app.ui.screens.stats.AchievementsScreen
+import com.frostlock.app.ui.screens.insights.HistoryScreen
+import com.frostlock.app.ui.screens.insights.InsightsScreen
+import com.frostlock.app.ui.screens.insights.ReflectionsScreen
+import com.frostlock.app.ui.screens.insights.TrendsScreen
+import com.frostlock.app.ui.screens.report.WeeklyReviewScreen
+import com.frostlock.app.ui.screens.stats.BadgesScreen
 import com.frostlock.app.ui.screens.stats.LevelsScreen
-import com.frostlock.app.ui.screens.stats.StatsScreen
 
 /**
- * Insights tab: progress, reviews, reflections, badges and levels.
+ * Insights tab: progress, trends, history, reviews, reflections, badges, levels.
  *
- * The old Stats screen stands in for the consolidated dashboard until Phase 4.
- * Each destination already has its final route, so Phase 4 replaces screens
- * without moving links again.
+ * The dashboard merges the old Home and Stats pages. Every drill-down owns one
+ * period or one archive, so no metric has two homes.
  */
 fun NavGraphBuilder.insightsNavGraph(navController: NavHostController) {
     navigation(
@@ -24,35 +24,31 @@ fun NavGraphBuilder.insightsNavGraph(navController: NavHostController) {
         startDestination = Destinations.Insights.HOME
     ) {
         composable(Destinations.Insights.HOME) {
-            StatsScreen(
-                onOpenAchievements = {
-                    navController.navigateOnce(Destinations.Insights.BADGES)
-                },
-                onOpenDiary = {
+            InsightsScreen(
+                onOpenTrends = { navController.navigateOnce(Destinations.Insights.TRENDS) },
+                onOpenHistory = { navController.navigateOnce(Destinations.Insights.HISTORY) },
+                onOpenWeekly = { navController.navigateOnce(Destinations.Insights.WEEKLY) },
+                onOpenReflections = {
                     navController.navigateOnce(Destinations.Insights.REFLECTIONS)
                 },
-                onOpenWeeklyReport = {
-                    navController.navigateOnce(Destinations.Insights.WEEKLY)
-                },
-                onOpenCalendar = {
-                    navController.navigateOnce(Destinations.Insights.HISTORY)
-                },
-                onOpenLevels = {
-                    navController.navigateOnce(Destinations.Insights.LEVELS)
-                },
+                onOpenBadges = { navController.navigateOnce(Destinations.Insights.BADGES) },
+                onOpenLevels = { navController.navigateOnce(Destinations.Insights.LEVELS) },
                 onStartFocus = {
                     navController.navigateToTab(Destinations.Focus.HOME)
                 }
             )
         }
 
+        composable(Destinations.Insights.TRENDS) {
+            TrendsScreen(onBack = { navController.popBackStack() })
+        }
         composable(Destinations.Insights.HISTORY) {
-            CalendarScreen(onBack = { navController.popBackStack() })
+            HistoryScreen(onBack = { navController.popBackStack() })
         }
         composable(Destinations.Insights.WEEKLY) {
-            WeeklyReportScreen(
+            WeeklyReviewScreen(
                 onBack = { navController.popBackStack() },
-                onOpenDiary = {
+                onOpenReflections = {
                     navController.navigateOnce(Destinations.Insights.REFLECTIONS)
                 },
                 onStartFocus = {
@@ -61,7 +57,7 @@ fun NavGraphBuilder.insightsNavGraph(navController: NavHostController) {
             )
         }
         composable(Destinations.Insights.REFLECTIONS) {
-            DiaryScreen(
+            ReflectionsScreen(
                 onBack = { navController.popBackStack() },
                 onStartFocus = {
                     navController.navigateToTab(Destinations.Focus.HOME)
@@ -69,7 +65,7 @@ fun NavGraphBuilder.insightsNavGraph(navController: NavHostController) {
             )
         }
         composable(Destinations.Insights.BADGES) {
-            AchievementsScreen(onBack = { navController.popBackStack() })
+            BadgesScreen(onBack = { navController.popBackStack() })
         }
         composable(Destinations.Insights.LEVELS) {
             LevelsScreen(onBack = { navController.popBackStack() })

@@ -1,4 +1,4 @@
-package com.frostlock.app.ui.screens.calendar
+package com.frostlock.app.ui.screens.insights
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,6 +8,7 @@ import com.frostlock.app.ui.util.FocusMonth
 import com.frostlock.app.ui.util.buildFocusMonth
 import com.frostlock.app.ui.util.sessionsOn
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,40 +16,50 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
 import java.time.YearMonth
-import javax.inject.Inject
 
-data class CalendarUiState(
+data class HistoryUiState(
     val month: YearMonth = YearMonth.now(),
     val selected: LocalDate = LocalDate.now(),
     val calendar: FocusMonth = buildFocusMonth(YearMonth.now(), emptyList()),
     val daySessions: List<SessionEntity> = emptyList(),
-    val canGoNext: Boolean = false
-)
+    val allSessions: List<SessionEntity> = emptyList(),
+    val canGoNext: Boolean = false,
+    val totalSeconds: Long = 0L
+) {
+    val hasHistory: Boolean get() = allSessions.isNotEmpty()
+}
 
+/**
+ * History: the month heat-map, the selected day and the full session archive.
+ *
+ * The archive lives here so Reflections can stay about notes only.
+ */
 @HiltViewModel
-class CalendarViewModel @Inject constructor(
+class HistoryViewModel @Inject constructor(
     sessionDao: SessionDao
 ) : ViewModel() {
 
     private val month = MutableStateFlow(YearMonth.now())
     private val selected = MutableStateFlow(LocalDate.now())
 
-    val uiState: StateFlow<CalendarUiState> = combine(
-        sessionDao.recentSessions(2000),
+    val state: StateFlow<HistoryUiState> = combine(
+        sessionDao.recentSessions(2_000),
         month,
         selected
     ) { sessions, currentMonth, currentDay ->
-        CalendarUiState(
+        HistoryUiState(
             month = currentMonth,
             selected = currentDay,
             calendar = buildFocusMonth(currentMonth, sessions),
             daySessions = sessionsOn(currentDay, sessions),
-            canGoNext = currentMonth < YearMonth.now()
+            allSessions = sessions.sortedByDescending { it.endedAt },
+            canGoNext = currentMonth < YearMonth.now(),
+            totalSeconds = sessions.sumOf { it.durationSeconds.toLong() }
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = CalendarUiState()
+        initialValue = HistoryUiState()
     )
 
     fun previousMonth() {
@@ -65,7 +76,7 @@ class CalendarViewModel @Inject constructor(
         selected.value = if (target == current) LocalDate.now() else target.atDay(1)
     }
 
-    /** Selecting a leading/trailing day also moves the calendar to that month. */
+    /** Selecting a leading or trailing day also moves the calendar to its month. */
     fun select(date: LocalDate) {
         selected.value = date
         val target = YearMonth.from(date)

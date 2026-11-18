@@ -61,9 +61,9 @@ import com.frostlock.app.ui.util.focusLevelShareText
 @Composable
 fun LevelsScreen(
     onBack: () -> Unit,
-    viewModel: StatsViewModel = hiltViewModel()
+    viewModel: com.frostlock.app.ui.screens.insights.LevelsViewModel = hiltViewModel()
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.state.collectAsState()
     val level = state.level
     val ladder = focusLevelLadder(state.totalSeconds)
     val context = LocalContext.current
@@ -87,12 +87,12 @@ fun LevelsScreen(
             Spacer(modifier = Modifier.width(4.dp))
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    text = "Freeze levels",
+                    text = "Levels",
                     style = MaterialTheme.typography.headlineMedium,
                     color = TextPrimary
                 )
                 Text(
-                    text = "Titles earned from lifetime focus",
+                    text = "Titles earned from lifetime focus.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary
                 )

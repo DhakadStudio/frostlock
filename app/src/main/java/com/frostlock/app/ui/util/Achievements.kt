@@ -38,15 +38,17 @@ private val SESSION_TARGETS = listOf(1, 10, 50, 100)
 
 /**
  * Builds the complete badge set from data FrostLock already stores locally.
- * Focus totals use every saved session, while the streak is the best run found
- * in the recent session history.
+ * Focus totals use every saved session. The streak uses [bestStreakDays] when
+ * the caller already has a canonical streak, otherwise it is derived from the
+ * supplied start times.
  */
 fun buildAchievements(
     totalSeconds: Long,
     totalSessions: Int,
-    startTimes: List<Long>
+    startTimes: List<Long>,
+    bestStreakDays: Int? = null
 ): List<Achievement> {
-    val bestStreak = longestStreak(startTimes).toLong()
+    val bestStreak = (bestStreakDays ?: longestStreak(startTimes)).toLong()
 
     val focus = FOCUS_TARGETS_HOURS.map { hours ->
         Achievement(

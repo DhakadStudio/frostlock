@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
 import javax.inject.Inject
 
-data class WeeklyReportUiState(
+data class WeeklyReviewUiState(
     val report: WeeklyReport = buildWeeklyReport(emptyList()),
     val improvement: ImprovementReport = ImprovementReport(),
     val label: String = "This week",
@@ -32,7 +32,7 @@ data class WeeklyReportUiState(
 )
 
 @HiltViewModel
-class WeeklyReportViewModel @Inject constructor(
+class WeeklyReviewViewModel @Inject constructor(
     sessionDao: SessionDao,
     private val subjectStore: SubjectStore,
     focusSettings: FocusSettings
@@ -41,7 +41,7 @@ class WeeklyReportViewModel @Inject constructor(
     /** 0 = this week, 1 = last week, 2 = two weeks ago… */
     private val weeksAgo = MutableStateFlow(0)
 
-    val uiState: StateFlow<WeeklyReportUiState> = combine(
+    val uiState: StateFlow<WeeklyReviewUiState> = combine(
         sessionDao.recentSessions(2_000),
         weeksAgo,
         focusSettings.dailyGoalMinutes
@@ -50,7 +50,7 @@ class WeeklyReportViewModel @Inject constructor(
         val weekStart = startOfWeek(today).minusWeeks(offset.toLong())
         val colors = subjectStore.subjects().associateBy { subjectKey(it.name) }
 
-        WeeklyReportUiState(
+        WeeklyReviewUiState(
             report = buildWeeklyReport(
                 sessions = sessions,
                 weekStart = weekStart,
@@ -70,7 +70,7 @@ class WeeklyReportViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = WeeklyReportUiState()
+        initialValue = WeeklyReviewUiState()
     )
 
     fun previousWeek() {
