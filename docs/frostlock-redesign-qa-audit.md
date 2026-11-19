@@ -546,9 +546,15 @@ A controlled experiment with a live `adb logcat` capture identified the mechanis
 
 **Data loss stands:** the uninstalls destroyed 2 QA-era sessions (13s on 17 Nov, 56s on 18 Nov) and the Day-2 streak during the first harness uninstall. Not recoverable; not re-created. Onboarding has been re-completed with placeholder answers (editable).
 
+### Font-scale sweep — 2026-11-19 12:11
+
+- **1.3×**: Focus renders cleanly; chips wrap; no clipping of primary labels (countdown sits below the fold as designed — scrollable).
+- **2.0×**: real breakage found — the Pomodoro/Timer segmented control truncates its labels ("Pomodo…", "Time…"), the bottom-nav "Insights" label clips ("Insight…"), and the apps card runs under the nav bar. Release gate 6 (2.0 font) stays open; needs layout fixes, not just verification.
+- Font scale reverted to **1.0** immediately after capture (verified).
+
 ### Not verified on this device / still open
 
-- Onboarding flow (device already past onboarding; state not wiped).
+- ~~Onboarding flow (device already past onboarding; state not wiped).~~ Verified end-to-end three times on 2026-11-19 (slides, goals, triggers, reason, hold-to-start).
 - Actual app blocking via accessibility (permission is OFF on this phone).
 - Widget pinning, wallpaper/notification surfaces, break-timer alerts, reboot/process-death recovery.
 - **§7 release gates remain open**, notably gate 9 (instrumentation/Compose UI tests do not exist yet — 374 unit tests / 55 suites are all JVM-local), gate 6 (TalkBack/RTL/reduce-motion/2.0 font on device), gates 1–4 (state-table truth model, midnight behaviour, overlap edge cases) beyond unit-test coverage, and tablet/foldable layouts (rail path is unit-tested for the size-class mapping only).
