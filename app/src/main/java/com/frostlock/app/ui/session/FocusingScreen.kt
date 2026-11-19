@@ -151,7 +151,11 @@ fun FocusingScreen(
             Spacer(modifier = Modifier.weight(0.6f))
 
             Text(
-                text = if (state.phase == FocusPhase.BREAK) "BREAK" else "FOCUSING",
+                text = when {
+                    state.phase == FocusPhase.BREAK -> "BREAK"
+                    state.isRunning -> "FOCUSING"
+                    else -> "PAUSED"
+                },
                 style = FrostTheme.typography.labelMedium.copy(letterSpacing = 2.sp),
                 color = FrostTheme.colors.textSecondary
             )

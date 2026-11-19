@@ -47,10 +47,16 @@ fun NavGraphBuilder.focusNavGraph(navController: NavHostController) {
         composable(
             route = Destinations.Focus.SUMMARY,
             arguments = listOf(
-                navArgument(Destinations.Focus.SUMMARY_ARG) { type = NavType.LongType }
+                navArgument(Destinations.Focus.SUMMARY_ARG) { type = NavType.LongType },
+                navArgument(Destinations.Focus.SUMMARY_CONTINUES_ARG) {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
             )
-        ) {
+        ) { entry ->
             SessionSummaryScreen(
+                continues = entry.arguments
+                    ?.getBoolean(Destinations.Focus.SUMMARY_CONTINUES_ARG) == true,
                 onDone = {
                     if (!navController.popBackStack()) {
                         navController.navigate(Destinations.Focus.HOME) {

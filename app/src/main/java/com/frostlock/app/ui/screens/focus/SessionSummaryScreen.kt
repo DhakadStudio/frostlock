@@ -53,6 +53,7 @@ import com.frostlock.app.ui.util.formatDuration
 @Composable
 fun SessionSummaryScreen(
     onDone: () -> Unit,
+    continues: Boolean = false,
     viewModel: SessionSummaryViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -85,7 +86,9 @@ fun SessionSummaryScreen(
                 onNoteChange = viewModel::onNoteChange,
                 onPickPhoto = viewModel::attachPhoto,
                 onRemovePhoto = viewModel::removePhoto,
+                continues = continues,
                 onSaveAndEnd = viewModel::saveAndEnd,
+                onDone = viewModel::done,
                 onDiscard = { confirmDiscard = true }
             )
         }
@@ -145,7 +148,9 @@ private fun SummaryContent(
     onNoteChange: (String) -> Unit,
     onPickPhoto: (android.net.Uri) -> Unit,
     onRemovePhoto: () -> Unit,
+    continues: Boolean,
     onSaveAndEnd: () -> Unit,
+    onDone: () -> Unit,
     onDiscard: () -> Unit
 ) {
     val summary = buildSessionSummary(session, streakDays)
@@ -302,9 +307,12 @@ private fun SummaryContent(
         }
 
         item {
+            // A Pomodoro round can finish while the session continues into a
+            // break; there "Done" saves the note and keeps the intention for
+            // the next round instead of claiming the session ended.
             FrostButton(
-                text = "Save and end",
-                onClick = onSaveAndEnd,
+                text = if (continues) "Done" else "Save and end",
+                onClick = if (continues) onDone else onSaveAndEnd,
                 enabled = !busy,
                 modifier = Modifier.fillMaxWidth()
             )

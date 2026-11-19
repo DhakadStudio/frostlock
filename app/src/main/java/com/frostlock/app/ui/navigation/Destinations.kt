@@ -18,9 +18,16 @@ object Destinations {
         // Reserved for Phase 6.
         const val SESSION = "focus/session"
         const val SUMMARY_ARG = "sessionId"
-        const val SUMMARY = "focus/summary/{$SUMMARY_ARG}"
+        const val SUMMARY_CONTINUES_ARG = "continues"
+        const val SUMMARY = "focus/summary/{$SUMMARY_ARG}?$SUMMARY_CONTINUES_ARG={$SUMMARY_CONTINUES_ARG}"
 
-        fun summary(sessionId: Long) = "focus/summary/$sessionId"
+        /**
+         * [continues] is true when the session keeps going after this round (a
+         * Pomodoro break is running), so the summary must not offer to end it
+         * or clear the intention.
+         */
+        fun summary(sessionId: Long, continues: Boolean = false) =
+            "focus/summary/$sessionId?$SUMMARY_CONTINUES_ARG=$continues"
     }
 
     object Shield {

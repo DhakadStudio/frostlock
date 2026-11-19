@@ -30,6 +30,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -134,6 +135,7 @@ fun FocusScreen(
                 onReturn = viewModel::showImmersive,
                 onPause = viewModel::pause,
                 onResume = viewModel::startOrResume,
+                onSkipBreak = viewModel::skipBreak,
                 onEnd = {
                     if (state.elapsedSeconds >= 5) {
                         confirmEnd = true
@@ -561,6 +563,7 @@ private fun ActiveSessionPreview(
     onReturn: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
+    onSkipBreak: () -> Unit,
     onEnd: () -> Unit
 ) {
     Column(
@@ -632,11 +635,15 @@ private fun ActiveSessionPreview(
             )
         }
 
+        // During a break the round is already saved, so "end" really means
+        // "skip the rest of the break" — the end-of-session dialog would show
+        // break time as if it were focus time.
+        val onBreak = state.phase == FocusPhase.BREAK
         FrostButton(
-            text = "End session",
-            onClick = onEnd,
+            text = if (onBreak) "Skip break" else "End session",
+            onClick = if (onBreak) onSkipBreak else onEnd,
             variant = FrostButtonVariant.GHOST,
-            icon = Icons.Default.Stop,
+            icon = if (onBreak) Icons.Default.SkipNext else Icons.Default.Stop,
             modifier = Modifier.fillMaxWidth()
         )
     }

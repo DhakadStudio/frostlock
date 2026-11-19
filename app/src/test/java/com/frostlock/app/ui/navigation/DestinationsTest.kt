@@ -53,6 +53,15 @@ class DestinationsTest {
     }
 
     @Test
+    fun `session summary carries whether the session continues`() {
+        assertEquals("focus/summary/42?continues=false", Destinations.Focus.summary(42L))
+        assertEquals(
+            "focus/summary/42?continues=true",
+            Destinations.Focus.summary(42L, continues = true)
+        )
+    }
+
+    @Test
     fun `immersive routes never include a tab root`() {
         TopLevelDestination.entries.forEach { tab ->
             assertFalse(

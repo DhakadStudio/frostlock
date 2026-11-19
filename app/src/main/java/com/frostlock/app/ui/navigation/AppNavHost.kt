@@ -174,7 +174,10 @@ fun AppNavHost(
     LaunchedEffect(pendingSummaryId) {
         val id = pendingSummaryId ?: return@LaunchedEffect
         viewModel.consumeSummary()
-        navController.navigate(Destinations.Focus.summary(id)) {
+        // A break means the session keeps going after this round, so the
+        // summary is a round summary: "Done", not "Save and end".
+        val continues = state.phase == com.frostlock.app.focus.FocusPhase.BREAK
+        navController.navigate(Destinations.Focus.summary(id, continues = continues)) {
             launchSingleTop = true
         }
     }
