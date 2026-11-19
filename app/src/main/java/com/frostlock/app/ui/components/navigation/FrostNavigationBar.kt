@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import com.frostlock.app.ui.components.surface.frostGlass
 import com.frostlock.app.ui.theme.FrostShapes
 import com.frostlock.app.ui.theme.FrostTheme
 
@@ -41,15 +42,18 @@ fun FrostNavigationBar(
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val shape = FrostShapes.extraLarge
     Surface(
         modifier = modifier
             .navigationBarsPadding()
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth(),
-        shape = FrostShapes.extraLarge,
-        color = FrostTheme.colors.surfaceContainerHigh,
-        tonalElevation = 8.dp,
-        shadowElevation = 8.dp
+            .fillMaxWidth()
+            .frostGlass(shape = shape, strong = true),
+        shape = shape,
+        // The glass modifier paints the bar so the page wash reads through it.
+        color = Color.Transparent,
+        tonalElevation = 0.dp,
+        shadowElevation = 12.dp
     ) {
         NavigationBar(
             containerColor = Color.Transparent,

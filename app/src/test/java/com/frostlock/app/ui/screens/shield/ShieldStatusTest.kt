@@ -60,6 +60,10 @@ class ShieldStatusTest {
             ShieldStatus.apps(granted.copy(appsEnabled = true))
         )
         assertEquals(
+            "On · 1 app selected",
+            ShieldStatus.apps(granted.copy(appsEnabled = true, appsCount = 1))
+        )
+        assertEquals(
             "On · 3 apps selected",
             ShieldStatus.apps(granted.copy(appsEnabled = true, appsCount = 3))
         )

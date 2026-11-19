@@ -33,6 +33,8 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -70,6 +72,7 @@ import com.frostlock.app.ui.components.dialogs.TestBlockDialog
 import com.frostlock.app.ui.theme.FrostShapes
 import com.frostlock.app.ui.theme.FrostTheme
 import com.frostlock.app.ui.theme.rememberReducedMotion
+import com.frostlock.app.ui.util.ambienceFromKey
 import com.frostlock.app.ui.util.formatClock
 import com.frostlock.app.ui.util.TimerAutoSize
 
@@ -88,7 +91,8 @@ fun FocusingScreen(
     onStop: () -> Unit,
     onDiscard: () -> Unit,
     onEndStrict: () -> Unit,
-    onSkipBreak: () -> Unit
+    onSkipBreak: () -> Unit,
+    onToggleAmbience: () -> Unit
 ) {
     var confirmStop by remember { mutableStateOf(false) }
     var testApp by remember { mutableStateOf<InstalledApp?>(null) }
@@ -120,6 +124,29 @@ fun FocusingScreen(
                     isBreak = state.phase == FocusPhase.BREAK
                 )
                 Spacer(modifier = Modifier.weight(1f))
+                if (state.phase != FocusPhase.BREAK) {
+                    val sound = ambienceFromKey(state.ambienceKey)
+                    IconButton(onClick = onToggleAmbience) {
+                        Icon(
+                            imageVector = if (sound.isOff) {
+                                Icons.Default.VolumeOff
+                            } else {
+                                Icons.Default.VolumeUp
+                            },
+                            contentDescription = if (sound.isOff) {
+                                "Sound off — tap to play " +
+                                    ambienceFromKey(state.lastAudibleAmbienceKey).label
+                            } else {
+                                "Playing ${sound.label} — tap to mute"
+                            },
+                            tint = if (sound.isOff) {
+                                FrostTheme.colors.textSecondary
+                            } else {
+                                FrostTheme.colors.primary
+                            }
+                        )
+                    }
+                }
                 if (state.strictActive) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

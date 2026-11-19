@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.frostlock.app.ui.components.surface.frostGlass
 import com.frostlock.app.ui.theme.FrostShapes
 import com.frostlock.app.ui.theme.FrostTheme
 
@@ -37,15 +38,17 @@ fun FrostChip(
     dotColor: Color? = null
 ) {
     val colors = FrostTheme.colors
+    // Unselected pills are glass, selected ones are solid accent: the fill is
+    // the state, so it reads without relying on hue.
+    val surface = if (selected) {
+        Modifier.background(colors.primary, FrostShapes.pill)
+    } else {
+        Modifier.frostGlass(shape = FrostShapes.pill)
+    }
     Row(
         modifier = modifier
             .clip(FrostShapes.pill)
-            .background(if (selected) colors.primary else colors.surfaceContainerHigh)
-            .border(
-                width = 1.dp,
-                color = if (selected) colors.primary else colors.outline,
-                shape = FrostShapes.pill
-            )
+            .then(surface)
             .alpha(if (enabled) 1f else 0.45f)
             .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = FrostTheme.spacing.md, vertical = FrostTheme.spacing.sm),

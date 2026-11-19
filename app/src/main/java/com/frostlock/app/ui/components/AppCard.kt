@@ -1,36 +1,32 @@
 package com.frostlock.app.ui.components
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.frostlock.app.ui.components.surface.FrostCard
+import com.frostlock.app.ui.components.surface.FrostCardVariant
 import com.frostlock.app.ui.theme.FrostLockTheme
 import com.frostlock.app.ui.theme.FrostTheme
 
-/** Standard content card: soft surface, subtle border, large corners. */
+/**
+ * Legacy content card used by a few older screens.
+ *
+ * Delegates to [FrostCard] so those screens automatically share the app's
+ * frosted-glass surface instead of keeping a second card style alive.
+ */
 @Composable
 fun AppCard(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = FrostTheme.colors.surfaceContainer),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(1.dp, FrostTheme.colors.outline)
+    FrostCard(
+        modifier = modifier,
+        variant = FrostCardVariant.OUTLINED,
+        contentPadding = PaddingValues(16.dp)
     ) {
-        Box(modifier = Modifier.padding(16.dp)) {
-            content()
-        }
+        content()
     }
 }
 
@@ -38,6 +34,6 @@ fun AppCard(
 @Composable
 private fun AppCardPreview() {
     FrostLockTheme {
-        AppCard { Text(text = "Card", color = FrostTheme.colors.textPrimary) }
+        AppCard { androidx.compose.material3.Text(text = "Card", color = FrostTheme.colors.textPrimary) }
     }
 }

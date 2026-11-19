@@ -58,6 +58,7 @@ import com.frostlock.app.ui.util.NotificationAppTotal
 import com.frostlock.app.ui.util.NotificationDay
 import com.frostlock.app.ui.util.formatSessionTime
 import com.frostlock.app.ui.util.notificationDayLabel
+import com.frostlock.app.ui.components.surface.frostPageBackground
 import com.frostlock.app.ui.theme.FrostTheme
 
 /**
@@ -84,7 +85,7 @@ fun NotificationsScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .background(FrostTheme.colors.background),
+            .frostPageBackground(),
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {

@@ -23,6 +23,7 @@ internal object ShieldStatus {
         !state.blockingReady -> "Off — access needed"
         !state.appsEnabled -> "Off"
         state.appsCount == 0 -> "On · no apps selected"
+        state.appsCount == 1 -> "On · 1 app selected"
         else -> "On · ${state.appsCount} apps selected"
     }
 

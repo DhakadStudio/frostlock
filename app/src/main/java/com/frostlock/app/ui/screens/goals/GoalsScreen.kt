@@ -43,6 +43,7 @@ import com.frostlock.app.ui.util.GoalProgress
 import com.frostlock.app.ui.util.goalDaysLabel
 import com.frostlock.app.ui.util.goalMinutesLabel
 import com.frostlock.app.ui.util.goalStatusLabel
+import com.frostlock.app.ui.components.surface.frostPageBackground
 import com.frostlock.app.ui.theme.FrostTheme
 
 /**
@@ -62,7 +63,7 @@ fun GoalsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(FrostTheme.colors.background)
+            .frostPageBackground()
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)

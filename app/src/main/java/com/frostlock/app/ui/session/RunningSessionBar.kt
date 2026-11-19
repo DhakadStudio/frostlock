@@ -17,6 +17,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -31,8 +33,10 @@ import androidx.compose.ui.unit.dp
 import com.frostlock.app.focus.FocusMode
 import com.frostlock.app.focus.FocusPhase
 import com.frostlock.app.focus.FocusUiState
+import com.frostlock.app.ui.components.surface.frostGlass
 import com.frostlock.app.ui.theme.FrostShapes
 import com.frostlock.app.ui.theme.FrostTheme
+import com.frostlock.app.ui.util.ambienceFromKey
 import com.frostlock.app.ui.util.formatClock
 
 /**
@@ -48,6 +52,7 @@ fun RunningSessionBar(
     onOpen: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
+    onToggleAmbience: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val isBreak = state.phase == FocusPhase.BREAK
@@ -58,10 +63,12 @@ fun RunningSessionBar(
         else -> FrostTheme.colors.warning
     }
 
+    val shape = FrostShapes.large
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(FrostTheme.colors.surfaceContainerHigh)
+            .frostGlass(shape = shape, strong = true)
+            .clip(shape)
             .clickable(role = Role.Button, onClick = onOpen)
             .semantics { contentDescription = "Open running session" }
             .padding(
@@ -98,6 +105,22 @@ fun RunningSessionBar(
             )
         }
         if (!isBreak) {
+            val sound = ambienceFromKey(state.ambienceKey)
+            IconButton(onClick = onToggleAmbience) {
+                Icon(
+                    imageVector = if (sound.isOff) {
+                        Icons.Default.VolumeOff
+                    } else {
+                        Icons.Default.VolumeUp
+                    },
+                    contentDescription = if (sound.isOff) "Play sound" else "Mute sound",
+                    tint = if (sound.isOff) {
+                        FrostTheme.colors.textSecondary
+                    } else {
+                        FrostTheme.colors.primary
+                    }
+                )
+            }
             IconButton(
                 onClick = { if (state.isRunning) onPause() else onResume() },
                 enabled = !state.isRunning || canPause

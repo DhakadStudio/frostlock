@@ -11,6 +11,8 @@ import com.frostlock.app.data.local.prefs.BlockingPreferences
 import com.frostlock.app.data.local.prefs.FocusSettings
 import com.frostlock.app.data.local.prefs.SubjectStore
 import com.frostlock.app.data.local.prefs.effectiveSessionPackages
+import com.frostlock.app.ui.util.AmbienceSound
+import com.frostlock.app.ui.util.ambienceFromKey
 import com.frostlock.app.ui.util.computeStreak
 import com.frostlock.app.widget.WidgetUpdater
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -84,6 +86,7 @@ class FocusSessionController @Inject constructor(
                 breakMinutes = focusSettings.breakMinutes.value,
                 maxPauses = focusSettings.maxPauses.value,
                 ambienceKey = focusSettings.ambienceKey.value,
+                lastAudibleAmbienceKey = focusSettings.lastAudibleAmbience.value,
                 strictMode = focusSettings.strictMode.value,
                 subjects = subjectStore.subjects(),
                 blockingAccess = capabilities.state(Capability.APP_BLOCKING),
@@ -184,6 +187,21 @@ class FocusSessionController @Inject constructor(
     fun setMaxPauses(count: Int) = focusSettings.setMaxPauses(count)
 
     fun setAmbience(key: String) = focusSettings.setAmbienceKey(key)
+
+    /**
+     * Silences the bed without forgetting it, or brings the last audible bed
+     * back. The running service picks the change up on its next tick.
+     */
+    fun toggleAmbience() {
+        val muted = ambienceFromKey(focusSettings.ambienceKey.value).isOff
+        focusSettings.setAmbienceKey(
+            if (muted) {
+                focusSettings.lastAudibleAmbience.value
+            } else {
+                AmbienceSound.Off.key
+            }
+        )
+    }
 
     fun refreshAccess() = capabilities.refresh()
 
@@ -691,6 +709,11 @@ class FocusSessionController @Inject constructor(
         scope.launch {
             focusSettings.ambienceKey.collect { key ->
                 _uiState.update { it.copy(ambienceKey = key) }
+            }
+        }
+        scope.launch {
+            focusSettings.lastAudibleAmbience.collect { key ->
+                _uiState.update { it.copy(lastAudibleAmbienceKey = key) }
             }
         }
         scope.launch {

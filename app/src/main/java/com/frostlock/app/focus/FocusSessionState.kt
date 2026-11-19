@@ -44,6 +44,8 @@ data class FocusUiState(
     val pausesUsed: Int = 0,
     /** Locally synthesised ambience that plays while this session runs. */
     val ambienceKey: String = AmbienceSound.Off.key,
+    /** The bed that returns when the user unmutes from the running timer. */
+    val lastAudibleAmbienceKey: String = AmbienceSound.Pulse.key,
     val tag: String = "",
     /** The one outcome this session is for, shown on the immersive timer. */
     val intent: String = "",

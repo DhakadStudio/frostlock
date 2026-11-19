@@ -60,6 +60,16 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
     )
     val ambienceKey: StateFlow<String> = _ambienceKey.asStateFlow()
 
+    /**
+     * The last audible bed, so muting from the running timer can be undone
+     * without sending the user back to Session settings.
+     */
+    private val _lastAudibleAmbience = MutableStateFlow(
+        prefs.getString(KEY_LAST_AUDIBLE_AMBIENCE, AmbienceSound.Pulse.key)
+            ?: AmbienceSound.Pulse.key
+    )
+    val lastAudibleAmbience: StateFlow<String> = _lastAudibleAmbience.asStateFlow()
+
     /** A local notification when a blocking rule starts and when it ends. */
     private val _scheduleRemindersEnabled =
         MutableStateFlow(prefs.getBoolean(KEY_SCHEDULE_REMINDERS, true))
@@ -120,7 +130,12 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
     /** Stores the ambience choice; unknown keys fall back to silence. */
     fun setAmbienceKey(key: String) {
         val sound = ambienceFromKey(key)
-        prefs.edit().putString(KEY_AMBIENCE, sound.key).apply()
+        val editor = prefs.edit().putString(KEY_AMBIENCE, sound.key)
+        if (!sound.isOff) {
+            editor.putString(KEY_LAST_AUDIBLE_AMBIENCE, sound.key)
+            _lastAudibleAmbience.value = sound.key
+        }
+        editor.apply()
         _ambienceKey.value = sound.key
     }
 
@@ -169,6 +184,7 @@ class FocusSettings @Inject constructor(@ApplicationContext context: Context) {
         const val KEY_MAX_PAUSES = "max_pauses_per_session"
         const val KEY_FOCUS_BUBBLE = "focus_bubble_enabled"
         const val KEY_AMBIENCE = "focus_ambience"
+        const val KEY_LAST_AUDIBLE_AMBIENCE = "focus_ambience_last_audible"
         const val KEY_SCHEDULE_REMINDERS = "schedule_reminders_enabled"
         const val KEY_NOTIFICATION_BLOCKING = "notification_blocking_enabled"
         const val KEY_SESSION_TAG = "last_session_tag"

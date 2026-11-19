@@ -57,6 +57,7 @@ import com.frostlock.app.ui.components.MoodChip
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SectionHeader
 import com.frostlock.app.ui.util.WebsiteCategory
+import com.frostlock.app.ui.components.surface.frostPageBackground
 import com.frostlock.app.ui.theme.FrostTheme
 
 /**
@@ -89,7 +90,7 @@ fun WebsitesScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(FrostTheme.colors.background)
+            .frostPageBackground()
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)

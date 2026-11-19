@@ -57,6 +57,7 @@ import com.frostlock.app.ui.util.deadlineIsUrgent
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.frostlock.app.ui.components.surface.frostPageBackground
 import com.frostlock.app.ui.theme.FrostTheme
 
 /**
@@ -84,7 +85,7 @@ fun DeadlineScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(FrostTheme.colors.background)
+            .frostPageBackground()
             .imePadding()
     ) {
         Row(

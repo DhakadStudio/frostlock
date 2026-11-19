@@ -58,6 +58,7 @@ import com.frostlock.app.ui.util.goalTargetLabel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.frostlock.app.ui.components.surface.frostPageBackground
 import com.frostlock.app.ui.theme.FrostTheme
 
 /** Create or edit one local focus goal. */
@@ -85,7 +86,7 @@ fun GoalEditorScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(FrostTheme.colors.background)
+            .frostPageBackground()
             .imePadding()
     ) {
         Row(

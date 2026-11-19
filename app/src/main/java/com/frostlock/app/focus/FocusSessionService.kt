@@ -60,6 +60,9 @@ class FocusSessionService : Service() {
     private var bubbleParams: WindowManager.LayoutParams? = null
     private val ambiencePlayer = AmbiencePlayer()
 
+    /** The key currently handed to [ambiencePlayer], so ticks can detect edits. */
+    private var activeAmbienceKey: String? = null
+
     override fun onCreate() {
         super.onCreate()
         prefs = BlockingPreferences(applicationContext)
@@ -88,7 +91,7 @@ class FocusSessionService : Service() {
         prefs.setSessionEndsAt(if (openEnded) 0L else until)
         startForeground(NOTIFICATION_ID, buildNotification(openEnded, 0L))
         showBubble()
-        startAmbience()
+        syncAmbience()
 
         job?.cancel()
         job = scope.launch {
@@ -101,6 +104,7 @@ class FocusSessionService : Service() {
                 val remaining = if (openEnded) 0L else (until - now).coerceAtLeast(0L)
                 notifyProgress(openEnded, remaining)
                 updateBubble(openEnded, remaining)
+                syncAmbience()
 
                 // Focus Guard: an opt-in nudge every ten minutes.
                 if (focusGuard && now - lastGuardAt >= FOCUS_GUARD_INTERVAL_MS) {
@@ -201,14 +205,20 @@ class FocusSessionService : Service() {
     /**
      * Reads the ambience choice synchronously, exactly like the bubble setting,
      * because the service starts before any ViewModel exists.
+     *
+     * The same call runs once per tick, so changing or muting the sound from the
+     * timer takes effect within a second instead of at the next session.
      */
-    private fun startAmbience() {
+    private fun syncAmbience() {
         val key = getSharedPreferences(FocusSettings.PREFS_NAME, MODE_PRIVATE)
             .getString(FocusSettings.KEY_AMBIENCE, AmbienceSound.Off.key)
+        if (key == activeAmbienceKey) return
+        activeAmbienceKey = key
         ambiencePlayer.play(ambienceFromKey(key))
     }
 
     private fun stopAmbience() {
+        activeAmbienceKey = null
         ambiencePlayer.stop()
     }
 

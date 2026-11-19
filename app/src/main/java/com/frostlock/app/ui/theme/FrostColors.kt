@@ -30,7 +30,28 @@ data class FrostColors(
     val warning: Color,
     val danger: Color,
     val actionGradient: List<Color>,
-    val heroGradient: List<Color>
+    val heroGradient: List<Color>,
+
+    /** Page canvas: lifted at the top, sinking to the base colour below. */
+    val pageTop: Color,
+    val pageBottom: Color,
+
+    /** Faint accent bloom painted behind the header. */
+    val headerGlow: Color,
+
+    /** Translucent card fill that lets the page gradient read through. */
+    val glassFill: Color,
+    val glassFillStrong: Color,
+
+    /** Hairline edge of a glass card: bright on top, fading downwards. */
+    val glassEdgeTop: Color,
+    val glassEdgeBottom: Color,
+
+    /** Opaque gradient used by sheets and dialogs raised above a scrim. */
+    val panelTop: Color,
+    val panelBottom: Color,
+    val panelEdgeTop: Color,
+    val panelEdgeBottom: Color
 ) {
     companion object {
         /** Maps an ice palette onto the semantic roles. */
@@ -56,7 +77,22 @@ data class FrostColors(
             heroGradient = listOf(
                 palette.glacier.copy(alpha = 0.55f),
                 palette.backgroundElevated
-            )
+            ),
+
+            // Direction A — frosted depth. The page is a soft vertical wash,
+            // cards are white-alpha glass over it, and panels (sheets and
+            // dialogs) are opaque so they stay readable above the scrim.
+            pageTop = palette.backgroundElevated,
+            pageBottom = palette.background,
+            headerGlow = palette.primary.copy(alpha = 0.16f),
+            glassFill = Color.White.copy(alpha = 0.045f),
+            glassFillStrong = Color.White.copy(alpha = 0.075f),
+            glassEdgeTop = Color.White.copy(alpha = 0.17f),
+            glassEdgeBottom = Color.White.copy(alpha = 0.04f),
+            panelTop = palette.surfaceHigh,
+            panelBottom = palette.surfaceCard,
+            panelEdgeTop = Color.White.copy(alpha = 0.20f),
+            panelEdgeBottom = Color.White.copy(alpha = 0.04f)
         )
     }
 }

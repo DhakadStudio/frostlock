@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Icon
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -58,6 +60,7 @@ import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.frostlock.app.ui.components.surface.frostPageBackground
 import com.frostlock.app.ui.theme.FrostTheme
 
 @Composable
@@ -102,7 +105,7 @@ fun ScheduleScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(FrostTheme.colors.background)
+            .frostPageBackground()
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -276,7 +279,7 @@ private fun ScheduleRow(
     onDelete: () -> Unit
 ) {
     AppCard {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -353,6 +356,8 @@ private fun ScheduleRow(
                 )
             }
 
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = appsSummary(schedule.packages, labels),
                 style = MaterialTheme.typography.bodyMedium,
@@ -361,14 +366,30 @@ private fun ScheduleRow(
                 overflow = TextOverflow.Ellipsis
             )
 
+            HorizontalDivider(
+                modifier = Modifier.padding(top = 12.dp),
+                color = FrostTheme.colors.outline.copy(alpha = 0.35f)
+            )
+
+            // Compact footer: the default TextButton height left a wide gap
+            // between the rule details and these two actions.
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = onEdit) {
+                TextButton(
+                    onClick = onEdit,
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                ) {
                     Text(text = "Edit", color = FrostTheme.colors.secondary)
                 }
-                TextButton(onClick = onDelete) {
+                TextButton(
+                    onClick = onDelete,
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                ) {
                     Text(text = "Delete", color = FrostTheme.colors.danger)
                 }
             }

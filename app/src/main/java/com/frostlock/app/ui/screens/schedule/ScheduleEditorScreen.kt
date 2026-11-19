@@ -86,6 +86,7 @@ import com.frostlock.app.ui.util.ruleOverlaps
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import com.frostlock.app.ui.components.surface.frostPageBackground
 import com.frostlock.app.ui.theme.FrostTheme
 
 private enum class TimeField { START, END }
@@ -183,7 +184,7 @@ fun ScheduleEditorScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(FrostTheme.colors.background)
+            .frostPageBackground()
             .imePadding()
     ) {
         EditorTopBar(editing = initial != null, onBack = onDismiss)

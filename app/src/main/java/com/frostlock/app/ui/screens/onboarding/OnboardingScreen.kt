@@ -104,6 +104,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
+import com.frostlock.app.ui.components.surface.frostPageBackground
 import com.frostlock.app.ui.theme.FrostTheme
 
 @Composable
@@ -133,7 +134,7 @@ fun OnboardingScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(FrostTheme.colors.background)
+            .frostPageBackground()
     ) {
         OnboardingAurora()
 
@@ -1262,7 +1263,7 @@ private fun androidx.compose.foundation.layout.BoxScope.RadarAppIcon(
                     .absoluteOffset(x = 5.dp, y = 5.dp)
                     .size(16.dp)
                     .clip(CircleShape)
-                    .background(FrostTheme.colors.background)
+                    .frostPageBackground()
                     .border(1.dp, FrostTheme.colors.secondary.copy(alpha = 0.55f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {

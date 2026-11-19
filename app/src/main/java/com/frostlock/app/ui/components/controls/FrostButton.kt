@@ -54,7 +54,8 @@ fun FrostButton(
     modifier: Modifier = Modifier,
     variant: FrostButtonVariant = FrostButtonVariant.PRIMARY,
     enabled: Boolean = true,
-    icon: ImageVector? = null
+    icon: ImageVector? = null,
+    tint: Color? = null
 ) {
     val colors = FrostTheme.colors
     when (variant) {
@@ -103,7 +104,7 @@ fun FrostButton(
                 shape = FrostShapes.pill,
                 border = BorderStroke(1.dp, colors.outline),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = colors.textPrimary,
+                    contentColor = tint ?: colors.textPrimary,
                     disabledContentColor = colors.textSecondary
                 ),
                 contentPadding = PaddingValues(horizontal = FrostTheme.spacing.xxl)
@@ -118,7 +119,7 @@ fun FrostButton(
                 enabled = enabled,
                 modifier = modifier.heightIn(min = 48.dp),
                 colors = ButtonDefaults.textButtonColors(
-                    contentColor = colors.primary,
+                    contentColor = tint ?: colors.primary,
                     disabledContentColor = colors.textSecondary
                 )
             ) {

@@ -59,6 +59,7 @@ import com.frostlock.app.ui.util.formatDuration
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+import com.frostlock.app.ui.components.surface.frostPageBackground
 import com.frostlock.app.ui.theme.FrostTheme
 
 /**
@@ -81,7 +82,7 @@ fun WeeklyReviewScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .background(FrostTheme.colors.background),
+            .frostPageBackground(),
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {

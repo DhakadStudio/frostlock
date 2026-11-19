@@ -1,6 +1,5 @@
 package com.frostlock.app.ui.components.surface
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -10,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -30,8 +30,9 @@ enum class FrostCardVariant {
 /**
  * Standard content card.
  *
- * Defaults to [FrostCardVariant.OUTLINED] so lists read as one calm surface
- * rather than a stack of competing blocks.
+ * All three variants share the frosted-glass treatment: a translucent fill that
+ * lets the page wash read through, and a hairline edge that is bright on top
+ * and fades down. The variants only change how much light the card catches.
  */
 @Composable
 fun FrostCard(
@@ -43,21 +44,12 @@ fun FrostCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     val colors = FrostTheme.colors
-    val container = when (variant) {
-        FrostCardVariant.FILLED -> colors.surfaceContainer
-        FrostCardVariant.OUTLINED -> colors.surfaceContainerLow
-        FrostCardVariant.ELEVATED -> colors.surfaceContainerHigh
-    }
-    val border = if (variant == FrostCardVariant.OUTLINED) {
-        BorderStroke(1.dp, colors.outline)
-    } else {
-        null
-    }
-    val elevation = if (variant == FrostCardVariant.ELEVATED) 2.dp else 0.dp
+    val strong = variant == FrostCardVariant.ELEVATED
 
     Surface(
         modifier = modifier
             .fillMaxWidth()
+            .frostGlass(shape = shape, strong = strong)
             .then(
                 if (onClick != null) {
                     Modifier.clickable(role = Role.Button, onClick = onClick)
@@ -66,11 +58,11 @@ fun FrostCard(
                 }
             ),
         shape = shape,
-        color = container,
+        // The glass modifier paints the surface; Surface only owns the shape
+        // clip, content colour and click semantics.
+        color = Color.Transparent,
         contentColor = colors.textPrimary,
-        border = border,
-        tonalElevation = elevation,
-        shadowElevation = elevation
+        shadowElevation = if (strong) 12.dp else 0.dp
     ) {
         Column(
             modifier = Modifier.padding(contentPadding),

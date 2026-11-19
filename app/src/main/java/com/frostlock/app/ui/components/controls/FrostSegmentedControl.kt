@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import com.frostlock.app.ui.components.surface.frostGlass
 import com.frostlock.app.ui.theme.FrostShapes
 import com.frostlock.app.ui.theme.FrostTheme
 
@@ -31,7 +32,7 @@ fun <T> FrostSegmentedControl(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(FrostTheme.colors.surfaceContainerHigh, FrostShapes.pill)
+            .frostGlass(shape = FrostShapes.pill)
             .padding(FrostTheme.spacing.xs)
     ) {
         options.forEach { option ->

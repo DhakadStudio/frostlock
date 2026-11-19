@@ -5,6 +5,7 @@ import android.provider.Settings
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,17 +30,28 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.AcUnit
+import androidx.compose.material.icons.filled.Air
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.filled.Waves
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -54,6 +68,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -73,9 +88,12 @@ import com.frostlock.app.ui.components.controls.FrostSegmentedControl
 import com.frostlock.app.ui.components.controls.FrostSwitchRow
 import com.frostlock.app.ui.components.dialogs.EndSessionDialog
 import com.frostlock.app.ui.components.surface.FrostCard
+import com.frostlock.app.ui.components.surface.frostPanel
+import com.frostlock.app.ui.components.surface.FrostCardVariant
 import com.frostlock.app.ui.components.surface.HeroCard
 import com.frostlock.app.ui.components.surface.PermissionCard
 import com.frostlock.app.ui.shell.FrostTabScaffold
+import com.frostlock.app.ui.theme.FrostShapes
 import com.frostlock.app.ui.theme.FrostTheme
 import com.frostlock.app.ui.util.AmbienceSound
 import com.frostlock.app.ui.util.ambienceFromKey
@@ -760,67 +778,217 @@ private fun SessionSettingsSheet(
     onMaxPauses: (Int) -> Unit,
     onAmbience: (String) -> Unit
 ) {
+    val colors = FrostTheme.colors
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = FrostTheme.colors.surfaceContainer
+        // The panel paints itself below, so the sheet container stays clear and
+        // no flat slab shows around the gradient.
+        containerColor = Color.Transparent,
+        dragHandle = null,
+        contentWindowInsets = { WindowInsets(0, 0, 0, 0) }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .frostPanel(shape = FrostShapes.sheet)
                 .verticalScroll(rememberScrollState())
+                .navigationBarsPadding()
                 .padding(
                     start = FrostTheme.spacing.screenHorizontal,
                     end = FrostTheme.spacing.screenHorizontal,
+                    top = FrostTheme.spacing.sm,
                     bottom = FrostTheme.spacing.huge
                 ),
-            verticalArrangement = Arrangement.spacedBy(FrostTheme.spacing.md)
+            verticalArrangement = Arrangement.spacedBy(FrostTheme.spacing.xl)
         ) {
-            Text(
-                text = "Session settings",
-                style = FrostTheme.typography.titleLarge,
-                color = FrostTheme.colors.textPrimary
+            // Drag handle inside the panel so it shares the gradient surface.
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .width(36.dp)
+                    .height(4.dp)
+                    .clip(FrostShapes.pill)
+                    .background(colors.textSecondary.copy(alpha = 0.4f))
             )
-            FrostSwitchRow(
-                title = "Strict mode",
-                checked = state.strictMode,
-                onCheckedChange = onStrictMode,
-                description = "No pausing or early exit until the timer ends."
-            )
-
-            Text(
-                text = "Pauses per session",
-                style = FrostTheme.typography.labelLarge,
-                color = FrostTheme.colors.textSecondary
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(FrostTheme.spacing.sm)) {
-                PAUSE_OPTIONS.forEach { option ->
-                    FrostChip(
-                        text = pauseOptionLabel(option),
-                        selected = state.maxPauses == option,
-                        onClick = { onMaxPauses(option) }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(Brush.linearGradient(colors.actionGradient))
+                        .border(
+                            width = 1.dp,
+                            color = colors.primary.copy(alpha = 0.35f),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Tune,
+                        contentDescription = null,
+                        tint = FrostTheme.colors.onPrimary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(FrostTheme.spacing.md))
+                Column {
+                    Text(
+                        text = "Session settings",
+                        style = FrostTheme.typography.titleLarge,
+                        color = FrostTheme.colors.textPrimary
+                    )
+                    Text(
+                        text = "Set the room before the timer starts.",
+                        style = FrostTheme.typography.bodySmall,
+                        color = FrostTheme.colors.textSecondary
                     )
                 }
             }
 
-            Text(
-                text = "Sound",
-                style = FrostTheme.typography.labelLarge,
-                color = FrostTheme.colors.textSecondary
-            )
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(FrostTheme.spacing.sm),
-                verticalArrangement = Arrangement.spacedBy(FrostTheme.spacing.sm)
+            HorizontalDivider(color = colors.outline.copy(alpha = 0.5f))
+
+            SettingsSection(
+                title = "Discipline",
+                hint = "How much the timer lets you interrupt it."
             ) {
-                AmbienceSound.entries.forEach { sound ->
-                    FrostChip(
-                        text = sound.label,
-                        selected = ambienceFromKey(state.ambienceKey) == sound,
-                        onClick = { onAmbience(sound.key) }
+                FrostCard(
+                    variant = FrostCardVariant.OUTLINED,
+                    contentPadding = PaddingValues(
+                        horizontal = FrostTheme.spacing.md,
+                        vertical = FrostTheme.spacing.xs
                     )
+                ) {
+                    FrostSwitchRow(
+                        title = "Strict mode",
+                        checked = state.strictMode,
+                        onCheckedChange = onStrictMode,
+                        description = "No pausing or early exit until the timer ends."
+                    )
+                }
+            }
+
+            SettingsSection(
+                title = "Pauses",
+                hint = "Times you may stop the clock before the round ends."
+            ) {
+                FrostSegmentedControl(
+                    options = PAUSE_OPTIONS,
+                    selected = state.maxPauses,
+                    onSelect = onMaxPauses,
+                    label = ::pauseOptionLabel
+                )
+            }
+
+            SettingsSection(
+                title = "Sound",
+                hint = "Generated on this device. Mute it any time from the timer."
+            ) {
+                val current = ambienceFromKey(state.ambienceKey)
+                FrostCard(
+                    variant = FrostCardVariant.OUTLINED,
+                    contentPadding = PaddingValues(FrostTheme.spacing.xs)
+                ) {
+                    AmbienceSound.entries.forEach { sound ->
+                        AmbienceOptionRow(
+                            sound = sound,
+                            selected = current == sound,
+                            onSelect = { onAmbience(sound.key) }
+                        )
+                    }
                 }
             }
         }
     }
+}
+
+/** One labelled block inside the session settings sheet. */
+@Composable
+private fun SettingsSection(
+    title: String,
+    hint: String,
+    content: @Composable () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(FrostTheme.spacing.sm)) {
+        Text(
+            text = title,
+            style = FrostTheme.typography.titleMedium,
+            color = FrostTheme.colors.textPrimary
+        )
+        Text(
+            text = hint,
+            style = FrostTheme.typography.bodySmall,
+            color = FrostTheme.colors.textSecondary
+        )
+        content()
+    }
+}
+
+/**
+ * One sound in the picker: icon, name, what it sounds like, and a radio mark.
+ * The whole row is the target so it works with a thumb and with TalkBack.
+ */
+@Composable
+private fun AmbienceOptionRow(
+    sound: AmbienceSound,
+    selected: Boolean,
+    onSelect: () -> Unit
+) {
+    val colors = FrostTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(FrostTheme.shapes.medium)
+            .background(if (selected) colors.primary.copy(alpha = 0.12f) else Color.Transparent)
+            .clickable(onClick = onSelect)
+            .padding(horizontal = FrostTheme.spacing.sm, vertical = FrostTheme.spacing.sm),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(CircleShape)
+                .background(colors.surfaceContainerHigh),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = ambienceIcon(sound),
+                contentDescription = null,
+                tint = if (selected) colors.primary else colors.textSecondary,
+                modifier = Modifier.size(19.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(FrostTheme.spacing.md))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = sound.label,
+                style = FrostTheme.typography.titleMedium,
+                color = if (selected) colors.primary else colors.textPrimary
+            )
+            Text(
+                text = sound.detail,
+                style = FrostTheme.typography.bodySmall,
+                color = colors.textSecondary
+            )
+        }
+        RadioButton(
+            selected = selected,
+            onClick = null,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = colors.primary,
+                unselectedColor = colors.outline
+            )
+        )
+    }
+}
+
+private fun ambienceIcon(sound: AmbienceSound): ImageVector = when (sound) {
+    AmbienceSound.Off -> Icons.Default.VolumeOff
+    AmbienceSound.Pulse -> Icons.Default.GraphicEq
+    AmbienceSound.Surge -> Icons.Default.Bolt
+    AmbienceSound.Deep -> Icons.Default.Waves
+    AmbienceSound.Rain -> Icons.Default.WaterDrop
+    AmbienceSound.Wind -> Icons.Default.Air
+    AmbienceSound.Snow -> Icons.Default.AcUnit
 }
 
 @Composable

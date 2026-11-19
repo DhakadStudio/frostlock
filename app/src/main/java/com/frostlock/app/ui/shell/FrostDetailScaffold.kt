@@ -22,13 +22,17 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import com.frostlock.app.ui.components.surface.frostPageBackground
 import com.frostlock.app.ui.theme.FrostTheme
 
 /**
  * Standard detail scaffold: back arrow, small title, optional actions and an
  * optional bottom bar.
  *
- * The bottom bar stays visible here; only immersive flows hide navigation.
+ * The bottom bar stays visible here; only immersive flows hide navigation. The
+ * page uses the shared frosted wash, and the app bar is transparent so the
+ * header bloom reaches behind it.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,49 +44,52 @@ fun FrostDetailScaffold(
     navigationBar: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
-    Scaffold(
-        modifier = modifier,
-        containerColor = FrostTheme.colors.background,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = title,
-                        style = FrostTheme.typography.titleLarge,
-                        color = FrostTheme.colors.textPrimary
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = FrostTheme.colors.textPrimary
+    Box(modifier = modifier.fillMaxSize().frostPageBackground()) {
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = title,
+                            style = FrostTheme.typography.titleLarge,
+                            color = FrostTheme.colors.textPrimary
                         )
-                    }
-                },
-                actions = actions,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = FrostTheme.colors.background,
-                    titleContentColor = FrostTheme.colors.textPrimary,
-                    navigationIconContentColor = FrostTheme.colors.textPrimary,
-                    actionIconContentColor = FrostTheme.colors.textPrimary
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = FrostTheme.colors.textPrimary
+                            )
+                        }
+                    },
+                    actions = actions,
+                    // The root host owns the status-bar inset.
+                    windowInsets = WindowInsets(0, 0, 0, 0),
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        titleContentColor = FrostTheme.colors.textPrimary,
+                        navigationIconContentColor = FrostTheme.colors.textPrimary,
+                        actionIconContentColor = FrostTheme.colors.textPrimary
+                    )
                 )
-            )
-        },
-        bottomBar = navigationBar,
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
-    ) { padding ->
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.TopCenter
-        ) {
+            },
+            bottomBar = navigationBar,
+            contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
+        ) { padding ->
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .widthIn(max = FrostTheme.spacing.contentMaxWidth)
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.TopCenter
             ) {
-                content(padding)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .widthIn(max = FrostTheme.spacing.contentMaxWidth)
+                ) {
+                    content(padding)
+                }
             }
         }
     }

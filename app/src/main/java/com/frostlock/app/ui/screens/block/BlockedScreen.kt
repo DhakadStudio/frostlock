@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.frostlock.app.ui.components.PrimaryButton
 import com.frostlock.app.ui.components.SecondaryButton
 import com.frostlock.app.ui.util.formatClock
+import com.frostlock.app.ui.components.surface.frostPageBackground
 import com.frostlock.app.ui.theme.FrostTheme
 
 @Composable
@@ -56,7 +57,7 @@ fun BlockedScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(FrostTheme.colors.background)
+            .frostPageBackground()
             .padding(32.dp),
         contentAlignment = Alignment.Center
     ) {

@@ -26,7 +26,8 @@ fun ImmersiveSessionHost(
     onStop: () -> Unit,
     onDiscard: () -> Unit,
     onEndStrict: () -> Unit,
-    onSkipBreak: () -> Unit
+    onSkipBreak: () -> Unit,
+    onToggleAmbience: () -> Unit
 ) {
     if (!state.immersiveVisible || !state.hasStarted) return
     val dismissible = !state.strictActive
@@ -49,7 +50,8 @@ fun ImmersiveSessionHost(
             onStop = onStop,
             onDiscard = onDiscard,
             onEndStrict = onEndStrict,
-            onSkipBreak = onSkipBreak
+            onSkipBreak = onSkipBreak,
+            onToggleAmbience = onToggleAmbience
         )
     }
 }

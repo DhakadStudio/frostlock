@@ -4,6 +4,7 @@ import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
 import com.frostlock.app.ui.util.AmbienceSound
+import com.frostlock.app.ui.util.AmbienceSynth
 import com.frostlock.app.ui.util.AmbienceTone
 import java.util.Random
 
@@ -108,6 +109,8 @@ class AmbiencePlayer {
                 val white = random.nextDouble(-1.0, 1.0)
                 val value = when (active) {
                     AmbienceSound.Off -> 0.0
+                    AmbienceSound.Pulse -> AmbienceSynth.pulse(seconds, white)
+                    AmbienceSound.Surge -> AmbienceSynth.surge(seconds, white)
                     AmbienceSound.Deep -> {
                         val drone = 0.16 * AmbienceTone.sine(110.0, seconds) +
                             0.08 * AmbienceTone.sine(165.0, seconds)

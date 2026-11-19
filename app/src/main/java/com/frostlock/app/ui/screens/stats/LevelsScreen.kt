@@ -44,6 +44,7 @@ import com.frostlock.app.ui.util.FocusLevel
 import com.frostlock.app.ui.util.FocusLevelStep
 import com.frostlock.app.ui.util.focusLevelLadder
 import com.frostlock.app.ui.util.focusLevelShareText
+import com.frostlock.app.ui.components.surface.frostPageBackground
 import com.frostlock.app.ui.theme.FrostTheme
 
 /**
@@ -63,7 +64,7 @@ fun LevelsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(FrostTheme.colors.background)
+            .frostPageBackground()
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)

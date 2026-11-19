@@ -35,5 +35,7 @@ class FocusSessionHostViewModel @Inject constructor(
 
     fun skipBreak() = controller.skipBreak()
 
+    fun toggleAmbience() = controller.toggleAmbience()
+
     fun consumeSummary() = controller.consumeSummary()
 }

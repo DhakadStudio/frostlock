@@ -1,12 +1,11 @@
 package com.frostlock.app.ui.shell
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.frostlock.app.ui.theme.FrostTheme
+import com.frostlock.app.ui.components.surface.frostPageBackground
 
 /**
  * Full-screen host for Focusing, the session summary and the block wall.
@@ -23,7 +22,7 @@ fun FrostImmersiveScaffold(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FrostTheme.colors.background),
+            .frostPageBackground(),
         content = content
     )
 }

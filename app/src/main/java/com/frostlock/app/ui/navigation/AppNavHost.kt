@@ -1,6 +1,5 @@
 package com.frostlock.app.ui.navigation
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,6 +15,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -25,6 +26,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.frostlock.app.ui.components.navigation.FrostNavigationBar
 import com.frostlock.app.ui.components.navigation.FrostNavigationRail
+import com.frostlock.app.ui.components.surface.frostPageBackground
 import com.frostlock.app.ui.session.FocusSessionHostViewModel
 import com.frostlock.app.ui.session.ImmersiveSessionHost
 import com.frostlock.app.ui.session.RunningSessionBar
@@ -77,7 +79,7 @@ fun AppNavHost(
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(FrostTheme.colors.background)
+                    .frostPageBackground()
             ) {
                 FrostNavigationRail(
                     items = navItems,
@@ -89,6 +91,9 @@ fun AppNavHost(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
+                        // The rail layout has no root Scaffold, so it owns the
+                        // top inset; screens must not add it again.
+                        .statusBarsPadding()
                 ) {
                     Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                         SessionNavHost(
@@ -104,6 +109,7 @@ fun AppNavHost(
                             onOpen = viewModel::showImmersive,
                             onPause = viewModel::pause,
                             onResume = viewModel::startOrResume,
+                            onToggleAmbience = viewModel::toggleAmbience,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(
@@ -118,7 +124,7 @@ fun AppNavHost(
             }
         } else {
             Scaffold(
-                containerColor = FrostTheme.colors.background,
+                containerColor = Color.Transparent,
                 bottomBar = {
                     if (showNavigation) {
                         Column(
@@ -131,6 +137,7 @@ fun AppNavHost(
                                     onOpen = viewModel::showImmersive,
                                     onPause = viewModel::pause,
                                     onResume = viewModel::startOrResume,
+                                    onToggleAmbience = viewModel::toggleAmbience,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(
@@ -167,7 +174,8 @@ fun AppNavHost(
             onStop = viewModel::stop,
             onDiscard = viewModel::discardSession,
             onEndStrict = viewModel::endStrictSession,
-            onSkipBreak = viewModel::skipBreak
+            onSkipBreak = viewModel::skipBreak,
+            onToggleAmbience = viewModel::toggleAmbience
         )
     }
 

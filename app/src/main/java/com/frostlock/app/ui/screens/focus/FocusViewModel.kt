@@ -40,6 +40,8 @@ class FocusViewModel @Inject constructor(
 
     fun setAmbience(key: String) = controller.setAmbience(key)
 
+    fun toggleAmbience() = controller.toggleAmbience()
+
     fun refreshAccess() = controller.refreshAccess()
 
     fun startOrResume() = controller.startOrResume()
