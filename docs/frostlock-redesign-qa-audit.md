@@ -521,7 +521,7 @@ Method: `adb`-driven manual QA on a physical device. `uiautomator` bounds for ta
 
 ### Incident note — 2026-11-18 evening: app uninstalled from the QA device
 
-Between the instrumented test run (~19:08, 5/5 passed) and the font-scale check (~19:19), FrostLock disappeared from the device. System logs show the package reported as `REPLACED` and then `REMOVED` at 19:19:53, followed by `MultiApp: uninstallIfNeed com.frostlock.app` from system_server (19:21:51). Causality is unconfirmed — the user's app-lock screen ("Security test — Unable to find this app") was on screen at 19:20, and an on-device cleaner is a plausible system-side cause; the instrumented test runner does not uninstall the app under test. The user may also have tapped something in the lock screen.
+Between the instrumented test run (~19:08, 5/5 passed) and the font-scale check (~19:19), FrostLock disappeared from the device. System logs show the package reported as `REPLACED` and then `REMOVED` at 19:19:53, followed by `MultiApp: uninstallIfNeed com.frostlock.app` from system_server (19:21:51). Causality is unconfirmed — the user's app-lock screen ("Security test — Unable to find this app") was on screen at 19:20, and an on-device cleaner is a plausible system-side cause; the instrumented test runner does not uninstall the app under test. The user may also have tapped something in the lock screen. **Status: superseded — see "Root cause found" below. The device cleaner and the user were not responsible.**
 
 **Data loss:** the uninstall wiped FrostLock's private storage (Room DB, prefs). On reinstall the app launches into onboarding. Lost: 2 test-era sessions (13s on 17 Nov, 56s on 18 Nov), the Day-2 streak, and any non-default preferences set during QA. No backup snapshot existed for this same-day debug install, and the sample `data_extraction_rules`/`backup_rules` contain only template comments (Auto Backup includes everything by default but had never run for this install window).
 
@@ -529,7 +529,22 @@ Between the instrumented test run (~19:08, 5/5 passed) and the font-scale check 
 
 ### Incident follow-up — 2026-11-19 (second removal)
 
-The reinstalled build (`app-debug.apk`, 17:29 build) ran fine (onboarding re-completed at 00:38 on 2026-11-19, verified by screenshot), but when the instrumented suite was re-run at ~00:44 the package was again absent from `pm list packages`, with `com.heytap.market/com.oplus.exp.installed.rec.core.InstalledRecommendActivity` (Realme App Market "new app" screen) holding focus the whole time. Each `connectedDebugAndroidTest` reinstalls the debug APK (`adb install -r`); both removals happened within ~25 minutes of a reinstall. Realme's device-care/app-market pipeline is the likelier culprit (the same class of system decision as `MultiApp: uninstallIfNeed` logged earlier); user action cannot be ruled out. **Code mitigation shipped:** explicit Auto Backup rules (`backup_rules.xml`, `data_extraction_rules.xml` — commit `c4feb10`) now include `database` + `sharedpref` for cloud and device transfer. **User mitigation required:** in Phone Manager / Security settings, stop the cleaner uninstalling or hiding FrostLock, or this will keep destroying local data. Until then, installing via adb keeps triggering the market's new-app flow.
+The reinstalled build (`app-debug.apk`, 17:29 build) ran fine (onboarding re-completed at 00:38 on 2026-11-19, verified by screenshot), but when the instrumented suite was re-run at ~00:44 the package was again absent from `pm list packages`, with `com.heytap.market/com.oplus.exp.installed.rec.core.InstalledRecommendActivity` (Realme App Market "new app" screen) holding focus the whole time. Each `connectedDebugAndroidTest` reinstalls the debug APK (`adb install -r`); both removals happened within ~25 minutes of a reinstall. Realme's device-care/app-market pipeline is the likelier culprit (the same class of system decision as `MultiApp: uninstallIfNeed` logged earlier); user action cannot be ruled out. **Code mitigation shipped:** explicit Auto Backup rules (`backup_rules.xml`, `data_extraction_rules.xml` — commit `c4feb10`) now include `database` + `sharedpref` for cloud and device transfer. **User mitigation required:** in Phone Manager / Security settings, stop the cleaner uninstalling or hiding FrostLock, or this will keep destroying local data. Until then, installing via adb keeps triggering the market's new-app flow. **Status: superseded — see "Root cause found" below. The Realme pipeline was not responsible.**
+
+### Root cause found — 2026-11-19 ~12:05 (supersedes the suspicions above)
+
+A controlled experiment with a live `adb logcat` capture identified the mechanism conclusively:
+
+- **11:57** — plain `adb install -r`; the app stays installed and running for 5+ minutes. No removal.
+- **12:03:33–12:04:19** — `./gradlew :app:connectedDebugAndroidTest` (one test). At **12:04:21** the device logs `android.intent.action.PACKAGE_REMOVED` for `com.frostlock.app` and `com.frostlock.app.test` with `dataRemove=true`, `replacing=false`, followed by `PACKAGE_FULLY_REMOVED for com.frostlock.app.test for u0`.
+
+**The remover was the test harness, not the phone.** AGP's `connectedDebugAndroidTest` uninstalls both APKs after the run as tidy-up; every previous disappearance (19:19, 00:44, 01:28) followed a connected test run. The Realme cleaner, the App Market "new app" screens and `MultiApp: uninstallIfNeed` were coincidental / unrelated, and no user action was involved.
+
+**Fix:** `android.injected.androidTest.leaveApksInstalledAfterRun=true` in `gradle.properties` (AGP 9.5.1 `BooleanOption`). Verified at 12:08: full `SmokeTest` suite **5/5 green**, and both packages remain installed with onboarding state intact after the run.
+
+**Side effect to reverse (user's call):** the App Market scan toggles were turned off while chasing the wrong cause. They are not needed for the fix and can be re-enabled without breaking the dev loop.
+
+**Data loss stands:** the uninstalls destroyed 2 QA-era sessions (13s on 17 Nov, 56s on 18 Nov) and the Day-2 streak during the first harness uninstall. Not recoverable; not re-created. Onboarding has been re-completed with placeholder answers (editable).
 
 ### Not verified on this device / still open
 
